@@ -265,6 +265,35 @@
     </div>
   </div>
 
+  <!-- Google OAuth / Supabase Config Modal -->
+  <div id="supa-cfg-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base">Connect Real Google Login</h3>
+        <button id="close-supa-cfg" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        Paste your <strong>Supabase Project URL</strong> and <strong>Anon Public Key</strong> (with Google provider enabled in Supabase Auth) to enable real Google Sign-In.
+      </p>
+      <form id="supa-cfg-form" class="space-y-3">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-zinc-500">Supabase Project URL</label>
+          <input id="supa-url-input" type="url" placeholder="https://your-project.supabase.co" required class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-zinc-500">Supabase Anon Public Key</label>
+          <input id="supa-key-input" type="text" placeholder="eyJhbGciOiJIUzI1NiIs..." required class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button id="cancel-supa-cfg" type="button" class="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold">Cancel</button>
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-semibold">Save & Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast" class="hidden fixed bottom-20 md:bottom-6 right-6 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold shadow-lg"></div>
 
@@ -1278,11 +1307,21 @@
       } catch {}
     }
 
+    // Optional: paste your Supabase URL & Anon Key here for all visitors on GitHub Pages
+    const DEFAULT_SUPABASE_URL = '';
+    const DEFAULT_SUPABASE_ANON_KEY = '';
+
     function loadSupaConfig() {
       try {
         const raw = localStorage.getItem(SUPA_CFG_KEY);
-        return raw ? JSON.parse(raw) : { url: '', anonKey: '' };
-      } catch { return { url: '', anonKey: '' }; }
+        const parsed = raw ? JSON.parse(raw) : {};
+        return {
+          url: (parsed.url || DEFAULT_SUPABASE_URL || '').trim().replace(/\/$/, ''),
+          anonKey: (parsed.anonKey || DEFAULT_SUPABASE_ANON_KEY || '').trim()
+        };
+      } catch {
+        return { url: DEFAULT_SUPABASE_URL, anonKey: DEFAULT_SUPABASE_ANON_KEY };
+      }
     }
 
     function saveSupaConfig(url, anonKey) {
@@ -1366,6 +1405,18 @@
               </div>
 
               <div class="space-y-2.5 text-center">
+                <button type="button" id="google-login-btn" class="w-full py-2 px-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-center gap-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-100 transition">
+                  <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
+                    <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+                <button type="button" id="open-supa-cfg-btn" class="text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 underline">
+                  Google OAuth Settings
+                </button>
                 <button id="quick-user-btn" class="w-full text-xs font-semibold text-[#385185] dark:text-sky-400 hover:opacity-80">
                   Log in as Demo Creator (@aarav.lens)
                 </button>
@@ -1394,6 +1445,23 @@
           </div>
         </div>
       `;
+
+      const gBtn = document.getElementById('google-login-btn');
+      if (gBtn) {
+        gBtn.addEventListener('click', () => {
+          const cfg = loadSupaConfig();
+          if (!cfg.url.startsWith('https://') || !cfg.anonKey) {
+            openSupaCfgModal();
+            showToast('Add your Supabase URL & Anon Key first');
+            return;
+          }
+          const redirectTo = window.location.origin + window.location.pathname;
+          window.location.href = `${cfg.url}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+        });
+      }
+
+      const openCfgBtn = document.getElementById('open-supa-cfg-btn');
+      if (openCfgBtn) openCfgBtn.addEventListener('click', openSupaCfgModal);
 
       const togglePwBtn = document.getElementById('toggle-pw-btn');
       if (togglePwBtn) {
@@ -1929,6 +1997,66 @@
           splash.classList.add('hidden');
         }, 420);
       }, 1350);
+    })();
+
+  
+    // Google OAuth Config Modal & Callback Handler
+    function openSupaCfgModal() {
+      const cfg = loadSupaConfig();
+      document.getElementById('supa-url-input').value = cfg.url || '';
+      document.getElementById('supa-key-input').value = cfg.anonKey || '';
+      document.getElementById('supa-cfg-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function closeSupaCfgModal() {
+      document.getElementById('supa-cfg-modal').classList.add('hidden');
+    }
+
+    document.getElementById('close-supa-cfg').addEventListener('click', closeSupaCfgModal);
+    document.getElementById('cancel-supa-cfg').addEventListener('click', closeSupaCfgModal);
+    document.getElementById('supa-cfg-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const url = document.getElementById('supa-url-input').value.trim().replace(/\/$/, '');
+      const key = document.getElementById('supa-key-input').value.trim();
+      saveSupaConfig(url, key);
+      closeSupaCfgModal();
+      showToast('Google OAuth config saved — tap Continue with Google');
+    });
+
+    (async function handleGoogleOAuthCallback() {
+      const hash = window.location.hash || '';
+      if (!hash.includes('access_token=') && !hash.includes('error_description=')) return;
+      const params = new URLSearchParams(hash.slice(1));
+      const errDesc = params.get('error_description');
+      if (errDesc) {
+        state.authError = decodeURIComponent(errDesc.replace(/\+/g, ' '));
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        render();
+        return;
+      }
+      const accessToken = params.get('access_token');
+      const cfg = loadSupaConfig();
+      if (!accessToken || !cfg.url || !cfg.anonKey) return;
+      try {
+        const res = await fetch(`${cfg.url}/auth/v1/user`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${accessToken}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch Google user');
+        const user = await res.json();
+        const meta = user.user_metadata || {};
+        const email = user.email || '';
+        const fullName = meta.full_name || meta.name || email.split('@')[0];
+        const username = (meta.preferred_username || email.split('@')[0] || 'snapuser').toLowerCase().replace(/[^a-z0-9._]/g, '');
+        if (meta.avatar_url || meta.picture) {
+          state.currentUser.avatar = meta.avatar_url || meta.picture;
+        }
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        completeLogin(email, username, fullName);
+      } catch (err) {
+        state.authError = 'Google sign-in could not be verified. Check Supabase URL/Key.';
+        render();
+      }
     })();
 
   </script>
