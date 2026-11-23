@@ -16,6 +16,7 @@
     };
   </script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; }
@@ -265,30 +266,34 @@
     </div>
   </div>
 
-  <!-- Google OAuth / Supabase Config Modal -->
+  <!-- Google One Tap / Supabase Config Modal -->
   <div id="supa-cfg-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base">Connect Real Google Login</h3>
+        <h3 class="font-bold text-base">Google One Tap & OAuth Settings</h3>
         <button id="close-supa-cfg" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-        Paste your <strong>Supabase Project URL</strong> and <strong>Anon Public Key</strong> (with Google provider enabled in Supabase Auth) to enable real Google Sign-In.
+        Paste your <strong>Google OAuth Client ID</strong> for true <strong>Google One Tap</strong> sign-in. Optionally add Supabase credentials below to persist sessions to your Supabase backend.
       </p>
       <form id="supa-cfg-form" class="space-y-3">
         <div class="space-y-1">
-          <label class="text-xs font-semibold text-zinc-500">Supabase Project URL</label>
-          <input id="supa-url-input" type="url" placeholder="https://your-project.supabase.co" required class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
+          <label class="text-xs font-semibold text-zinc-500">Google OAuth Client ID (for One Tap)</label>
+          <input id="google-client-id-input" type="text" placeholder="1234567890-abcdef.apps.googleusercontent.com" class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
         </div>
         <div class="space-y-1">
-          <label class="text-xs font-semibold text-zinc-500">Supabase Anon Public Key</label>
-          <input id="supa-key-input" type="text" placeholder="eyJhbGciOiJIUzI1NiIs..." required class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
+          <label class="text-xs font-semibold text-zinc-500">Supabase Project URL <span class="font-normal text-zinc-400">(optional)</span></label>
+          <input id="supa-url-input" type="url" placeholder="https://your-project.supabase.co" class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-zinc-500">Supabase Anon Public Key <span class="font-normal text-zinc-400">(optional)</span></label>
+          <input id="supa-key-input" type="text" placeholder="eyJhbGciOiJIUzI1NiIs..." class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
         </div>
         <div class="flex gap-2 pt-1">
           <button id="cancel-supa-cfg" type="button" class="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold">Cancel</button>
-          <button type="submit" class="flex-1 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-semibold">Save & Connect</button>
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-semibold">Save & Enable One Tap</button>
         </div>
       </form>
     </div>
@@ -1283,7 +1288,8 @@
     }
 
     function clearSession() {
-      try { localStorage.removeItem(SESSION_KEY); } catch {}
+      try { localStorage.removeItem(SESSION_KEY);
+          if (window.google?.accounts?.id) { try { window.google.accounts.id.disableAutoSelect(); } catch {} } } catch {}
     }
 
     function restoreSession() {
@@ -1307,7 +1313,8 @@
       } catch {}
     }
 
-    // Optional: paste your Supabase URL & Anon Key here for all visitors on GitHub Pages
+    // Optional: paste your Google Client ID & Supabase credentials here for all visitors on GitHub Pages
+    const DEFAULT_GOOGLE_CLIENT_ID = '';
     const DEFAULT_SUPABASE_URL = '';
     const DEFAULT_SUPABASE_ANON_KEY = '';
 
@@ -1316,16 +1323,23 @@
         const raw = localStorage.getItem(SUPA_CFG_KEY);
         const parsed = raw ? JSON.parse(raw) : {};
         return {
+          googleClientId: (parsed.googleClientId || DEFAULT_GOOGLE_CLIENT_ID || '').trim(),
           url: (parsed.url || DEFAULT_SUPABASE_URL || '').trim().replace(/\/$/, ''),
           anonKey: (parsed.anonKey || DEFAULT_SUPABASE_ANON_KEY || '').trim()
         };
       } catch {
-        return { url: DEFAULT_SUPABASE_URL, anonKey: DEFAULT_SUPABASE_ANON_KEY };
+        return { googleClientId: DEFAULT_GOOGLE_CLIENT_ID, url: DEFAULT_SUPABASE_URL, anonKey: DEFAULT_SUPABASE_ANON_KEY };
       }
     }
 
-    function saveSupaConfig(url, anonKey) {
-      try { localStorage.setItem(SUPA_CFG_KEY, JSON.stringify({ url: url.trim(), anonKey: anonKey.trim() })); } catch {}
+    function saveSupaConfig(url, anonKey, googleClientId = '') {
+      try {
+        localStorage.setItem(SUPA_CFG_KEY, JSON.stringify({
+          googleClientId: googleClientId.trim(),
+          url: url.trim(),
+          anonKey: anonKey.trim()
+        }));
+      } catch {}
     }
 
     function completeLogin(email, username, fullName) {
@@ -1405,6 +1419,7 @@
               </div>
 
               <div class="space-y-2.5 text-center">
+                <div id="google-onetap-btn-wrap" class="w-full flex justify-center"></div>
                 <button type="button" id="google-login-btn" class="w-full py-2 px-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-center gap-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-100 transition">
                   <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
@@ -1412,10 +1427,10 @@
                     <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
                     <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
                   </svg>
-                  <span>Continue with Google</span>
+                  <span>Continue with Google One Tap</span>
                 </button>
                 <button type="button" id="open-supa-cfg-btn" class="text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 underline">
-                  Google OAuth Settings
+                  Google One Tap & OAuth Settings
                 </button>
                 <button id="quick-user-btn" class="w-full text-xs font-semibold text-[#385185] dark:text-sky-400 hover:opacity-80">
                   Log in as Demo Creator (@aarav.lens)
@@ -1450,15 +1465,24 @@
       if (gBtn) {
         gBtn.addEventListener('click', () => {
           const cfg = loadSupaConfig();
-          if (!cfg.url.startsWith('https://') || !cfg.anonKey) {
-            openSupaCfgModal();
-            showToast('Add your Supabase URL & Anon Key first');
+          if (cfg.googleClientId) {
+            if (!window.google?.accounts?.id) {
+              showToast('Google Sign-In is still loading — try again in a moment');
+              return;
+            }
+            initGoogleOneTap(true);
             return;
           }
-          const redirectTo = window.location.origin + window.location.pathname;
-          window.location.href = `${cfg.url}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+          if (cfg.url.startsWith('https://') && cfg.anonKey) {
+            const redirectTo = window.location.origin + window.location.pathname;
+            window.location.href = `${cfg.url}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+            return;
+          }
+          openSupaCfgModal();
+          showToast('Add your Google Client ID to enable One Tap');
         });
       }
+      initGoogleOneTap(false);
 
       const openCfgBtn = document.getElementById('open-supa-cfg-btn');
       if (openCfgBtn) openCfgBtn.addEventListener('click', openSupaCfgModal);
@@ -2000,9 +2024,109 @@
     })();
 
   
-    // Google OAuth Config Modal & Callback Handler
+    // Google One Tap (GIS) + OAuth Config Modal & Callback Handler
+    let googleOneTapInitializedClient = '';
+
+    function decodeJwtPayload(token) {
+      const part = token.split('.')[1];
+      if (!part) throw new Error('Invalid JWT');
+      const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      return JSON.parse(json);
+    }
+
+    async function handleGoogleOneTapCredential(response) {
+      try {
+        if (!response || !response.credential) throw new Error('Missing Google credential');
+        const payload = decodeJwtPayload(response.credential);
+        const cfg = loadSupaConfig();
+        let email = payload.email || '';
+        let fullName = payload.name || email.split('@')[0];
+        let avatar = payload.picture || '';
+
+        // If Supabase is configured, also exchange the One Tap ID token for a real Supabase session
+        if (cfg.url.startsWith('https://') && cfg.anonKey) {
+          const res = await fetch(`${cfg.url}/auth/v1/token?grant_type=id_token`, {
+            method: 'POST',
+            headers: {
+              apikey: cfg.anonKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ provider: 'google', id_token: response.credential })
+          });
+          if (!res.ok) {
+            const errBody = await res.json().catch(() => ({}));
+            throw new Error(errBody.error_description || errBody.msg || 'Supabase Google ID token exchange failed');
+          }
+          const supaData = await res.json();
+          const meta = supaData.user?.user_metadata || {};
+          email = supaData.user?.email || email;
+          fullName = meta.full_name || meta.name || fullName;
+          avatar = meta.avatar_url || meta.picture || avatar;
+        }
+
+        if (!email) throw new Error('Google account email unavailable');
+        if (avatar) state.currentUser.avatar = avatar;
+        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9._]/g, '') || 'snapuser';
+        completeLogin(email, username, fullName);
+      } catch (err) {
+        state.authError = err.message || 'Google One Tap sign-in failed.';
+        render();
+      }
+    }
+
+    function initGoogleOneTap(manualTrigger = false, retryCount = 0) {
+      if (state.isAuthenticated) return;
+      const cfg = loadSupaConfig();
+      if (!cfg.googleClientId) return;
+
+      if (!window.google?.accounts?.id) {
+        if (retryCount < 15) {
+          setTimeout(() => initGoogleOneTap(manualTrigger, retryCount + 1), 300);
+        }
+        return;
+      }
+
+      if (googleOneTapInitializedClient !== cfg.googleClientId) {
+        window.google.accounts.id.initialize({
+          client_id: cfg.googleClientId,
+          callback: handleGoogleOneTapCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          context: 'signin',
+          use_fedcm_for_prompt: true
+        });
+        googleOneTapInitializedClient = cfg.googleClientId;
+      }
+
+      const btnWrap = document.getElementById('google-onetap-btn-wrap');
+      const fallbackBtn = document.getElementById('google-login-btn');
+      if (btnWrap && btnWrap.childElementCount === 0) {
+        window.google.accounts.id.renderButton(btnWrap, {
+          theme: state.theme === 'dark' ? 'filled_black' : 'outline',
+          size: 'large',
+          shape: 'rectangular',
+          text: 'continue_with',
+          width: 284
+        });
+        if (fallbackBtn) fallbackBtn.classList.add('hidden');
+      }
+
+      window.google.accounts.id.prompt((notification) => {
+        if (manualTrigger && (notification.isNotDisplayed() || notification.isSkippedMoment())) {
+          if (cfg.url.startsWith('https://') && cfg.anonKey) {
+            const redirectTo = window.location.origin + window.location.pathname;
+            window.location.href = `${cfg.url}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+          } else {
+            showToast('Use the Google button above or check browser cookie/FedCM settings');
+          }
+        }
+      });
+    }
+
     function openSupaCfgModal() {
       const cfg = loadSupaConfig();
+      document.getElementById('google-client-id-input').value = cfg.googleClientId || '';
       document.getElementById('supa-url-input').value = cfg.url || '';
       document.getElementById('supa-key-input').value = cfg.anonKey || '';
       document.getElementById('supa-cfg-modal').classList.remove('hidden');
@@ -2017,11 +2141,19 @@
     document.getElementById('cancel-supa-cfg').addEventListener('click', closeSupaCfgModal);
     document.getElementById('supa-cfg-form').addEventListener('submit', (e) => {
       e.preventDefault();
+      const googleClientId = document.getElementById('google-client-id-input').value.trim();
       const url = document.getElementById('supa-url-input').value.trim().replace(/\/$/, '');
       const key = document.getElementById('supa-key-input').value.trim();
-      saveSupaConfig(url, key);
+      if (!googleClientId && (!url || !key)) {
+        showToast('Enter a Google Client ID or Supabase URL + Key');
+        return;
+      }
+      saveSupaConfig(url, key, googleClientId);
+      googleOneTapInitializedClient = '';
       closeSupaCfgModal();
-      showToast('Google OAuth config saved — tap Continue with Google');
+      render();
+      initGoogleOneTap(true);
+      showToast(googleClientId ? 'Google One Tap enabled!' : 'Supabase OAuth config saved');
     });
 
     (async function handleGoogleOAuthCallback() {
