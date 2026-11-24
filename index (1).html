@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SNAPGRAM — Interactive Social Media Platform</title>
+  <meta name="theme-color" content="#ec4899" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
@@ -480,6 +483,20 @@
           <button type="submit" class="flex-1 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-semibold">Save & Enable One Tap</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- New Message User Search Modal -->
+  <div id="new-chat-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl max-h-[80vh] flex flex-col">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base">New Message</h3>
+        <button id="close-new-chat" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <input id="new-chat-search" type="text" placeholder="Search @username..." class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none" />
+      <div id="new-chat-users-list" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 space-y-1">
+        <p class="text-xs text-zinc-500 py-4 text-center">Loading users...</p>
+      </div>
     </div>
   </div>
 
@@ -1339,8 +1356,11 @@
       document.querySelectorAll('.like-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const p = state.posts.find(x => x.id === btn.dataset.postId);
+          if (!p) return;
           p.liked = !p.liked;
-          p.likes += p.liked ? 1 : -1;
+          p.likes = Math.max(0, p.likes + (p.liked ? 1 : -1));
+          saveUserEngagements();
+          syncMediaEngagement(p.id, { likes_count: p.likes });
           render();
         });
       });
@@ -1348,7 +1368,9 @@
       document.querySelectorAll('.save-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const p = state.posts.find(x => x.id === btn.dataset.postId);
+          if (!p) return;
           p.saved = !p.saved;
+          saveUserEngagements();
           showToast(p.saved ? 'Saved to bookmarks' : 'Removed from bookmarks');
           render();
         });
@@ -1378,7 +1400,9 @@
           const input = document.getElementById(`comment-input-${form.dataset.postId}`);
           if (!input.value.trim()) return;
           const p = state.posts.find(x => x.id === form.dataset.postId);
+          if (!p) return;
           p.comments.push({ user: state.currentUser.username, text: input.value.trim() });
+          syncMediaEngagement(p.id, { comments: p.comments });
           render();
         });
       });
@@ -1416,8 +1440,11 @@
       document.querySelectorAll('.reel-like-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const r = state.reels.find(x => x.id === btn.dataset.reelId);
+          if (!r) return;
           r.liked = !r.liked;
-          r.likes += r.liked ? 1 : -1;
+          r.likes = Math.max(0, r.likes + (r.liked ? 1 : -1));
+          saveUserEngagements();
+          syncMediaEngagement(r.id, { likes_count: r.likes });
           render();
         });
       });
@@ -1469,7 +1496,7 @@
 
       const newChatBtn = document.getElementById('new-chat-btn');
       if (newChatBtn) {
-        newChatBtn.addEventListener('click', () => showToast('Select a contact to start a new chat'));
+        newChatBtn.addEventListener('click', openNewChatModal);
       }
 
       document.querySelectorAll('.msg-react-btn').forEach(btn => {
@@ -1728,7 +1755,7 @@
       saveSession(state.currentUser);
       showToast(isAdmin ? 'Signed in with Admin access' : `Welcome, @${state.currentUser.username}`);
       syncUserActivity('login');
-      loadRemoteMedia();
+      loadRemoteMedia(); loadMyMessages();
       if (isAdmin) loadAdminData();
       render();
     }
@@ -2872,6 +2899,7 @@
             });
           }
         });
+        applyUserEngagements();
         render();
       } catch {}
     }
@@ -3258,7 +3286,173 @@
       } catch {}
     }
 
-    window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { syncUserActivity('login'); loadRemoteMedia(); if (state.currentUser.isAdmin) loadAdminData(); } });
+
+    // =========================================================================
+    // ENGAGEMENT PERSISTENCE, REAL USER-TO-USER DMs & PWA SERVICE WORKER
+    // =========================================================================
+    function getEngagementKey() {
+      return 'snapgram_eng_' + (state.currentUser.username || 'user');
+    }
+
+    function saveUserEngagements() {
+      try {
+        const likedPosts = state.posts.filter(p => p.liked).map(p => p.id);
+        const savedPosts = state.posts.filter(p => p.saved).map(p => p.id);
+        const likedReels = state.reels.filter(r => r.liked).map(r => r.id);
+        localStorage.setItem(getEngagementKey(), JSON.stringify({ likedPosts, savedPosts, likedReels }));
+      } catch {}
+    }
+
+    function applyUserEngagements() {
+      try {
+        const raw = localStorage.getItem(getEngagementKey());
+        if (!raw) return;
+        const { likedPosts = [], savedPosts = [], likedReels = [] } = JSON.parse(raw);
+        state.posts.forEach(p => {
+          if (likedPosts.includes(p.id)) p.liked = true;
+          if (savedPosts.includes(p.id)) p.saved = true;
+        });
+        state.reels.forEach(r => {
+          if (likedReels.includes(r.id)) r.liked = true;
+        });
+      } catch {}
+    }
+
+    async function syncMediaEngagement(id, patch) {
+      const cfg = loadSupaConfig();
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey || !state.currentUser.supaToken) return;
+      try {
+        await fetch(`${cfg.url}/rest/v1/snapgram_media?id=eq.${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch)
+        });
+      } catch {}
+    }
+
+    async function loadMyMessages() {
+      const cfg = loadSupaConfig();
+      const me = state.currentUser.username;
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey || !state.currentUser.supaToken || !me) return;
+      try {
+        const res = await fetch(`${cfg.url}/rest/v1/snapgram_messages?or=(sender_username.eq.${encodeURIComponent(me)},recipient_username.eq.${encodeURIComponent(me)})&order=created_at.asc`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}` }
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        const convMap = {};
+        rows.forEach(m => {
+          const peer = m.sender_username === me ? m.recipient_username : m.sender_username;
+          if (!convMap[peer]) {
+            convMap[peer] = {
+              id: 'dm_' + peer,
+              box: 'primary',
+              title: peer,
+              subtitle: 'Snapgram Direct',
+              avatar: '',
+              online: false,
+              seen: '',
+              messages: []
+            };
+          }
+          convMap[peer].messages.push({
+            id: m.id,
+            sender: m.sender_username,
+            text: m.text,
+            time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            reaction: ''
+          });
+        });
+        const loaded = Object.values(convMap);
+        if (loaded.length) {
+          state.conversations = loaded;
+          if (!state.activeConvId || !loaded.some(c => c.id === state.activeConvId)) {
+            state.activeConvId = loaded[0].id;
+          }
+          render();
+        }
+      } catch {}
+    }
+
+    let cachedDirectoryUsers = [];
+    async function openNewChatModal() {
+      document.getElementById('new-chat-modal').classList.remove('hidden');
+      document.getElementById('new-chat-search').value = '';
+      const listEl = document.getElementById('new-chat-users-list');
+      listEl.innerHTML = '<p class="text-xs text-zinc-500 py-4 text-center">Loading users...</p>';
+      if (window.lucide) window.lucide.createIcons();
+
+      const cfg = loadSupaConfig();
+      if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken) {
+        try {
+          const res = await fetch(`${cfg.url}/rest/v1/snapgram_users?select=username,full_name,avatar_url,is_verified,is_blocked`, {
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}` }
+          });
+          if (res.ok) {
+            cachedDirectoryUsers = (await res.json()).filter(u => !u.is_blocked && u.username !== state.currentUser.username);
+          }
+        } catch {}
+      }
+      renderNewChatUsers('');
+    }
+
+    function renderNewChatUsers(query) {
+      const listEl = document.getElementById('new-chat-users-list');
+      const q = (query || '').toLowerCase();
+      const matches = cachedDirectoryUsers.filter(u => !q || (u.username || '').toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q));
+      if (!matches.length) {
+        listEl.innerHTML = '<p class="text-xs text-zinc-500 py-6 text-center">No users found.</p>';
+        return;
+      }
+      listEl.innerHTML = matches.map(u => `
+        <button type="button" class="start-dm-user w-full text-left py-2.5 px-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-3 transition" data-uname="${u.username}" data-avatar="${u.avatar_url || ''}">
+          ${renderAvatar(u.avatar_url, u.username, 'w-10 h-10')}
+          <div class="min-w-0">
+            <p class="text-sm font-semibold inline-flex items-center gap-1">@${u.username}${u.is_verified ? renderVerifiedBadge(u.username) : ''}</p>
+            <p class="text-xs text-zinc-500 truncate">${u.full_name || ''}</p>
+          </div>
+        </button>
+      `).join('');
+
+      document.querySelectorAll('.start-dm-user').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const peer = btn.dataset.uname;
+          const convId = 'dm_' + peer;
+          if (!state.conversations.some(c => c.id === convId)) {
+            state.conversations.unshift({
+              id: convId,
+              box: 'primary',
+              title: peer,
+              subtitle: 'Snapgram Direct',
+              avatar: btn.dataset.avatar || '',
+              online: false,
+              seen: '',
+              messages: []
+            });
+          }
+          state.activeConvId = convId;
+          state.mobileChatOpen = true;
+          state.activeTab = 'messages';
+          document.getElementById('new-chat-modal').classList.add('hidden');
+          render();
+        });
+      });
+    }
+
+    document.getElementById('close-new-chat').addEventListener('click', () => {
+      document.getElementById('new-chat-modal').classList.add('hidden');
+    });
+    document.getElementById('new-chat-search').addEventListener('input', e => {
+      renderNewChatUsers(e.target.value);
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); if (state.currentUser.isAdmin) loadAdminData(); } });
   
     // Pull-to-refresh (drag down from top) for touch & mouse
     (function initPullToRefresh() {
