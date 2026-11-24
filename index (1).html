@@ -1407,12 +1407,21 @@
         });
       });
 
+      function restoreInputCursor(id, pos) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.focus();
+          try { el.setSelectionRange(pos, pos); } catch {}
+        }
+      }
+
       const expSearch = document.getElementById('explore-search');
       if (expSearch) {
         expSearch.addEventListener('input', e => {
+          const pos = e.target.selectionStart ?? e.target.value.length;
           state.searchQuery = e.target.value;
           render();
-          document.getElementById('explore-search')?.focus();
+          restoreInputCursor('explore-search', pos);
         });
       }
 
@@ -1477,9 +1486,10 @@
       const chatSearchInput = document.getElementById('chat-search-input');
       if (chatSearchInput) {
         chatSearchInput.addEventListener('input', e => {
+          const pos = e.target.selectionStart ?? e.target.value.length;
           state.chatSearch = e.target.value;
           render();
-          document.getElementById('chat-search-input')?.focus();
+          restoreInputCursor('chat-search-input', pos);
         });
       }
 
@@ -1605,9 +1615,10 @@
       const adminUserSearch = document.getElementById('admin-user-search');
       if (adminUserSearch) {
         adminUserSearch.addEventListener('input', e => {
+          const pos = e.target.selectionStart ?? e.target.value.length;
           state.admin.userSearch = e.target.value;
           render();
-          document.getElementById('admin-user-search')?.focus();
+          restoreInputCursor('admin-user-search', pos);
         });
       }
 
