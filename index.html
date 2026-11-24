@@ -217,8 +217,7 @@
               <button type="button" class="edit-avatar-preset w-6 h-6 rounded-full overflow-hidden border border-zinc-300 dark:border-zinc-700" data-preset="coffee"></button>
               <button type="button" class="edit-avatar-preset w-6 h-6 rounded-full overflow-hidden border border-zinc-300 dark:border-zinc-700" data-preset="tokyo"></button>
               <button type="button" class="edit-avatar-preset w-6 h-6 rounded-full overflow-hidden border border-zinc-300 dark:border-zinc-700" data-preset="coast"></button>
-              <button type="button" class="edit-avatar-preset w-6 h-6 rounded-full overflow-hidden border border-zinc-300 dark:border-zinc-700" data-preset="pasta"></button>
-            </div>
+                          </div>
           </div>
         </div>
 
@@ -320,143 +319,32 @@
       theme: 'light',
       createKind: 'post',
       currentUser: {
-        email: 'aarav.lens@snapgram.app',
+        email: '',
         isAdmin: false,
-        username: 'aarav.lens',
-        fullName: 'Aarav Mehta',
-        category: 'Digital Creator',
-        bio: 'Visual storyteller & full-stack builder. Capturing mountains, street lights, and coastal mornings.',
-        website: 'snapgram.app/aarav.lens',
-        avatar: IMAGES.coffee,
+        username: '',
+        fullName: '',
+        category: '',
+        bio: '',
+        website: '',
+        avatar: '',
         isPrivate: false,
-        followers: 1482,
-        following: 318
+        followers: 0,
+        following: 0
       },
-      stories: [
-        { id: 's1', username: 'aarav.lens', privacy: 'Followers', img: IMAGES.coffee, caption: '6:15 AM pour-over above the clouds', viewed: false },
-        { id: 's2', username: 'kenji.frames', privacy: 'Close Friends', img: IMAGES.tokyo, caption: 'Shinjuku rain reflections', viewed: false },
-        { id: 's3', username: 'maya.coast', privacy: 'Followers', img: IMAGES.coast, caption: 'Golden hour swell check', viewed: false }
-      ],
-      posts: [
-        {
-          id: 'p1',
-          username: 'aarav.lens',
-          location: 'Someshwar Range, Uttarakhand',
-          img: IMAGES.coffee,
-          caption: 'First light hitting the ridge with a warm pour-over. #himalayas #morningcoffee #travel',
-          likes: 342,
-          liked: false,
-          saved: false,
-          following: true,
-          isFeatured: false,
-          featuredLabel: '',
-          comments: [
-            { user: 'kenji.frames', text: 'The light on that wooden railing is unreal!' },
-            { user: 'maya.coast', text: 'Need this view right now ☕' }
-          ]
-        },
-        {
-          id: 'p2',
-          username: 'kenji.frames',
-          location: 'Omoide Yokocho, Tokyo',
-          img: IMAGES.tokyo,
-          caption: 'Lanterns and wet cobblestones after midnight rain. #tokyo #streetphotography #night',
-          likes: 891,
-          liked: true,
-          saved: false,
-          following: true,
-          isFeatured: true,
-          featuredLabel: 'Featured by Snapgram',
-          comments: [
-            { user: 'aarav.lens', text: 'Classic cinematic framing.' }
-          ]
-        }
-      ],
-      reels: [
-        {
-          id: 'r1',
-          username: 'maya.coast',
-          img: IMAGES.coast,
-          caption: 'Basalt cliffs & Atlantic swell at dusk #ocean #drone #reels',
-          audio: 'Original Audio · maya.coast (Licensed)',
-          views: 18420,
-          likes: 2140,
-          liked: false,
-          saved: false,
-          playing: true
-        },
-        {
-          id: 'r2',
-          username: 'kenji.frames',
-          img: IMAGES.tokyo,
-          caption: 'Rainy alleywalk in 4K 60fps #tokyo #cinematic',
-          audio: 'Midnight Lo-Fi · Studio Beats (Licensed)',
-          views: 9310,
-          likes: 940,
-          liked: false,
-          saved: false,
-          playing: false
-        }
-      ],
+      stories: [],
+      posts: [],
+      reels: [],
+      highlights: [],
       chatBoxTab: 'primary',
       chatSearch: '',
       mobileChatOpen: false,
-      conversations: [
-        {
-          id: 'c1',
-          box: 'primary',
-          title: 'kenji.frames',
-          subtitle: 'Active now',
-          avatar: IMAGES.tokyo,
-          online: true,
-          seen: 'Seen 2m ago',
-          messages: [
-            { id: 'm1', sender: 'kenji.frames', text: 'Hey! Loved the Uttarakhand sunrise shot.', time: '10:14 AM', reaction: '❤️' },
-            { id: 'm2', sender: 'aarav.lens', text: 'Thanks Kenji! Your Tokyo rain reel is blowing up 🔥', time: '10:16 AM', reaction: '' }
-          ]
-        },
-        {
-          id: 'c2',
-          box: 'primary',
-          title: 'Creators Collective',
-          subtitle: '3 members · Active',
-          avatar: IMAGES.coast,
-          online: true,
-          seen: 'Delivered',
-          messages: [
-            { id: 'm3', sender: 'maya.coast', text: 'Anyone shooting golden hour this weekend?', time: '9:40 AM', reaction: '🔥' }
-          ]
-        },
-        {
-          id: 'c3',
-          box: 'general',
-          title: 'maya.coast',
-          subtitle: 'Active 18m ago',
-          avatar: IMAGES.coast,
-          online: false,
-          seen: 'Seen 18m ago',
-          messages: [
-            { id: 'm4', sender: 'maya.coast', text: 'Sent you the raw drone LUTs!', time: 'Yesterday', reaction: '' }
-          ]
-        }
-      ],
-      activeConvId: 'c1',
-      followRequests: [
-        { id: 'fr1', username: 'rohan.dev', fullName: 'Rohan Sharma' }
-      ],
-      notifications: [
-        { id: 'n1', actor: 'kenji.frames', text: 'liked your post in Someshwar Range', time: '5m' },
-        { id: 'n2', actor: 'maya.coast', text: 'mentioned you in a comment', time: '22m' }
-      ],
+      conversations: [],
+      activeConvId: null,
+      followRequests: [],
+      notifications: [],
       admin: {
-        reports: [
-          { id: 'rep1', targetType: 'comment', reason: 'Spam link detected', reporter: 'maya.coast', status: 'pending' },
-          { id: 'rep2', targetType: 'post', reason: 'Unverified giveaway claim', reporter: 'kenji.frames', status: 'pending' }
-        ],
-        users: [
-          { id: 'u1', username: 'kenji.frames', status: 'active' },
-          { id: 'u2', username: 'spam_bot_99', status: 'suspended' }
-        ]
+        reports: [],
+        users: []
       },
       searchQuery: '',
       profileTab: 'posts'
@@ -507,6 +395,14 @@
       });
     }
 
+    function renderAvatar(avatar, name, sizeClass = 'w-9 h-9') {
+      if (avatar) {
+        return `<img src="${avatar}" alt="${name || 'User'}" class="${sizeClass} rounded-full object-cover border border-zinc-200 dark:border-zinc-700" />`;
+      }
+      const initial = (name || 'U').trim().charAt(0).toUpperCase();
+      return `<div class="${sizeClass} rounded-full bg-gradient-to-tr from-pink-500 to-amber-500 text-white font-bold flex items-center justify-center border border-zinc-200 dark:border-zinc-700 select-none">${initial}</div>`;
+    }
+
     function renderHome() {
       return `
         <div class="max-w-xl mx-auto py-5 px-4 space-y-6">
@@ -520,11 +416,17 @@
                 <span class="text-[11px] font-medium truncate w-16 text-center">${s.username}</span>
               </button>
             `).join('')}
+            <button id="empty-create-story-btn" class="flex flex-col items-center gap-1.5 shrink-0">
+              <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-500 hover:border-pink-500 hover:text-pink-500 transition">
+                <i data-lucide="plus" class="w-6 h-6"></i>
+              </div>
+              <span class="text-[11px] font-medium text-zinc-500">Add Story</span>
+            </button>
           </div>
 
           <!-- Posts -->
           <div class="space-y-6">
-            ${state.posts.map(p => `
+            ${state.posts.length ? state.posts.map(p => `
               <article class="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
                 <header class="flex items-center justify-between px-4 py-3">
                   <div class="flex items-center gap-3">
@@ -537,9 +439,11 @@
                       ${p.location ? `<p class="text-[11px] text-zinc-500">${p.location}</p>` : ''}
                     </div>
                   </div>
-                  <button class="follow-toggle text-xs font-semibold px-3 py-1 rounded-lg ${p.following ? 'bg-zinc-100 dark:bg-zinc-800' : 'bg-pink-500 text-white'}" data-post-id="${p.id}">
-                    ${p.following ? 'Following' : 'Follow'}
-                  </button>
+                  ${p.username !== state.currentUser.username ? `
+                    <button class="follow-toggle text-xs font-semibold px-3 py-1 rounded-lg ${p.following ? 'bg-zinc-100 dark:bg-zinc-800' : 'bg-pink-500 text-white'}" data-post-id="${p.id}">
+                      ${p.following ? 'Following' : 'Follow'}
+                    </button>
+                  ` : ''}
                 </header>
                 <div class="aspect-square bg-black overflow-hidden">
                   <img src="${p.img}" alt="Post" class="w-full h-full object-cover" />
@@ -572,7 +476,16 @@
                   </form>
                 </div>
               </article>
-            `).join('')}
+            `).join('') : `
+              <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-3 bg-white dark:bg-zinc-900">
+                <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
+                  <i data-lucide="camera" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-base font-bold">No posts yet</h2>
+                <p class="text-xs text-zinc-500 max-w-xs mx-auto">Your feed is empty. Share a photo or video to get started.</p>
+                <button id="empty-create-post-btn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-semibold hover:opacity-95 transition">Create Post</button>
+              </div>
+            `}
           </div>
         </div>
       `;
@@ -581,35 +494,63 @@
     function renderExplore() {
       const q = state.searchQuery.toLowerCase();
       const filteredPosts = state.posts.filter(p => !q || p.caption.toLowerCase().includes(q) || p.username.toLowerCase().includes(q));
-      const tags = ['himalayas', 'tokyo', 'streetphotography', 'ocean', 'morningcoffee', 'reels'];
+      const tagSet = new Set();
+      state.posts.forEach(p => {
+        const matches = (p.caption || '').match(/#([a-zA-Z0-9_]+)/g) || [];
+        matches.forEach(m => tagSet.add(m.slice(1).toLowerCase()));
+      });
+      const tags = Array.from(tagSet);
       return `
         <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
           <div class="relative">
             <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3 text-zinc-400"></i>
             <input id="explore-search" type="text" value="${state.searchQuery}" placeholder="Search users, #hashtags, or posts..." class="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-sm focus:outline-none" />
           </div>
-          <div>
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Trending Hashtags</h2>
-            <div class="flex flex-wrap gap-2">
-              ${tags.map(t => `<button class="tag-pill px-3 py-1.5 rounded-full bg-pink-500/10 text-pink-500 text-xs font-semibold" data-tag="${t}">#${t}</button>`).join('')}
-            </div>
-          </div>
-          <div class="grid grid-cols-3 gap-1.5">
-            ${filteredPosts.map(p => `
-              <div class="aspect-square bg-zinc-200 dark:bg-zinc-900 overflow-hidden rounded-md relative group">
-                <img src="${p.img}" alt="Explore" class="w-full h-full object-cover" />
-                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-3">
-                  <span>♥ ${p.likes}</span>
-                  <span>💬 ${p.comments.length}</span>
-                </div>
+          ${tags.length ? `
+            <div>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Hashtags</h2>
+              <div class="flex flex-wrap gap-2">
+                ${tags.map(t => `<button class="tag-pill px-3 py-1.5 rounded-full bg-pink-500/10 text-pink-500 text-xs font-semibold" data-tag="${t}">#${t}</button>`).join('')}
               </div>
-            `).join('')}
-          </div>
+            </div>
+          ` : ''}
+          ${filteredPosts.length ? `
+            <div class="grid grid-cols-3 gap-1.5">
+              ${filteredPosts.map(p => `
+                <div class="aspect-square bg-zinc-200 dark:bg-zinc-900 overflow-hidden rounded-md relative group">
+                  <img src="${p.img}" alt="Explore" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-3">
+                    <span>♥ ${p.likes}</span>
+                    <span>💬 ${p.comments.length}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-2">
+              <p class="text-sm font-semibold">No posts to explore yet</p>
+              <p class="text-xs text-zinc-500">Posts you create will appear here.</p>
+            </div>
+          `}
         </div>
       `;
     }
 
     function renderReels() {
+      if (!state.reels.length) {
+        return `
+          <div class="max-w-md mx-auto py-12 px-4">
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-3 bg-white dark:bg-zinc-900">
+              <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
+                <i data-lucide="film" class="w-6 h-6"></i>
+              </div>
+              <h2 class="text-base font-bold">No reels yet</h2>
+              <p class="text-xs text-zinc-500">Create a reel to see it here.</p>
+              <button id="empty-create-reel-btn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-semibold hover:opacity-95 transition">Create Reel</button>
+            </div>
+          </div>
+        `;
+      }
       return `
         <div class="py-4 px-4 flex flex-col items-center gap-6">
           ${state.reels.map(r => `
@@ -645,16 +586,11 @@
     }
 
     function renderMessages() {
-      const conv = state.conversations.find(c => c.id === state.activeConvId) || state.conversations[0];
+      const conv = state.conversations.find(c => c.id === state.activeConvId) || state.conversations[0] || null;
       const filteredConvs = state.conversations.filter(c =>
         (state.chatBoxTab === 'all' || c.box === state.chatBoxTab) &&
         (!state.chatSearch || c.title.toLowerCase().includes(state.chatSearch.toLowerCase()))
       );
-      const notes = [
-        { user: 'Your note', img: IMAGES.coffee, note: 'Editing reels 🎬' },
-        { user: 'kenji.frames', img: IMAGES.tokyo, note: 'Tokyo rain 🌧️' },
-        { user: 'maya.coast', img: IMAGES.coast, note: 'Surfing at 5!' }
-      ];
       return `
         <div class="max-w-5xl mx-auto h-[calc(100vh-7rem)] md:h-screen flex border-x border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
           <!-- Instagram DM Inbox -->
@@ -676,19 +612,6 @@
               </div>
             </div>
 
-            <!-- Instagram Notes Tray -->
-            <div class="flex gap-3 px-4 py-2 overflow-x-auto no-scrollbar">
-              ${notes.map(n => `
-                <div class="flex flex-col items-center shrink-0 w-16">
-                  <div class="relative mb-1">
-                    <div class="px-2 py-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-[10px] font-medium shadow-sm whitespace-nowrap mb-[-6px] relative z-10">${n.note}</div>
-                    <img src="${n.img}" alt="${n.user}" class="w-14 h-14 rounded-full object-cover mx-auto border border-zinc-200 dark:border-zinc-700" />
-                  </div>
-                  <span class="text-[11px] text-zinc-500 truncate w-full text-center">${n.user}</span>
-                </div>
-              `).join('')}
-            </div>
-
             <!-- Primary / General / Requests Tabs -->
             <div class="flex border-b border-zinc-200 dark:border-zinc-800 px-2 text-xs font-semibold">
               ${['primary', 'general', 'all'].map(tab => `
@@ -700,93 +623,104 @@
               ${filteredConvs.map(c => {
                 const last = c.messages[c.messages.length - 1];
                 return `
-                  <button class="conv-select w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition ${c.id === conv.id ? 'bg-zinc-100/80 dark:bg-zinc-900' : ''}" data-conv-id="${c.id}">
+                  <button class="conv-select w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition ${conv && c.id === conv.id ? 'bg-zinc-100/80 dark:bg-zinc-900' : ''}" data-conv-id="${c.id}">
                     <div class="relative shrink-0">
-                      <img src="${c.avatar}" alt="${c.title}" class="w-12 h-12 rounded-full object-cover" />
+                      ${renderAvatar(c.avatar, c.title, 'w-12 h-12')}
                       ${c.online ? '<span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-semibold truncate">${c.title}</p>
-                      <p class="text-xs text-zinc-500 truncate">${last ? last.text : 'No messages yet'} · ${last ? last.time : ''}</p>
+                      <p class="text-xs text-zinc-500 truncate">${last ? last.text : 'No messages yet'} ${last ? '· ' + last.time : ''}</p>
                     </div>
                   </button>
                 `;
-              }).join('') || '<p class="p-6 text-center text-xs text-zinc-500">No conversations found.</p>'}
+              }).join('') || '<p class="p-6 text-center text-xs text-zinc-500">No conversations yet.</p>'}
             </div>
           </aside>
 
           <!-- Instagram Active Chat Thread -->
           <section class="${state.mobileChatOpen ? 'flex' : 'hidden md:flex'} flex-1 flex-col">
-            <header class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <button id="chat-back-btn" class="md:hidden p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Back">
-                  <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                </button>
-                <div class="relative">
-                  <img src="${conv.avatar}" alt="${conv.title}" class="w-9 h-9 rounded-full object-cover" />
-                  ${conv.online ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
-                </div>
-                <div>
-                  <p class="text-sm font-bold leading-tight">${conv.title}</p>
-                  <p class="text-[11px] text-zinc-500">${conv.subtitle}</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Audio call"><i data-lucide="phone" class="w-5 h-5"></i></button>
-                <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Video call"><i data-lucide="video" class="w-5 h-5"></i></button>
-                <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Chat details"><i data-lucide="info" class="w-5 h-5"></i></button>
-              </div>
-            </header>
-
-            <div class="flex-1 p-4 space-y-3 overflow-y-auto">
-              <div class="text-center py-4 space-y-2">
-                <img src="${conv.avatar}" alt="${conv.title}" class="w-16 h-16 rounded-full object-cover mx-auto" />
-                <p class="text-sm font-bold">${conv.title}</p>
-                <p class="text-xs text-zinc-500">Snapgram · ${conv.subtitle}</p>
-              </div>
-              ${conv.messages.map((m, idx) => {
-                const isMine = m.sender === state.currentUser.username;
-                const isLast = idx === conv.messages.length - 1;
-                return `
-                  <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
-                    <div class="flex items-end gap-2 max-w-[78%] group">
-                      ${!isMine ? `<img src="${conv.avatar}" alt="${m.sender}" class="w-6 h-6 rounded-full object-cover shrink-0 mb-1" />` : ''}
-                      <button class="msg-react-btn text-left relative px-4 py-2.5 rounded-3xl text-sm transition ${
-                        isMine
-                          ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white'
-                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-                      }" data-msg-id="${m.id}" title="Tap to react">
-                        <span>${m.text}</span>
-                        ${m.reaction ? `<span class="absolute -bottom-2 ${isMine ? 'left-2' : 'right-2'} text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow">${m.reaction}</span>` : ''}
-                      </button>
-                    </div>
-                    ${isMine && isLast ? `<span class="text-[10px] text-zinc-400 mt-1.5 mr-1">${conv.seen}</span>` : ''}
+            ${conv ? `
+              <header class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <button id="chat-back-btn" class="md:hidden p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Back">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                  </button>
+                  <div class="relative">
+                    ${renderAvatar(conv.avatar, conv.title, 'w-9 h-9')}
+                    ${conv.online ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
                   </div>
-                `;
-              }).join('')}
-            </div>
+                  <div>
+                    <p class="text-sm font-bold leading-tight">${conv.title}</p>
+                    <p class="text-[11px] text-zinc-500">${conv.subtitle || ''}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
+                  <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Audio call"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                  <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Video call"><i data-lucide="video" class="w-5 h-5"></i></button>
+                  <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Chat details"><i data-lucide="info" class="w-5 h-5"></i></button>
+                </div>
+              </header>
 
-            <form id="chat-form" class="p-3 border-t border-zinc-200 dark:border-zinc-800">
-              <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900">
-                <button type="button" class="chat-quick-btn w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shrink-0" data-msg="📸 Photo">
-                  <i data-lucide="camera" class="w-4 h-4"></i>
-                </button>
-                <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent text-sm focus:outline-none py-1" />
-                <button type="button" class="chat-quick-btn p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white" data-msg="🎙️ Voice note (0:06)" aria-label="Voice message">
-                  <i data-lucide="mic" class="w-5 h-5"></i>
-                </button>
-                <button type="button" class="chat-quick-btn p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white" data-msg="❤️" aria-label="Send Heart">
-                  <i data-lucide="heart" class="w-5 h-5"></i>
-                </button>
-                <button type="submit" class="text-xs font-bold text-indigo-500 hover:text-indigo-600 px-2">Send</button>
+              <div class="flex-1 p-4 space-y-3 overflow-y-auto">
+                <div class="text-center py-4 space-y-2">
+                  ${renderAvatar(conv.avatar, conv.title, 'w-16 h-16 mx-auto')}
+                  <p class="text-sm font-bold">${conv.title}</p>
+                  <p class="text-xs text-zinc-500">Snapgram${conv.subtitle ? ' · ' + conv.subtitle : ''}</p>
+                </div>
+                ${conv.messages.map((m, idx) => {
+                  const isMine = m.sender === state.currentUser.username;
+                  const isLast = idx === conv.messages.length - 1;
+                  return `
+                    <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
+                      <div class="flex items-end gap-2 max-w-[78%] group">
+                        ${!isMine ? renderAvatar(conv.avatar, m.sender, 'w-6 h-6 shrink-0 mb-1') : ''}
+                        <button class="msg-react-btn text-left relative px-4 py-2.5 rounded-3xl text-sm transition ${
+                          isMine
+                            ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
+                        }" data-msg-id="${m.id}" title="Tap to react">
+                          <span>${m.text}</span>
+                          ${m.reaction ? `<span class="absolute -bottom-2 ${isMine ? 'left-2' : 'right-2'} text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow">${m.reaction}</span>` : ''}
+                        </button>
+                      </div>
+                      ${isMine && isLast && conv.seen ? `<span class="text-[10px] text-zinc-400 mt-1.5 mr-1">${conv.seen}</span>` : ''}
+                    </div>
+                  `;
+                }).join('')}
               </div>
-            </form>
+
+              <form id="chat-form" class="p-3 border-t border-zinc-200 dark:border-zinc-800">
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+                  <button type="button" class="chat-quick-btn w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shrink-0" data-msg="📸 Photo">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                  </button>
+                  <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent text-sm focus:outline-none py-1" />
+                  <button type="button" class="chat-quick-btn p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white" data-msg="🎙️ Voice note (0:06)" aria-label="Voice message">
+                    <i data-lucide="mic" class="w-5 h-5"></i>
+                  </button>
+                  <button type="button" class="chat-quick-btn p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white" data-msg="❤️" aria-label="Send Heart">
+                    <i data-lucide="heart" class="w-5 h-5"></i>
+                  </button>
+                  <button type="submit" class="text-xs font-bold text-indigo-500 hover:text-indigo-600 px-2">Send</button>
+                </div>
+              </form>
+            ` : `
+              <div class="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3">
+                <div class="w-16 h-16 rounded-full border-2 border-zinc-900 dark:border-white flex items-center justify-center">
+                  <i data-lucide="message-circle" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-base font-bold">Your Messages</h2>
+                <p class="text-xs text-zinc-500 max-w-xs">No conversations yet. Messages with other users will appear here.</p>
+              </div>
+            `}
           </section>
         </div>
       `;
     }
 
     function renderActivity() {
+      const hasAny = state.followRequests.length > 0 || state.notifications.length > 0;
       return `
         <div class="max-w-xl mx-auto p-4 md:p-8 space-y-6">
           <h1 class="text-xl font-bold">Activity & Follow Requests</h1>
@@ -807,27 +741,35 @@
               `).join('')}
             </div>
           ` : ''}
-          <div class="space-y-2">
-            <h2 class="text-xs font-semibold uppercase text-zinc-500">Recent Notifications</h2>
-            ${state.notifications.map(n => `
-              <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 flex justify-between items-center text-sm">
-                <p><span class="font-semibold mr-1">@${n.actor}</span>${n.text}</p>
-                <span class="text-xs text-zinc-400">${n.time}</span>
+          ${state.notifications.length ? `
+            <div class="space-y-2">
+              <h2 class="text-xs font-semibold uppercase text-zinc-500">Recent Notifications</h2>
+              ${state.notifications.map(n => `
+                <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 flex justify-between items-center text-sm">
+                  <p><span class="font-semibold mr-1">@${n.actor}</span>${n.text}</p>
+                  <span class="text-xs text-zinc-400">${n.time}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          ${!hasAny ? `
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-2">
+              <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
+                <i data-lucide="heart" class="w-6 h-6"></i>
               </div>
-            `).join('')}
-          </div>
+              <p class="text-sm font-semibold">No activity yet</p>
+              <p class="text-xs text-zinc-500">Follow requests and notifications will appear here.</p>
+            </div>
+          ` : ''}
         </div>
       `;
     }
 
     function renderProfile() {
       const u = state.currentUser;
-      const items = state.profileTab === 'posts' ? state.posts : state.profileTab === 'reels' ? state.reels : state.posts.filter(p => p.saved);
-      const highlights = [
-        { title: 'Himalayas', img: IMAGES.coffee },
-        { title: 'Tokyo', img: IMAGES.tokyo },
-        { title: 'Coast', img: IMAGES.coast }
-      ];
+      const userPosts = state.posts.filter(p => p.username === u.username);
+      const userReels = state.reels.filter(r => r.username === u.username);
+      const items = state.profileTab === 'posts' ? userPosts : state.profileTab === 'reels' ? userReels : state.posts.filter(p => p.saved);
       return `
         <div class="max-w-3xl mx-auto px-4 py-5 md:py-8 space-y-6">
           <!-- Instagram Profile Top Bar -->
@@ -851,11 +793,14 @@
           <!-- Instagram Avatar + 3-Column Stats -->
           <header class="flex items-center gap-6 md:gap-10">
             <div class="w-20 h-20 md:w-28 md:h-28 rounded-full p-[3px] story-ring shrink-0">
-              <img src="${u.avatar || IMAGES.coffee}" alt="${u.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />
+              ${u.avatar
+                ? `<img src="${u.avatar}" alt="${u.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
+                : `<div class="w-full h-full rounded-full bg-zinc-100 dark:bg-zinc-900 border-2 border-white dark:border-zinc-950 flex items-center justify-center text-2xl font-bold text-zinc-600 dark:text-zinc-300">${(u.fullName || u.username || 'U').charAt(0).toUpperCase()}</div>`
+              }
             </div>
             <div class="flex-1 grid grid-cols-3 text-center">
               <div>
-                <p class="text-lg font-bold">${state.posts.length}</p>
+                <p class="text-lg font-bold">${userPosts.length}</p>
                 <p class="text-xs text-zinc-500">posts</p>
               </div>
               <div>
@@ -863,7 +808,7 @@
                 <p class="text-xs text-zinc-500">followers</p>
               </div>
               <div>
-                <p class="text-lg font-bold">${u.following}</p>
+                <p class="text-lg font-bold">${u.following.toLocaleString()}</p>
                 <p class="text-xs text-zinc-500">following</p>
               </div>
             </div>
@@ -873,7 +818,7 @@
           <div class="space-y-1 text-sm">
             <p class="font-bold">${u.fullName}</p>
             ${u.category ? `<p class="text-xs text-zinc-500 font-medium">${u.category}</p>` : ''}
-            <p class="text-sm text-zinc-700 dark:text-zinc-300 leading-snug">${u.bio}</p>
+            ${u.bio ? `<p class="text-sm text-zinc-700 dark:text-zinc-300 leading-snug">${u.bio}</p>` : ''}
             ${u.website ? `<p class="text-xs font-semibold text-indigo-500">${u.website}</p>` : ''}
           </div>
 
@@ -890,7 +835,7 @@
 
           <!-- Story Highlights -->
           <div class="flex gap-4 overflow-x-auto no-scrollbar pt-1">
-            ${highlights.map(h => `
+            ${state.highlights.map(h => `
               <div class="flex flex-col items-center gap-1.5 shrink-0">
                 <div class="w-16 h-16 rounded-full p-0.5 border border-zinc-300 dark:border-zinc-700">
                   <img src="${h.img}" alt="${h.title}" class="w-full h-full rounded-full object-cover" />
@@ -954,7 +899,7 @@
 
           <section class="space-y-3">
             <h2 class="text-base font-semibold">Moderation Queue</h2>
-            ${state.admin.reports.map(r => `
+            ${state.admin.reports.length ? state.admin.reports.map(r => `
               <div class="flex items-center justify-between p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm">
                 <div>
                   <p class="font-semibold">${r.targetType.toUpperCase()} — ${r.reason}</p>
@@ -967,25 +912,56 @@
                   </div>
                 ` : ''}
               </div>
-            `).join('')}
+            `).join('') : '<p class="text-xs text-zinc-500 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">No reports in moderation queue.</p>'}
           </section>
 
           <section class="space-y-3">
             <h2 class="text-base font-semibold">Transparent Featured Controls</h2>
-            ${state.posts.map(p => `
+            ${state.posts.length ? state.posts.map(p => `
               <div class="flex items-center justify-between p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-sm">
                 <span>@${p.username}: "${p.caption.slice(0, 48)}..."</span>
                 <button class="admin-feature-btn px-3 py-1.5 rounded-lg text-xs font-semibold ${p.isFeatured ? 'bg-pink-500 text-white' : 'bg-zinc-200 dark:bg-zinc-800'}" data-post-id="${p.id}">
                   ${p.isFeatured ? 'Featured (Labeled)' : 'Feature Post'}
                 </button>
               </div>
-            `).join('')}
+            `).join('') : '<p class="text-xs text-zinc-500 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">No posts available to feature.</p>'}
           </section>
         </div>
       `;
     }
 
     function bindViewEvents() {
+      const emptyCreatePost = document.getElementById('empty-create-post-btn');
+      if (emptyCreatePost) {
+        emptyCreatePost.addEventListener('click', () => {
+          state.createKind = 'post';
+          document.querySelectorAll('.create-kind-btn').forEach(b => {
+            b.className = `create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold ${b.dataset.kind === 'post' ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
+          });
+          openCreate();
+        });
+      }
+      const emptyCreateReel = document.getElementById('empty-create-reel-btn');
+      if (emptyCreateReel) {
+        emptyCreateReel.addEventListener('click', () => {
+          state.createKind = 'reel';
+          document.querySelectorAll('.create-kind-btn').forEach(b => {
+            b.className = `create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold ${b.dataset.kind === 'reel' ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
+          });
+          openCreate();
+        });
+      }
+      const emptyCreateStory = document.getElementById('empty-create-story-btn');
+      if (emptyCreateStory) {
+        emptyCreateStory.addEventListener('click', () => {
+          state.createKind = 'story';
+          document.querySelectorAll('.create-kind-btn').forEach(b => {
+            b.className = `create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold ${b.dataset.kind === 'story' ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
+          });
+          openCreate();
+        });
+      }
+
       document.querySelectorAll('.open-story').forEach(btn => {
         btn.addEventListener('click', () => {
           const s = state.stories.find(st => st.id === btn.dataset.storyId);
@@ -1134,6 +1110,7 @@
       document.querySelectorAll('.msg-react-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const conv = state.conversations.find(c => c.id === state.activeConvId);
+          if (!conv) return;
           const msg = conv.messages.find(m => m.id === btn.dataset.msgId);
           if (msg) {
             msg.reaction = msg.reaction === '❤️' ? '' : '❤️';
@@ -1145,6 +1122,7 @@
       document.querySelectorAll('.chat-quick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const conv = state.conversations.find(c => c.id === state.activeConvId);
+          if (!conv) return;
           conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: btn.dataset.msg, time: 'Just now', reaction: '' });
           conv.seen = 'Delivered';
           render();
@@ -1158,6 +1136,7 @@
           const input = document.getElementById('chat-input');
           if (!input.value.trim()) return;
           const conv = state.conversations.find(c => c.id === state.activeConvId);
+          if (!conv) return;
           conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: input.value.trim(), time: 'Just now', reaction: '' });
           conv.seen = 'Delivered';
           render();
@@ -1254,17 +1233,12 @@
     function loadAccounts() {
       try {
         const raw = localStorage.getItem(ACCOUNTS_KEY);
-        if (raw) return JSON.parse(raw);
-      } catch {}
-      return [
-        {
-          email: 'aarav.lens@snapgram.app',
-          username: 'aarav.lens',
-          fullName: 'Aarav Mehta',
-          passwordHash: null,
-          isDemo: true
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed.filter(a => !a.isDemo);
         }
-      ];
+      } catch {}
+      return [];
     }
 
     function saveAccounts(list) {
@@ -1349,6 +1323,8 @@
       state.currentUser.isAdmin = isAdmin;
       state.currentUser.username = username ? username.trim().toLowerCase() : (isAdmin ? 'admin.snapgram' : cleanEmail.split('@')[0]);
       state.currentUser.fullName = fullName ? fullName.trim() : (isAdmin ? 'Snapgram Admin' : state.currentUser.username);
+      state.currentUser.followers = 0;
+      state.currentUser.following = 0;
       state.isAuthenticated = true;
       state.activeTab = isAdmin ? 'admin' : 'home';
       state.authError = '';
@@ -1370,8 +1346,8 @@
             <img src="${IMAGES.coast}" alt="Snapgram preview" class="w-full h-full object-cover opacity-90" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 p-5 flex flex-col justify-between text-white">
               <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-full story-ring p-0.5"><img src="${IMAGES.coffee}" alt="Creator" class="w-full h-full rounded-full object-cover" /></div>
-                <span class="text-xs font-semibold">aarav.lens</span>
+                <div class="w-7 h-7 rounded-full story-ring p-0.5"><img src="${IMAGES.coffee}" alt="Snapgram" class="w-full h-full rounded-full object-cover" /></div>
+                <span class="text-xs font-semibold">SNAPGRAM</span>
               </div>
               <div>
                 <p class="text-sm font-bold">Share your world</p>
@@ -1431,9 +1407,6 @@
                 </button>
                 <button type="button" id="open-supa-cfg-btn" class="text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 underline">
                   Google One Tap & OAuth Settings
-                </button>
-                <button id="quick-user-btn" class="w-full text-xs font-semibold text-[#385185] dark:text-sky-400 hover:opacity-80">
-                  Log in as Demo Creator (@aarav.lens)
                 </button>
                 <div class="flex justify-center gap-4 text-xs">
                   <button class="auth-mode-btn text-[#00376B] dark:text-sky-300" data-mode="otp">OTP Login</button>
@@ -1567,13 +1540,11 @@
             render();
             return;
           }
-          if (!match.isDemo) {
-            const incomingHash = await hashPassword(passwordVal);
-            if (incomingHash !== match.passwordHash) {
-              state.authError = 'Incorrect password. Please try again.';
-              render();
-              return;
-            }
+          const incomingHash = await hashPassword(passwordVal);
+          if (incomingHash !== match.passwordHash) {
+            state.authError = 'Incorrect password. Please try again.';
+            render();
+            return;
           }
           completeLogin(match.email, match.username, match.fullName);
           return;
@@ -1617,10 +1588,6 @@
           render();
           return;
         }
-      });
-
-      document.getElementById('quick-user-btn').addEventListener('click', () => {
-        completeLogin('aarav.lens@snapgram.app', 'aarav.lens', 'Aarav Mehta');
       });
 
       document.querySelectorAll('.auth-mode-btn').forEach(btn => {
@@ -1817,13 +1784,11 @@
 
         setTimeout(() => {
           if (state.activeTab === 'home' && state.posts.length > 1) {
-            // Rotate non-first posts slightly or refresh engagement to simulate fresh feed
             const [first, ...rest] = state.posts;
             if (rest.length > 1) {
               const last = rest.pop();
               state.posts = [first, last, ...rest];
             }
-            state.posts[0].likes += 1;
           } else if (state.activeTab === 'reels' && state.reels.length > 0) {
             state.reels[0].views = state.reels[0].views;
           }
@@ -1919,8 +1884,15 @@
     let pendingAvatarData = '';
     function openEditProfileModal() {
       const u = state.currentUser;
-      pendingAvatarData = u.avatar || IMAGES.coffee;
-      document.getElementById('edit-avatar-preview').src = pendingAvatarData;
+      pendingAvatarData = u.avatar || '';
+      const previewEl = document.getElementById('edit-avatar-preview');
+      if (pendingAvatarData) {
+        previewEl.src = pendingAvatarData;
+        previewEl.classList.remove('hidden');
+      } else {
+        previewEl.removeAttribute('src');
+        previewEl.classList.add('hidden');
+      }
       document.getElementById('edit-fullname').value = u.fullName || '';
       document.getElementById('edit-username').value = u.username || '';
       document.getElementById('edit-category').value = u.category || '';
@@ -1955,7 +1927,9 @@
         const key = btn.dataset.preset;
         if (IMAGES[key]) {
           pendingAvatarData = IMAGES[key];
-          document.getElementById('edit-avatar-preview').src = pendingAvatarData;
+          const previewEl = document.getElementById('edit-avatar-preview');
+          previewEl.src = pendingAvatarData;
+          previewEl.classList.remove('hidden');
         }
       });
     });
@@ -1967,7 +1941,9 @@
       reader.onload = (ev) => {
         if (ev.target && ev.target.result) {
           pendingAvatarData = ev.target.result;
-          document.getElementById('edit-avatar-preview').src = pendingAvatarData;
+          const previewEl = document.getElementById('edit-avatar-preview');
+          previewEl.src = pendingAvatarData;
+          previewEl.classList.remove('hidden');
         }
       };
       reader.readAsDataURL(file);
@@ -1987,7 +1963,7 @@
       state.currentUser.category = document.getElementById('edit-category').value.trim();
       state.currentUser.bio = document.getElementById('edit-bio').value.trim();
       state.currentUser.website = document.getElementById('edit-website').value.trim();
-      state.currentUser.avatar = pendingAvatarData || state.currentUser.avatar || IMAGES.coffee;
+      state.currentUser.avatar = pendingAvatarData || state.currentUser.avatar || '';
       state.currentUser.isPrivate = document.getElementById('edit-private-toggle').checked;
 
       // Sync username across user's own posts & stories if changed
