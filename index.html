@@ -1517,6 +1517,13 @@
               return;
             }
             if (state.authMode === 'signup' && !data.access_token && !data.session?.access_token) {
+              const identities = data.user?.identities || data.identities;
+              if (Array.isArray(identities) && identities.length === 0) {
+                state.pendingConfirmationEmail = '';
+                state.authError = 'An account with this email already exists. Please log in instead.';
+                render();
+                return;
+              }
               state.pendingConfirmationEmail = identifier;
               state.authMessage = `Confirmation email sent to ${identifier}. Check your inbox (and spam) and click the link to verify your account.`;
               render();
@@ -2119,7 +2126,7 @@
         window.google.accounts.id.initialize({
           client_id: cfg.googleClientId,
           callback: handleGoogleOneTapCredential,
-          auto_select: false,
+          auto_select: true,
           cancel_on_tap_outside: true,
           context: 'signin',
           itp_support: true,
