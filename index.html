@@ -517,49 +517,41 @@
     </div>
   </div>
 
-  <!-- Instagram-Style Music Picker Modal (Local Audio + YT Music / External Apps) -->
+  <!-- Instagram-Style One-Tap Music Picker Modal -->
   <div id="music-modal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
-    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
-      <div class="flex items-center justify-between">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl h-[80vh] sm:h-[75vh] flex flex-col">
+      <div class="flex items-center justify-between shrink-0">
         <h3 class="text-base font-bold flex items-center gap-2"><i data-lucide="music" class="w-4 h-4 text-pink-500"></i> Add Music</h3>
-        <button id="close-music-modal" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <div class="flex items-center gap-2">
+          <button type="button" id="music-clear-btn" class="text-xs font-semibold text-red-500 hover:underline">Remove</button>
+          <button id="close-music-modal" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
       </div>
 
-      <div class="flex gap-2 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800">
-        <button type="button" class="music-tab-btn flex-1 py-2 rounded-lg text-xs font-semibold bg-pink-500 text-white" data-mtab="local">Device Audio</button>
-        <button type="button" class="music-tab-btn flex-1 py-2 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-300" data-mtab="ytmusic">YT Music / App Link</button>
+      <div class="flex gap-2 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 shrink-0">
+        <button type="button" class="music-tab-btn flex-1 py-2 rounded-lg text-xs font-semibold bg-pink-500 text-white" data-mtab="browse">Search Music</button>
+        <button type="button" class="music-tab-btn flex-1 py-2 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-300" data-mtab="local">Device Audio</button>
       </div>
 
-      <!-- Local Audio Tab -->
-      <div id="music-tab-local" class="space-y-3">
-        <label class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-pink-500 cursor-pointer text-xs font-semibold transition">
-          <i data-lucide="upload" class="w-4 h-4 text-pink-500"></i>
-          <span id="music-file-label">Choose MP3, M4A, WAV, or AAC from phone</span>
+      <!-- One-Tap Search & Select Music Tab -->
+      <div id="music-tab-browse" class="flex-1 flex flex-col min-h-0 space-y-3">
+        <div class="relative shrink-0">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-zinc-400"></i>
+          <input id="music-search-input" type="text" placeholder="Search any song or artist..." class="w-full pl-9 pr-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm focus:outline-none" />
+        </div>
+        <div id="music-search-results" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 pr-1">
+          <p class="text-xs text-zinc-500 py-8 text-center">Loading songs...</p>
+        </div>
+      </div>
+
+      <!-- Local Audio Tab (One-Tap Select & Use) -->
+      <div id="music-tab-local" class="hidden flex-1 flex flex-col space-y-3">
+        <label class="flex flex-col items-center justify-center gap-2 py-8 px-4 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-pink-500 cursor-pointer text-xs font-semibold transition text-center">
+          <i data-lucide="upload" class="w-6 h-6 text-pink-500"></i>
+          <span id="music-file-label">Tap to choose MP3, M4A, or WAV from your phone</span>
           <input id="music-file-input" type="file" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg" class="hidden" />
         </label>
         <audio id="music-local-preview" controls class="hidden w-full h-10"></audio>
-      </div>
-
-      <!-- YT Music / External App Tab -->
-      <div id="music-tab-ytmusic" class="hidden space-y-3">
-        <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2">
-          <div class="text-xs">
-            <p class="font-semibold">Pick a song from YouTube Music</p>
-            <p class="text-zinc-500">Copy the Share link & paste it below</p>
-          </div>
-          <a href="https://music.youtube.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold shrink-0">Open YT Music</a>
-        </div>
-        <input id="music-ext-url" type="url" placeholder="Paste YT Music / Spotify / SoundCloud link..." class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-xs focus:outline-none" />
-      </div>
-
-      <div class="space-y-2">
-        <input id="music-title-input" type="text" placeholder="Song title (e.g. Blinding Lights)" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-xs focus:outline-none" />
-        <input id="music-artist-input" type="text" placeholder="Artist name (optional)" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-xs focus:outline-none" />
-      </div>
-
-      <div class="flex gap-2">
-        <button type="button" id="music-clear-btn" class="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold">Remove</button>
-        <button type="button" id="music-save-btn" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-semibold">Use This Music</button>
       </div>
     </div>
   </div>
@@ -687,7 +679,7 @@
     function renderMusicPill(item) {
       if (!item || !item.musicTitle) return '';
       const label = item.musicArtist ? `${item.musicTitle} · ${item.musicArtist}` : item.musicTitle;
-      if (item.musicSource === 'upload' && item.musicUrl) {
+      if ((item.musicSource === 'upload' || item.musicSource === 'online') && item.musicUrl) {
         return `<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-medium mt-1">
           <button type="button" class="audio-toggle-btn text-pink-500 font-bold flex items-center gap-1" data-audio-url="${item.musicUrl}">
             <i data-lucide="music" class="w-3.5 h-3.5"></i>
@@ -3748,10 +3740,12 @@
 
 
     // =========================================================================
-    // INSTAGRAM-STYLE MUSIC PICKER (LOCAL AUDIO + YT MUSIC / EXTERNAL LINK)
+    // INSTAGRAM-STYLE ONE-TAP MUSIC PICKER (SEARCH + DEVICE AUDIO)
     // =========================================================================
-    let activeMusicTab = 'local';
-    let pendingLocalMusicFile = null;
+    let activeMusicTab = 'browse';
+    let musicSearchTimer = null;
+    let musicPreviewAudio = new Audio();
+    let playingPreviewUrl = '';
 
     function updateMusicSummaryUI() {
       const sumEl = document.getElementById('create-music-summary');
@@ -3763,14 +3757,86 @@
       if (storyLbl) storyLbl.textContent = uploadState.music?.title ? uploadState.music.title.slice(0, 14) : 'Add Music';
     }
 
+    function stopMusicPreview() {
+      musicPreviewAudio.pause();
+      playingPreviewUrl = '';
+    }
+
+    async function searchOnlineMusic(query = 'top hits') {
+      const resultsEl = document.getElementById('music-search-results');
+      resultsEl.innerHTML = '<p class="text-xs text-zinc-500 py-8 text-center">Searching songs...</p>';
+      try {
+        const term = (query || 'top hits').trim();
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=15`);
+        if (!res.ok) throw new Error('Search failed');
+        const data = await res.json();
+        const tracks = (data.results || []).filter(t => t.previewUrl);
+        if (!tracks.length) {
+          resultsEl.innerHTML = '<p class="text-xs text-zinc-500 py-8 text-center">No songs found. Try another search.</p>';
+          return;
+        }
+        resultsEl.innerHTML = tracks.map((t, idx) => `
+          <div class="py-2.5 flex items-center justify-between gap-3">
+            <button type="button" class="music-preview-btn relative w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-zinc-200 dark:bg-zinc-800" data-purl="${t.previewUrl}">
+              <img src="${t.artworkUrl100 || ''}" alt="${t.trackName}" class="w-full h-full object-cover" />
+              <span class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-bold">${playingPreviewUrl === t.previewUrl ? '❚❚' : '▶'}</span>
+            </button>
+            <button type="button" class="music-select-track flex-1 text-left min-w-0" data-idx="${idx}">
+              <p class="text-sm font-semibold truncate">${t.trackName}</p>
+              <p class="text-xs text-zinc-500 truncate">${t.artistName}</p>
+            </button>
+            <button type="button" class="music-select-track px-3 py-1.5 rounded-lg bg-pink-500 text-white text-xs font-semibold shrink-0" data-idx="${idx}">Add</button>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.music-preview-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const url = btn.dataset.purl;
+            if (playingPreviewUrl === url && !musicPreviewAudio.paused) {
+              stopMusicPreview();
+            } else {
+              musicPreviewAudio.src = url;
+              musicPreviewAudio.play().catch(() => {});
+              playingPreviewUrl = url;
+            }
+            searchOnlineMusic(document.getElementById('music-search-input').value || 'top hits');
+          });
+        });
+
+        document.querySelectorAll('.music-select-track').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const t = tracks[Number(btn.dataset.idx)];
+            if (!t) return;
+            stopMusicPreview();
+            uploadState.music = {
+              title: t.trackName,
+              artist: t.artistName,
+              url: t.previewUrl,
+              source: 'online'
+            };
+            updateMusicSummaryUI();
+            document.getElementById('music-modal').classList.add('hidden');
+            showToast(`Added "${t.trackName}" 🎵`);
+          });
+        });
+      } catch {
+        resultsEl.innerHTML = '<p class="text-xs text-red-500 py-8 text-center">Could not load music. Check your internet or use Device Audio.</p>';
+      }
+    }
+
     function openMusicModal() {
       document.getElementById('music-modal').classList.remove('hidden');
       if (window.lucide) window.lucide.createIcons();
+      if (activeMusicTab === 'browse') {
+        const q = document.getElementById('music-search-input').value.trim();
+        searchOnlineMusic(q || 'top hits');
+      }
     }
 
     document.getElementById('create-open-music-btn').addEventListener('click', openMusicModal);
     document.getElementById('story-open-music-btn').addEventListener('click', openMusicModal);
     document.getElementById('close-music-modal').addEventListener('click', () => {
+      stopMusicPreview();
       document.getElementById('music-local-preview')?.pause();
       document.getElementById('music-modal').classList.add('hidden');
     });
@@ -3782,9 +3848,19 @@
           const active = b.dataset.mtab === activeMusicTab;
           b.className = `music-tab-btn flex-1 py-2 rounded-lg text-xs font-semibold ${active ? 'bg-pink-500 text-white' : 'text-zinc-600 dark:text-zinc-300'}`;
         });
+        document.getElementById('music-tab-browse').classList.toggle('hidden', activeMusicTab !== 'browse');
         document.getElementById('music-tab-local').classList.toggle('hidden', activeMusicTab !== 'local');
-        document.getElementById('music-tab-ytmusic').classList.toggle('hidden', activeMusicTab !== 'ytmusic');
+        if (activeMusicTab === 'browse') {
+          searchOnlineMusic(document.getElementById('music-search-input').value.trim() || 'top hits');
+        }
       });
+    });
+
+    document.getElementById('music-search-input').addEventListener('input', e => {
+      clearTimeout(musicSearchTimer);
+      musicSearchTimer = setTimeout(() => {
+        searchOnlineMusic(e.target.value.trim() || 'top hits');
+      }, 350);
     });
 
     document.getElementById('music-file-input').addEventListener('change', e => {
@@ -3794,58 +3870,27 @@
         showToast('Audio file must be under 20 MB');
         return;
       }
-      pendingLocalMusicFile = file;
-      document.getElementById('music-file-label').textContent = file.name;
-      const titleInp = document.getElementById('music-title-input');
-      if (!titleInp.value.trim()) titleInp.value = file.name.replace(/\.[^/.]+$/, '');
-      const prev = document.getElementById('music-local-preview');
-      prev.src = URL.createObjectURL(file);
-      prev.classList.remove('hidden');
+      stopMusicPreview();
+      const title = file.name.replace(/\.[^/.]+$/, '');
+      uploadState.music = {
+        title,
+        artist: state.currentUser.username,
+        url: URL.createObjectURL(file),
+        source: 'upload',
+        file
+      };
+      updateMusicSummaryUI();
+      document.getElementById('music-modal').classList.add('hidden');
+      showToast(`Added "${title}" 🎵`);
+      e.target.value = '';
     });
 
     document.getElementById('music-clear-btn').addEventListener('click', () => {
+      stopMusicPreview();
       uploadState.music = null;
-      pendingLocalMusicFile = null;
-      document.getElementById('music-title-input').value = '';
-      document.getElementById('music-artist-input').value = '';
-      document.getElementById('music-ext-url').value = '';
-      document.getElementById('music-local-preview').classList.add('hidden');
+      document.getElementById('music-local-preview')?.classList.add('hidden');
       updateMusicSummaryUI();
       document.getElementById('music-modal').classList.add('hidden');
-    });
-
-    document.getElementById('music-save-btn').addEventListener('click', () => {
-      const title = document.getElementById('music-title-input').value.trim();
-      const artist = document.getElementById('music-artist-input').value.trim();
-      if (activeMusicTab === 'local') {
-        if (!pendingLocalMusicFile) {
-          showToast('Please select an audio file from your phone');
-          return;
-        }
-        uploadState.music = {
-          title: title || pendingLocalMusicFile.name,
-          artist,
-          url: URL.createObjectURL(pendingLocalMusicFile),
-          source: 'upload',
-          file: pendingLocalMusicFile
-        };
-      } else {
-        const extUrl = document.getElementById('music-ext-url').value.trim();
-        if (!extUrl) {
-          showToast('Paste a YouTube Music or song link');
-          return;
-        }
-        uploadState.music = {
-          title: title || 'YouTube Music Track',
-          artist,
-          url: extUrl,
-          source: 'ytmusic'
-        };
-      }
-      document.getElementById('music-local-preview')?.pause();
-      updateMusicSummaryUI();
-      document.getElementById('music-modal').classList.add('hidden');
-      showToast('Music added 🎵');
     });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); if (state.currentUser.isAdmin) loadAdminData(); } });
