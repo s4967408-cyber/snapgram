@@ -102,15 +102,18 @@
     <!-- Mobile Top Header -->
     <header class="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur">
       <span class="text-xl font-extrabold bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 bg-clip-text text-transparent">SNAPGRAM</span>
-      <div class="flex items-center gap-2">
-        <button id="create-btn-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Create">
-          <i data-lucide="plus-square" class="w-5 h-5"></i>
+      <div class="flex items-center gap-1">
+        <button id="camera-btn-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Camera">
+          <i data-lucide="camera" class="w-5 h-5"></i>
         </button>
         <button id="theme-toggle-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Toggle Theme">
           <i data-lucide="moon" class="w-5 h-5"></i>
         </button>
         <button id="activity-btn-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Activity">
           <i data-lucide="heart" class="w-5 h-5"></i>
+        </button>
+        <button id="messages-btn-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Messages">
+          <i data-lucide="message-circle" class="w-5 h-5"></i>
         </button>
       </div>
     </header>
@@ -135,7 +138,8 @@
   <!-- Story Viewer Modal -->
   <div id="story-modal" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
     <div class="relative w-full max-w-sm aspect-[9/16] rounded-2xl overflow-hidden bg-zinc-900 flex flex-col justify-between shadow-2xl">
-      <img id="story-modal-img" src="" alt="Story" class="absolute inset-0 w-full h-full object-cover" />
+      <img id="story-modal-img" src="" alt="Story" class="hidden absolute inset-0 w-full h-full object-cover" />
+      <video id="story-modal-video" playsinline autoplay loop class="hidden absolute inset-0 w-full h-full object-cover"></video>
       <div class="relative z-10 p-4 bg-gradient-to-b from-black/70 to-transparent">
         <div class="w-full h-1 bg-white/30 rounded-full overflow-hidden mb-3">
           <div class="h-full bg-white w-2/3 rounded-full"></div>
@@ -145,7 +149,10 @@
             <span id="story-modal-user" class="text-sm font-semibold"></span>
             <span id="story-modal-privacy" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/80 font-medium"></span>
           </div>
-          <button id="close-story-modal" class="p-1 rounded-full hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+          <div class="flex items-center gap-1">
+            <button id="delete-story-btn" class="hidden p-1.5 rounded-full hover:bg-red-500/30 text-red-400" title="Delete Story" aria-label="Delete Story"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            <button id="close-story-modal" class="p-1 rounded-full hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+          </div>
         </div>
       </div>
       <div class="relative z-10 p-4 bg-gradient-to-t from-black/85 to-transparent space-y-3">
@@ -164,31 +171,155 @@
     </div>
   </div>
 
-  <!-- Create Modal -->
-  <div id="create-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-xl">
+  <!-- Instagram-Style Create & Upload Modal -->
+  <div id="create-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 md:p-4">
+    <div class="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Create New Content</h3>
-        <button id="close-create-modal" class="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <h3 class="text-lg font-bold">Create</h3>
+        <button id="close-create-modal" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <div class="flex gap-2">
-        <button class="create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold bg-pink-500 text-white" data-kind="post">Post</button>
-        <button class="create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-zinc-800" data-kind="reel">Reel</button>
-        <button class="create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-zinc-800" data-kind="story">Story</button>
+
+      <!-- Post / Reel / Story Selector -->
+      <div class="flex gap-2 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800">
+        <button type="button" class="create-kind-btn flex-1 py-2 rounded-lg text-xs font-semibold bg-pink-500 text-white transition" data-kind="post">Post</button>
+        <button type="button" class="create-kind-btn flex-1 py-2 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition" data-kind="reel">Reel</button>
+        <button type="button" class="create-kind-btn flex-1 py-2 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition" data-kind="story">Story</button>
       </div>
-      <form id="create-form" class="space-y-3">
-        <div>
-          <label class="text-xs font-medium text-zinc-500 block mb-1">Choose Preset Media</label>
-          <select id="create-media-select" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm">
-            <option value="coffee">Himalayan Sunrise Coffee (1:1)</option>
-            <option value="tokyo">Rainy Tokyo Alley (1:1)</option>
-            <option value="coast">Coastal Cliffs Sunset (9:16)</option>
-          </select>
+
+      <!-- Media Source Buttons: Gallery & Live Camera -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <label class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-semibold cursor-pointer transition">
+          <i data-lucide="image" class="w-4 h-4 text-pink-500"></i>
+          <span>Select from Gallery</span>
+          <input id="media-file-input" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
+        </label>
+        <button type="button" id="open-camera-btn" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold hover:opacity-90 transition">
+          <i data-lucide="camera" class="w-4 h-4"></i>
+          <span>Open Camera</span>
+        </button>
+      </div>
+
+      <!-- Selected Media Preview Area -->
+      <div id="create-preview-area" class="hidden space-y-3">
+        <div id="create-preview-grid" class="grid grid-cols-3 gap-2"></div>
+
+        <!-- Story Canvas Editor (shown for Story photo) -->
+        <div id="story-editor-wrap" class="hidden space-y-2.5 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 bg-zinc-50 dark:bg-zinc-950">
+          <div class="flex items-center justify-between text-xs font-semibold">
+            <span>Story Studio (Draw, Text & Stickers)</span>
+            <button type="button" id="story-clear-edits" class="text-red-500 hover:underline">Reset</button>
+          </div>
+          <div class="relative w-full max-w-[260px] mx-auto aspect-[9/16] rounded-xl overflow-hidden bg-black">
+            <canvas id="story-editor-canvas" class="w-full h-full touch-none cursor-crosshair"></canvas>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" id="story-draw-toggle" class="px-2.5 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i> Draw
+            </button>
+            <div class="flex items-center gap-1">
+              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-white border border-zinc-400" data-color="#ffffff"></button>
+              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-pink-500" data-color="#ec4899"></button>
+              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-amber-400" data-color="#facc15"></button>
+              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-sky-400" data-color="#38bdf8"></button>
+            </div>
+          </div>
+          <div class="flex gap-1.5">
+            <input id="story-text-input" type="text" placeholder="Add text to story..." class="flex-1 px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs focus:outline-none" />
+            <button type="button" id="story-add-text-btn" class="px-3 py-1.5 rounded-lg bg-pink-500 text-white text-xs font-semibold">Add</button>
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-lg">
+            ${['❤️','🔥','😂','✨','📍','🎵','🙌','💯'].map(e => `<button type="button" class="story-sticker-btn px-2 py-0.5 rounded-lg bg-zinc-200/70 dark:bg-zinc-800 hover:scale-110 transition" data-sticker="${e}">${e}</button>`).join('')}
+          </div>
         </div>
-        <textarea id="create-caption" rows="3" placeholder="Write a caption... #hashtags @mentions" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none"></textarea>
-        <input id="create-location" type="text" placeholder="Location (optional)" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none" />
-        <button type="submit" class="w-full py-2.5 rounded-xl bg-pink-500 text-white font-semibold text-sm hover:bg-pink-600 transition">Publish</button>
+
+        <!-- Reel Thumbnail Picker (shown for Reel) -->
+        <div id="reel-thumb-wrap" class="hidden flex items-center justify-between p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+          <div class="flex items-center gap-2.5">
+            <img id="reel-thumb-preview" src="" alt="Cover" class="hidden w-10 h-14 rounded-lg object-cover border border-zinc-300 dark:border-zinc-700" />
+            <span class="text-xs font-medium text-zinc-600 dark:text-zinc-400">Reel Cover / Thumbnail (optional)</span>
+          </div>
+          <label class="px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs font-semibold cursor-pointer">
+            Choose
+            <input id="reel-thumb-input" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <form id="create-form" class="space-y-3">
+        <textarea id="create-caption" rows="3" placeholder="Write a caption... #hashtags" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none"></textarea>
+        <div id="create-post-extras" class="grid grid-cols-2 gap-2">
+          <input id="create-tags" type="text" placeholder="Tag people (@user1, @user2)" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-xs focus:outline-none" />
+          <input id="create-location" type="text" placeholder="Location (optional)" class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-xs focus:outline-none" />
+        </div>
+
+        <!-- Upload Progress & Error/Retry -->
+        <div id="upload-progress-wrap" class="hidden space-y-1.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+          <div class="flex items-center justify-between text-xs font-semibold">
+            <span id="upload-status-text">Uploading...</span>
+            <span id="upload-percent-text">0%</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+            <div id="upload-progress-bar" class="h-full bg-gradient-to-r from-pink-500 to-rose-500 transition-all duration-150" style="width: 0%"></div>
+          </div>
+        </div>
+        <div id="upload-error-box" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-600 dark:text-red-400 space-y-2">
+          <p id="upload-error-text"></p>
+          <button type="button" id="upload-retry-btn" class="px-3 py-1.5 rounded-lg bg-red-500 text-white font-semibold">Retry Upload</button>
+        </div>
+
+        <button id="create-submit-btn" type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold text-sm hover:opacity-95 transition disabled:opacity-50">
+          Share Post
+        </button>
       </form>
+    </div>
+  </div>
+
+  <!-- Live Camera Modal -->
+  <div id="camera-modal" class="hidden fixed inset-0 z-[60] bg-black flex flex-col justify-between text-white select-none">
+    <div class="relative z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
+      <button id="close-camera-btn" type="button" class="p-2 rounded-full bg-black/40 hover:bg-white/20" aria-label="Close Camera"><i data-lucide="x" class="w-6 h-6"></i></button>
+      <div id="camera-rec-badge" class="hidden flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-xs font-bold">
+        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+        <span id="camera-rec-timer">00:00</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="camera-flash-btn" type="button" class="p-2 rounded-full bg-black/40 hover:bg-white/20" aria-label="Toggle Flash"><i data-lucide="zap" class="w-5 h-5"></i></button>
+        <button id="camera-switch-btn" type="button" class="p-2 rounded-full bg-black/40 hover:bg-white/20" aria-label="Switch Camera"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
+      </div>
+    </div>
+
+    <div class="relative flex-1 flex items-center justify-center overflow-hidden bg-black">
+      <video id="camera-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+      <img id="camera-captured-img" src="" alt="Captured" class="hidden w-full h-full object-contain bg-black" />
+      <video id="camera-captured-video" controls playsinline class="hidden w-full h-full object-contain bg-black"></video>
+      <div id="camera-error-state" class="hidden text-center p-6 space-y-3 max-w-xs">
+        <i data-lucide="video-off" class="w-10 h-10 mx-auto text-zinc-400"></i>
+        <p id="camera-error-msg" class="text-sm text-zinc-300">Camera access denied or unavailable.</p>
+        <button type="button" id="camera-fallback-gallery" class="px-4 py-2 rounded-xl bg-pink-500 text-white text-xs font-semibold">Choose from Gallery</button>
+      </div>
+    </div>
+
+    <!-- Camera Bottom Controls -->
+    <div id="camera-live-controls" class="relative z-20 p-6 bg-gradient-to-t from-black/85 to-transparent space-y-4">
+      <div class="flex justify-center gap-4 text-xs font-semibold">
+        <button type="button" class="cam-mode-btn px-3 py-1 rounded-full bg-white text-black" data-cmode="photo">PHOTO</button>
+        <button type="button" class="cam-mode-btn px-3 py-1 rounded-full bg-white/15 text-white" data-cmode="video">VIDEO</button>
+      </div>
+      <div class="flex items-center justify-between max-w-xs mx-auto">
+        <button type="button" id="camera-gallery-shortcut" class="w-11 h-11 rounded-xl border border-white/40 bg-white/10 flex items-center justify-center" aria-label="Gallery">
+          <i data-lucide="image" class="w-5 h-5"></i>
+        </button>
+        <button type="button" id="camera-shutter-btn" class="w-16 h-16 rounded-full border-4 border-white flex items-center justify-center transition active:scale-95">
+          <span id="camera-shutter-inner" class="w-12 h-12 rounded-full bg-white transition-all"></span>
+        </button>
+        <div class="w-11 h-11"></div>
+      </div>
+    </div>
+
+    <!-- Captured Preview Controls -->
+    <div id="camera-preview-controls" class="hidden relative z-20 p-6 bg-black/85 flex items-center justify-between gap-4">
+      <button type="button" id="camera-retake-btn" class="flex-1 py-3 rounded-xl bg-zinc-800 text-white text-sm font-semibold">Retake</button>
+      <button type="button" id="camera-use-btn" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-semibold">Use Media</button>
     </div>
   </div>
 
@@ -321,6 +452,8 @@
       createKind: 'post',
       currentUser: {
         email: '',
+        supaUserId: '',
+        supaToken: '',
         isAdmin: false,
         username: '',
         fullName: '',
@@ -332,6 +465,8 @@
         followers: 0,
         following: 0
       },
+      activeStoryId: null,
+      postSlideIndex: {},
       stories: [],
       posts: [],
       reels: [],
@@ -382,11 +517,25 @@
       `).join('');
 
       const mNav = document.getElementById('mobile-nav');
-      mNav.innerHTML = visibleNav.filter(i => !i.desktopOnly).map(item => `
-        <button data-tab="${item.id}" class="nav-btn p-2 ${state.activeTab === item.id ? 'text-pink-500' : 'text-zinc-600 dark:text-zinc-400'}" aria-label="${item.label}">
+      const mobileTabs = [
+        { id: 'home', label: 'Home', icon: 'home' },
+        { id: 'explore', label: 'Search', icon: 'search' },
+        { id: '__create__', label: 'Create', icon: 'plus' },
+        { id: 'reels', label: 'Reels', icon: 'film' },
+        { id: 'profile', label: 'Profile', icon: 'user' }
+      ];
+      mNav.innerHTML = mobileTabs.map(item => {
+        if (item.id === '__create__') {
+          return `<button id="create-btn-mobile" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white flex items-center justify-center shadow-md active:scale-95 transition" aria-label="Create">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+          </button>`;
+        }
+        return `<button data-tab="${item.id}" class="nav-btn p-2 ${state.activeTab === item.id ? 'text-pink-500' : 'text-zinc-600 dark:text-zinc-400'}" aria-label="${item.label}">
           <i data-lucide="${item.icon}" class="w-6 h-6"></i>
-        </button>
-      `).join('');
+        </button>`;
+      }).join('');
+      const mobCreateBtn = document.getElementById('create-btn-mobile');
+      if (mobCreateBtn) mobCreateBtn.addEventListener('click', () => openCreate('post'));
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -404,7 +553,13 @@
       return `<div class="${sizeClass} rounded-full bg-gradient-to-tr from-pink-500 to-amber-500 text-white font-bold flex items-center justify-center border border-zinc-200 dark:border-zinc-700 select-none">${initial}</div>`;
     }
 
+    function filterActiveStories() {
+      const now = Date.now();
+      state.stories = state.stories.filter(s => !s.expiresAt || s.expiresAt > now);
+    }
+
     function renderHome() {
+      filterActiveStories();
       return `
         <div class="max-w-xl mx-auto py-5 px-4 space-y-6">
           <!-- Stories -->
@@ -412,7 +567,10 @@
             ${state.stories.map(s => `
               <button class="open-story flex flex-col items-center gap-1.5 shrink-0" data-story-id="${s.id}">
                 <div class="w-16 h-16 rounded-full p-[2.5px] ${s.viewed ? 'bg-zinc-300 dark:bg-zinc-700' : 'story-ring'}">
-                  <img src="${s.img}" alt="${s.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />
+                  ${s.mediaType === 'video'
+                    ? `<video src="${s.img}" muted playsinline class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950"></video>`
+                    : `<img src="${s.img}" alt="${s.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
+                  }
                 </div>
                 <span class="text-[11px] font-medium truncate w-16 text-center">${s.username}</span>
               </button>
@@ -427,11 +585,16 @@
 
           <!-- Posts -->
           <div class="space-y-6">
-            ${state.posts.length ? state.posts.map(p => `
+            ${state.posts.length ? state.posts.map(p => {
+              const mediaList = Array.isArray(p.media) && p.media.length ? p.media : [{ url: p.img, type: p.mediaType || 'image' }];
+              const slideIdx = Math.min(state.postSlideIndex[p.id] || 0, mediaList.length - 1);
+              const activeMedia = mediaList[slideIdx];
+              const isOwner = p.username === state.currentUser.username || (state.currentUser.supaUserId && p.userId === state.currentUser.supaUserId);
+              return `
               <article class="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
                 <header class="flex items-center justify-between px-4 py-3">
                   <div class="flex items-center gap-3">
-                    <img src="${p.img}" alt="${p.username}" class="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-zinc-700" />
+                    ${renderAvatar(p.userAvatar || (isOwner ? state.currentUser.avatar : ''), p.username, 'w-9 h-9')}
                     <div>
                       <div class="flex items-center gap-2">
                         <span class="text-sm font-semibold">${p.username}</span>
@@ -440,14 +603,34 @@
                       ${p.location ? `<p class="text-[11px] text-zinc-500">${p.location}</p>` : ''}
                     </div>
                   </div>
-                  ${p.username !== state.currentUser.username ? `
-                    <button class="follow-toggle text-xs font-semibold px-3 py-1 rounded-lg ${p.following ? 'bg-zinc-100 dark:bg-zinc-800' : 'bg-pink-500 text-white'}" data-post-id="${p.id}">
-                      ${p.following ? 'Following' : 'Follow'}
-                    </button>
-                  ` : ''}
+                  <div class="flex items-center gap-2">
+                    ${!isOwner ? `
+                      <button class="follow-toggle text-xs font-semibold px-3 py-1 rounded-lg ${p.following ? 'bg-zinc-100 dark:bg-zinc-800' : 'bg-pink-500 text-white'}" data-post-id="${p.id}">
+                        ${p.following ? 'Following' : 'Follow'}
+                      </button>
+                    ` : `
+                      <button class="delete-post-btn p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition" data-post-id="${p.id}" title="Delete Post" aria-label="Delete Post">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    `}
+                  </div>
                 </header>
-                <div class="aspect-square bg-black overflow-hidden">
-                  <img src="${p.img}" alt="Post" class="w-full h-full object-cover" />
+                <div class="aspect-square bg-black overflow-hidden relative">
+                  ${activeMedia.type === 'video'
+                    ? `<video src="${activeMedia.url}" controls playsinline class="w-full h-full object-contain bg-black"></video>`
+                    : `<img src="${activeMedia.url}" alt="Post" class="w-full h-full object-cover" />`
+                  }
+                  ${mediaList.length > 1 ? `
+                    <button class="carousel-prev absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80" data-post-id="${p.id}" aria-label="Previous">
+                      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <button class="carousel-next absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80" data-post-id="${p.id}" aria-label="Next">
+                      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                    <div class="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
+                      ${mediaList.map((_, idx) => `<span class="w-1.5 h-1.5 rounded-full ${idx === slideIdx ? 'bg-pink-500' : 'bg-white/60'}"></span>`).join('')}
+                    </div>
+                  ` : ''}
                 </div>
                 <div class="p-4 space-y-2.5">
                   <div class="flex items-center justify-between">
@@ -468,6 +651,7 @@
                   </div>
                   <p class="text-sm font-semibold">${p.likes.toLocaleString()} likes</p>
                   <p class="text-sm"><span class="font-semibold mr-1.5">${p.username}</span>${p.caption}</p>
+                  ${p.taggedUsers && p.taggedUsers.length ? `<p class="text-xs text-indigo-500 font-medium">Tagged: ${p.taggedUsers.join(' ')}</p>` : ''}
                   <div class="space-y-1 pt-1">
                     ${p.comments.map(c => `<p class="text-xs"><span class="font-semibold mr-1.5">${c.user}</span>${c.text}</p>`).join('')}
                   </div>
@@ -477,7 +661,7 @@
                   </form>
                 </div>
               </article>
-            `).join('') : `
+            `;}).join('') : `
               <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-3 bg-white dark:bg-zinc-900">
                 <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
                   <i data-lucide="camera" class="w-6 h-6"></i>
@@ -546,7 +730,7 @@
                 <i data-lucide="film" class="w-6 h-6"></i>
               </div>
               <h2 class="text-base font-bold">No reels yet</h2>
-              <p class="text-xs text-zinc-500">Create a reel to see it here.</p>
+              <p class="text-xs text-zinc-500">Record or upload a video reel to see it here.</p>
               <button id="empty-create-reel-btn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-semibold hover:opacity-95 transition">Create Reel</button>
             </div>
           </div>
@@ -554,12 +738,22 @@
       }
       return `
         <div class="py-4 px-4 flex flex-col items-center gap-6">
-          ${state.reels.map(r => `
+          ${state.reels.map(r => {
+            const isOwner = r.username === state.currentUser.username || (state.currentUser.supaUserId && r.userId === state.currentUser.supaUserId);
+            return `
             <div class="relative w-full max-w-sm aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-xl flex items-end">
-              <img src="${r.img}" alt="Reel" class="absolute inset-0 w-full h-full object-cover ${r.playing ? '' : 'opacity-60'}" />
+              ${r.mediaType === 'video' || (r.videoUrl || r.img || '').match(/\.(mp4|mov|webm)|video/i) || r.isVideo
+                ? `<video id="reel-vid-${r.id}" src="${r.videoUrl || r.img}" ${r.thumbnailUrl ? `poster="${r.thumbnailUrl}"` : ''} playsinline loop muted class="absolute inset-0 w-full h-full object-cover"></video>`
+                : `<img src="${r.img}" alt="Reel" class="absolute inset-0 w-full h-full object-cover" />`
+              }
               <button class="reel-play-toggle absolute inset-0 flex items-center justify-center z-10" data-reel-id="${r.id}" aria-label="Toggle Play">
                 ${r.playing ? '' : '<div class="p-4 rounded-full bg-black/60 text-white"><i data-lucide="play" class="w-8 h-8"></i></div>'}
               </button>
+              ${isOwner ? `
+                <button class="delete-reel-btn absolute top-3 right-3 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-red-500 transition" data-reel-id="${r.id}" title="Delete Reel" aria-label="Delete Reel">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              ` : ''}
               <div class="relative z-20 w-full p-4 bg-gradient-to-t from-black/85 via-black/30 to-transparent text-white flex justify-between items-end">
                 <div class="space-y-1.5 max-w-[75%]">
                   <p class="font-bold text-sm">@${r.username}</p>
@@ -581,7 +775,7 @@
                 </div>
               </div>
             </div>
-          `).join('')}
+          `;}).join('')}
         </div>
       `;
     }
@@ -968,13 +1162,58 @@
           const s = state.stories.find(st => st.id === btn.dataset.storyId);
           if (!s) return;
           s.viewed = true;
-          document.getElementById('story-modal-img').src = s.img;
+          state.activeStoryId = s.id;
+          const imgEl = document.getElementById('story-modal-img');
+          const vidEl = document.getElementById('story-modal-video');
+          if (s.mediaType === 'video') {
+            imgEl.classList.add('hidden');
+            vidEl.src = s.img;
+            vidEl.classList.remove('hidden');
+            vidEl.play().catch(() => {});
+          } else {
+            vidEl.pause();
+            vidEl.classList.add('hidden');
+            imgEl.src = s.img;
+            imgEl.classList.remove('hidden');
+          }
           document.getElementById('story-modal-user').textContent = '@' + s.username;
           document.getElementById('story-modal-privacy').textContent = s.privacy;
           document.getElementById('story-modal-caption').textContent = s.caption;
+          const isOwner = s.username === state.currentUser.username || (state.currentUser.supaUserId && s.userId === state.currentUser.supaUserId);
+          document.getElementById('delete-story-btn').classList.toggle('hidden', !isOwner);
           document.getElementById('story-modal').classList.remove('hidden');
           render();
         });
+      });
+
+      document.querySelectorAll('.carousel-prev').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pid = btn.dataset.postId;
+          const p = state.posts.find(x => x.id === pid);
+          const len = (p?.media?.length || 1);
+          const cur = state.postSlideIndex[pid] || 0;
+          state.postSlideIndex[pid] = (cur - 1 + len) % len;
+          render();
+        });
+      });
+
+      document.querySelectorAll('.carousel-next').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pid = btn.dataset.postId;
+          const p = state.posts.find(x => x.id === pid);
+          const len = (p?.media?.length || 1);
+          const cur = state.postSlideIndex[pid] || 0;
+          state.postSlideIndex[pid] = (cur + 1) % len;
+          render();
+        });
+      });
+
+      document.querySelectorAll('.delete-post-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteMediaItem('post', btn.dataset.postId));
+      });
+
+      document.querySelectorAll('.delete-reel-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteMediaItem('reel', btn.dataset.reelId));
       });
 
       document.querySelectorAll('.like-btn').forEach(btn => {
@@ -1043,8 +1282,13 @@
       document.querySelectorAll('.reel-play-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
           const r = state.reels.find(x => x.id === btn.dataset.reelId);
+          if (!r) return;
           r.playing = !r.playing;
-          if (r.playing) r.views += 1;
+          const vid = document.getElementById(`reel-vid-${r.id}`);
+          if (vid) {
+            if (r.playing) { vid.muted = false; vid.play().catch(() => {}); r.views += 1; }
+            else { vid.pause(); }
+          }
           render();
         });
       });
@@ -1256,6 +1500,8 @@
           bio: userObj.bio || '',
           website: userObj.website || '',
           avatar: userObj.avatar || '',
+          supaToken: userObj.supaToken || '',
+          supaUserId: userObj.supaUserId || '',
           isPrivate: Boolean(userObj.isPrivate),
           issuedAt: Date.now()
         }));
@@ -1281,6 +1527,8 @@
           if (typeof sess.bio === 'string') state.currentUser.bio = sess.bio;
           if (typeof sess.website === 'string') state.currentUser.website = sess.website;
           if (sess.avatar) state.currentUser.avatar = sess.avatar;
+          if (sess.supaToken) state.currentUser.supaToken = sess.supaToken;
+          if (sess.supaUserId) state.currentUser.supaUserId = sess.supaUserId;
           if (typeof sess.isPrivate === 'boolean') state.currentUser.isPrivate = sess.isPrivate;
           state.currentUser.isAdmin = isAdmin;
           state.isAuthenticated = true;
@@ -1317,13 +1565,15 @@
       } catch {}
     }
 
-    function completeLogin(email, username, fullName) {
+    function completeLogin(email, username, fullName, supaToken = '', supaUserId = '') {
       const cleanEmail = email.trim().toLowerCase();
       const isAdmin = cleanEmail === ADMIN_EMAIL;
       state.currentUser.email = cleanEmail;
       state.currentUser.isAdmin = isAdmin;
       state.currentUser.username = username ? username.trim().toLowerCase() : (isAdmin ? 'admin.snapgram' : cleanEmail.split('@')[0]);
       state.currentUser.fullName = fullName ? fullName.trim() : (isAdmin ? 'Snapgram Admin' : state.currentUser.username);
+      if (supaToken) state.currentUser.supaToken = supaToken;
+      if (supaUserId) state.currentUser.supaUserId = supaUserId;
       state.currentUser.followers = 0;
       state.currentUser.following = 0;
       state.isAuthenticated = true;
@@ -1332,6 +1582,7 @@
       state.authMessage = '';
       saveSession(state.currentUser);
       showToast(isAdmin ? 'Signed in with Admin access' : `Welcome, @${state.currentUser.username}`);
+      loadRemoteMedia();
       render();
     }
 
@@ -1531,7 +1782,7 @@
             }
             state.pendingConfirmationEmail = '';
             const meta = data.user?.user_metadata || {};
-            completeLogin(data.user?.email || identifier, meta.username, meta.full_name);
+            completeLogin(data.user?.email || identifier, meta.username, meta.full_name, data.access_token || data.session?.access_token || '', data.user?.id || '');
             return;
           } catch {
             state.authError = 'Could not reach Supabase Auth URL. Check your Supabase URL and Anon Key.';
@@ -1694,9 +1945,19 @@
     document.getElementById('theme-toggle-desktop').addEventListener('click', toggleTheme);
     document.getElementById('theme-toggle-mobile').addEventListener('click', toggleTheme);
     document.getElementById('activity-btn-mobile').addEventListener('click', () => { state.activeTab = 'activity'; render(); });
+    const msgBtnMob = document.getElementById('messages-btn-mobile');
+    if (msgBtnMob) msgBtnMob.addEventListener('click', () => { state.activeTab = 'messages'; render(); });
 
     document.getElementById('close-story-modal').addEventListener('click', () => {
+      const vidEl = document.getElementById('story-modal-video');
+      if (vidEl) vidEl.pause();
       document.getElementById('story-modal').classList.add('hidden');
+    });
+    document.getElementById('delete-story-btn').addEventListener('click', () => {
+      if (state.activeStoryId) {
+        deleteMediaItem('story', state.activeStoryId);
+        document.getElementById('story-modal').classList.add('hidden');
+      }
     });
     document.querySelectorAll('.story-react').forEach(btn => {
       btn.addEventListener('click', () => showToast(`Reacted ${btn.dataset.emoji} to story`));
@@ -1706,81 +1967,900 @@
       const input = document.getElementById('story-reply-input');
       if (!input.value.trim()) return;
       input.value = '';
-      showToast('Reply sent to DM');
+      showToast('Reply sent');
     });
 
-    const openCreate = () => document.getElementById('create-modal').classList.remove('hidden');
-    document.getElementById('create-btn-desktop').addEventListener('click', openCreate);
-    document.getElementById('create-btn-mobile').addEventListener('click', openCreate);
-    document.getElementById('close-create-modal').addEventListener('click', () => document.getElementById('create-modal').classList.add('hidden'));
+    // =========================================================================
+    // PRODUCTION MEDIA UPLOAD, CAMERA, STORY STUDIO & SUPABASE ENGINE
+    // =========================================================================
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'];
+    const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+    const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+
+    const uploadState = {
+      files: [],       // [{ file, url, type: 'image'|'video' }]
+      reelThumb: null, // { file, url }
+      isUploading: false,
+      storyDrawMode: false,
+      storyColor: '#ffffff',
+      storyStrokes: [],
+      storyOverlays: [], // [{ type: 'text'|'sticker', value, x, y, color }]
+      storyBaseImg: null
+    };
+
+    function openCreate(kind = 'post') {
+      state.createKind = kind;
+      updateCreateKindUI();
+      document.getElementById('upload-error-box').classList.add('hidden');
+      document.getElementById('upload-progress-wrap').classList.add('hidden');
+      document.getElementById('create-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function updateCreateKindUI() {
+      document.querySelectorAll('.create-kind-btn').forEach(b => {
+        b.className = `create-kind-btn flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+          b.dataset.kind === state.createKind ? 'bg-pink-500 text-white' : 'text-zinc-700 dark:text-zinc-300'
+        }`;
+      });
+      const fileInput = document.getElementById('media-file-input');
+      const submitBtn = document.getElementById('create-submit-btn');
+      const extras = document.getElementById('create-post-extras');
+      const reelThumbWrap = document.getElementById('reel-thumb-wrap');
+      if (state.createKind === 'post') {
+        fileInput.multiple = true;
+        fileInput.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
+        submitBtn.textContent = 'Share Post';
+        extras.classList.remove('hidden');
+        reelThumbWrap.classList.add('hidden');
+      } else if (state.createKind === 'reel') {
+        fileInput.multiple = false;
+        fileInput.accept = 'video/mp4,video/quicktime,video/webm';
+        submitBtn.textContent = 'Share Reel';
+        extras.classList.add('hidden');
+        if (uploadState.files.length) reelThumbWrap.classList.remove('hidden');
+      } else {
+        fileInput.multiple = false;
+        fileInput.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
+        submitBtn.textContent = 'Share to Story';
+        extras.classList.add('hidden');
+        reelThumbWrap.classList.add('hidden');
+      }
+      renderCreatePreviews();
+    }
+
+    document.getElementById('create-btn-desktop').addEventListener('click', () => openCreate('post'));
+    const camBtnMob = document.getElementById('camera-btn-mobile');
+    if (camBtnMob) camBtnMob.addEventListener('click', () => openCameraModal());
+
+    document.getElementById('close-create-modal').addEventListener('click', () => {
+      if (uploadState.isUploading) {
+        showToast('Upload in progress...');
+        return;
+      }
+      document.getElementById('create-modal').classList.add('hidden');
+    });
 
     document.querySelectorAll('.create-kind-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        if (uploadState.isUploading) return;
         state.createKind = btn.dataset.kind;
-        document.querySelectorAll('.create-kind-btn').forEach(b => {
-          b.className = `create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold ${
-            b.dataset.kind === state.createKind ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'
-          }`;
-        });
+        updateCreateKindUI();
       });
     });
 
-    document.getElementById('create-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const key = document.getElementById('create-media-select').value;
-      const caption = document.getElementById('create-caption').value.trim() || 'Shared via SNAPGRAM';
-      const location = document.getElementById('create-location').value.trim();
+    function validateAndAddFiles(fileList) {
+      const errBox = document.getElementById('upload-error-box');
+      const errTxt = document.getElementById('upload-error-text');
+      errBox.classList.add('hidden');
 
-      if (state.createKind === 'post') {
-        state.posts.unshift({
-          id: 'p' + Date.now(),
-          username: state.currentUser.username,
-          location,
-          img: IMAGES[key],
-          caption,
-          likes: 0,
-          liked: false,
-          saved: false,
-          following: true,
-          isFeatured: false,
-          featuredLabel: '',
-          comments: []
-        });
-        state.activeTab = 'home';
-      } else if (state.createKind === 'reel') {
-        state.reels.unshift({
-          id: 'r' + Date.now(),
-          username: state.currentUser.username,
-          img: IMAGES[key],
-          caption,
-          audio: 'Original Audio · ' + state.currentUser.username,
-          views: 1,
-          likes: 0,
-          liked: false,
-          saved: false,
-          playing: true
-        });
-        state.activeTab = 'reels';
-      } else {
-        state.stories.unshift({
-          id: 's' + Date.now(),
-          username: state.currentUser.username,
-          privacy: 'Followers',
-          img: IMAGES[key],
-          caption,
-          viewed: false
-        });
-        state.activeTab = 'home';
+      const incoming = Array.from(fileList || []);
+      if (!incoming.length) return;
+
+      for (const file of incoming) {
+        const isImg = ALLOWED_IMAGE_TYPES.includes(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
+        const isVid = ALLOWED_VIDEO_TYPES.includes(file.type) || /\.(mp4|mov|webm)$/i.test(file.name);
+
+        if (state.createKind === 'reel' && !isVid) {
+          errTxt.textContent = 'Reels require a video file (MP4, MOV, or WebM).';
+          errBox.classList.remove('hidden');
+          return;
+        }
+        if (!isImg && !isVid) {
+          errTxt.textContent = `Unsupported file "${file.name}". Use JPG, PNG, WEBP, MP4, or MOV.`;
+          errBox.classList.remove('hidden');
+          return;
+        }
+        if (isImg && file.size > MAX_IMAGE_BYTES) {
+          errTxt.textContent = `Image "${file.name}" exceeds 15 MB limit.`;
+          errBox.classList.remove('hidden');
+          return;
+        }
+        if (isVid && file.size > MAX_VIDEO_BYTES) {
+          errTxt.textContent = `Video "${file.name}" exceeds 100 MB limit.`;
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        const item = { file, url: URL.createObjectURL(file), type: isVid ? 'video' : 'image' };
+        if (state.createKind === 'post') {
+          uploadState.files.push(item);
+        } else {
+          uploadState.files = [item];
+        }
       }
+      renderCreatePreviews();
+    }
 
-      document.getElementById('create-caption').value = '';
-      document.getElementById('create-location').value = '';
-      document.getElementById('create-modal').classList.add('hidden');
-      showToast(`Published ${state.createKind}!`);
-      render();
+    document.getElementById('media-file-input').addEventListener('change', e => {
+      validateAndAddFiles(e.target.files);
+      e.target.value = '';
     });
 
-    window.addEventListener('DOMContentLoaded', render);
+    document.getElementById('reel-thumb-input').addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        showToast('Thumbnail must be JPG, PNG, or WEBP');
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      uploadState.reelThumb = { file, url };
+      const prev = document.getElementById('reel-thumb-preview');
+      prev.src = url;
+      prev.classList.remove('hidden');
+    });
+
+    function renderCreatePreviews() {
+      const wrap = document.getElementById('create-preview-area');
+      const grid = document.getElementById('create-preview-grid');
+      const storyWrap = document.getElementById('story-editor-wrap');
+      const reelThumbWrap = document.getElementById('reel-thumb-wrap');
+
+      if (!uploadState.files.length) {
+        wrap.classList.add('hidden');
+        storyWrap.classList.add('hidden');
+        reelThumbWrap.classList.add('hidden');
+        return;
+      }
+
+      wrap.classList.remove('hidden');
+      grid.innerHTML = uploadState.files.map((item, idx) => `
+        <div class="relative aspect-square rounded-xl overflow-hidden bg-black border border-zinc-200 dark:border-zinc-700">
+          ${item.type === 'video'
+            ? `<video src="${item.url}" controls playsinline class="w-full h-full object-cover"></video>`
+            : `<img src="${item.url}" alt="Preview" class="w-full h-full object-cover" />`
+          }
+          <button type="button" class="remove-media-btn absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/75 text-white flex items-center justify-center text-xs font-bold hover:bg-red-500" data-idx="${idx}">✕</button>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.remove-media-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.idx);
+          uploadState.files.splice(idx, 1);
+          renderCreatePreviews();
+        });
+      });
+
+      if (state.createKind === 'reel') {
+        reelThumbWrap.classList.remove('hidden');
+      } else {
+        reelThumbWrap.classList.add('hidden');
+      }
+
+      if (state.createKind === 'story' && uploadState.files[0]?.type === 'image') {
+        storyWrap.classList.remove('hidden');
+        initStoryCanvas(uploadState.files[0].url);
+      } else {
+        storyWrap.classList.add('hidden');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Story Canvas Editor (Draw, Text, Stickers)
+    function initStoryCanvas(imgUrl) {
+      const canvas = document.getElementById('story-editor-canvas');
+      canvas.width = 540;
+      canvas.height = 960;
+      uploadState.storyStrokes = [];
+      uploadState.storyOverlays = [];
+      const img = new Image();
+      img.onload = () => {
+        uploadState.storyBaseImg = img;
+        redrawStoryCanvas();
+      };
+      img.src = imgUrl;
+    }
+
+    function redrawStoryCanvas() {
+      const canvas = document.getElementById('story-editor-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (uploadState.storyBaseImg) {
+        const img = uploadState.storyBaseImg;
+        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      }
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      uploadState.storyStrokes.forEach(s => {
+        if (s.points.length < 2) return;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(s.points[0].x, s.points[0].y);
+        for (let i = 1; i < s.points.length; i++) ctx.lineTo(s.points[i].x, s.points[i].y);
+        ctx.stroke();
+      });
+      uploadState.storyOverlays.forEach(o => {
+        ctx.textAlign = 'center';
+        if (o.type === 'sticker') {
+          ctx.font = '64px sans-serif';
+          ctx.fillText(o.value, o.x, o.y);
+        } else {
+          ctx.font = 'bold 34px Inter, sans-serif';
+          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          const metrics = ctx.measureText(o.value);
+          ctx.fillRect(o.x - metrics.width / 2 - 16, o.y - 34, metrics.width + 32, 48);
+          ctx.fillStyle = o.color || '#ffffff';
+          ctx.fillText(o.value, o.x, o.y);
+        }
+      });
+    }
+
+    (function bindStoryEditor() {
+      const canvas = document.getElementById('story-editor-canvas');
+      let drawing = false;
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+      const startDraw = e => {
+        if (!uploadState.storyDrawMode) return;
+        drawing = true;
+        uploadState.storyStrokes.push({ color: uploadState.storyColor, points: [getPos(e)] });
+      };
+      const moveDraw = e => {
+        if (!drawing || !uploadState.storyDrawMode) return;
+        if (e.cancelable) e.preventDefault();
+        uploadState.storyStrokes[uploadState.storyStrokes.length - 1].points.push(getPos(e));
+        redrawStoryCanvas();
+      };
+      const endDraw = () => { drawing = false; };
+
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', moveDraw);
+      window.addEventListener('mouseup', endDraw);
+      canvas.addEventListener('touchstart', startDraw, { passive: true });
+      canvas.addEventListener('touchmove', moveDraw, { passive: false });
+      canvas.addEventListener('touchend', endDraw);
+
+      document.getElementById('story-draw-toggle').addEventListener('click', () => {
+        uploadState.storyDrawMode = !uploadState.storyDrawMode;
+        const btn = document.getElementById('story-draw-toggle');
+        btn.classList.toggle('bg-pink-500', uploadState.storyDrawMode);
+        btn.classList.toggle('text-white', uploadState.storyDrawMode);
+      });
+      document.querySelectorAll('.story-color-btn').forEach(btn => {
+        btn.addEventListener('click', () => { uploadState.storyColor = btn.dataset.color; });
+      });
+      document.getElementById('story-add-text-btn').addEventListener('click', () => {
+        const inp = document.getElementById('story-text-input');
+        const txt = inp.value.trim();
+        if (!txt) return;
+        uploadState.storyOverlays.push({ type: 'text', value: txt, x: 270, y: 240 + (uploadState.storyOverlays.length * 55) % 420, color: uploadState.storyColor });
+        inp.value = '';
+        redrawStoryCanvas();
+      });
+      document.querySelectorAll('.story-sticker-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          uploadState.storyOverlays.push({ type: 'sticker', value: btn.dataset.sticker, x: 140 + (uploadState.storyOverlays.length * 70) % 280, y: 360 + (uploadState.storyOverlays.length * 60) % 300 });
+          redrawStoryCanvas();
+        });
+      });
+      document.getElementById('story-clear-edits').addEventListener('click', () => {
+        uploadState.storyStrokes = [];
+        uploadState.storyOverlays = [];
+        redrawStoryCanvas();
+      });
+    })();
+
+    // =========================================================================
+    // LIVE CAMERA INTEGRATION (Photo, Video, Switch, Flash, Gallery Shortcut)
+    // =========================================================================
+    const camState = {
+      stream: null,
+      facingMode: 'environment',
+      mode: 'photo', // 'photo' | 'video'
+      flashOn: false,
+      recorder: null,
+      chunks: [],
+      recTimer: null,
+      recSeconds: 0,
+      capturedFile: null,
+      capturedUrl: '',
+      capturedType: 'image'
+    };
+
+    async function startCameraStream() {
+      stopCameraStream();
+      document.getElementById('camera-error-state').classList.add('hidden');
+      const videoEl = document.getElementById('camera-video');
+      videoEl.classList.remove('hidden');
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        document.getElementById('camera-error-msg').textContent = 'Camera API not supported in this browser.';
+        document.getElementById('camera-error-state').classList.remove('hidden');
+        videoEl.classList.add('hidden');
+        return;
+      }
+
+      try {
+        const needAudio = camState.mode === 'video';
+        try {
+          camState.stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: camState.facingMode },
+            audio: needAudio
+          });
+        } catch {
+          camState.stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: camState.facingMode },
+            audio: false
+          });
+        }
+        videoEl.srcObject = camState.stream;
+        await videoEl.play().catch(() => {});
+      } catch (err) {
+        videoEl.classList.add('hidden');
+        document.getElementById('camera-error-msg').textContent = 'Camera permission denied or unavailable. You can still upload from your Gallery.';
+        document.getElementById('camera-error-state').classList.remove('hidden');
+      }
+    }
+
+    function stopCameraStream() {
+      if (camState.recorder && camState.recorder.state === 'recording') {
+        try { camState.recorder.stop(); } catch {}
+      }
+      clearInterval(camState.recTimer);
+      document.getElementById('camera-rec-badge').classList.add('hidden');
+      if (camState.stream) {
+        camState.stream.getTracks().forEach(t => t.stop());
+        camState.stream = null;
+      }
+    }
+
+    function openCameraModal() {
+      camState.capturedFile = null;
+      document.getElementById('camera-captured-img').classList.add('hidden');
+      document.getElementById('camera-captured-video').classList.add('hidden');
+      document.getElementById('camera-live-controls').classList.remove('hidden');
+      document.getElementById('camera-preview-controls').classList.add('hidden');
+      document.getElementById('camera-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+      startCameraStream();
+    }
+
+    function closeCameraModal() {
+      stopCameraStream();
+      document.getElementById('camera-modal').classList.add('hidden');
+    }
+
+    document.getElementById('open-camera-btn').addEventListener('click', openCameraModal);
+    document.getElementById('close-camera-btn').addEventListener('click', closeCameraModal);
+    document.getElementById('camera-fallback-gallery').addEventListener('click', () => {
+      closeCameraModal();
+      document.getElementById('media-file-input').click();
+    });
+    document.getElementById('camera-gallery-shortcut').addEventListener('click', () => {
+      closeCameraModal();
+      if (document.getElementById('create-modal').classList.contains('hidden')) openCreate('post');
+      document.getElementById('media-file-input').click();
+    });
+
+    document.getElementById('camera-switch-btn').addEventListener('click', () => {
+      camState.facingMode = camState.facingMode === 'environment' ? 'user' : 'environment';
+      camState.flashOn = false;
+      startCameraStream();
+    });
+
+    document.getElementById('camera-flash-btn').addEventListener('click', async () => {
+      const track = camState.stream?.getVideoTracks?.()[0];
+      if (!track || !track.getCapabilities) {
+        showToast('Flash not available');
+        return;
+      }
+      const caps = track.getCapabilities();
+      if (!caps.torch) {
+        showToast('Flash not supported on this camera');
+        return;
+      }
+      camState.flashOn = !camState.flashOn;
+      try {
+        await track.applyConstraints({ advanced: [{ torch: camState.flashOn }] });
+        showToast(camState.flashOn ? 'Flash ON' : 'Flash OFF');
+      } catch {
+        showToast('Could not toggle flash');
+      }
+    });
+
+    document.querySelectorAll('.cam-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        camState.mode = btn.dataset.cmode;
+        document.querySelectorAll('.cam-mode-btn').forEach(b => {
+          const active = b.dataset.cmode === camState.mode;
+          b.className = `cam-mode-btn px-3 py-1 rounded-full ${active ? 'bg-white text-black' : 'bg-white/15 text-white'}`;
+        });
+        const inner = document.getElementById('camera-shutter-inner');
+        inner.className = camState.mode === 'video' ? 'w-12 h-12 rounded-full bg-red-500 transition-all' : 'w-12 h-12 rounded-full bg-white transition-all';
+        startCameraStream();
+      });
+    });
+
+    document.getElementById('camera-shutter-btn').addEventListener('click', () => {
+      if (!camState.stream) return;
+      const videoEl = document.getElementById('camera-video');
+
+      if (camState.mode === 'photo') {
+        const c = document.createElement('canvas');
+        c.width = videoEl.videoWidth || 1080;
+        c.height = videoEl.videoHeight || 1080;
+        c.getContext('2d').drawImage(videoEl, 0, 0, c.width, c.height);
+        c.toBlob(blob => {
+          if (!blob) return;
+          const file = new File([blob], `snap_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          camState.capturedFile = file;
+          camState.capturedUrl = URL.createObjectURL(file);
+          camState.capturedType = 'image';
+          stopCameraStream();
+          videoEl.classList.add('hidden');
+          const capImg = document.getElementById('camera-captured-img');
+          capImg.src = camState.capturedUrl;
+          capImg.classList.remove('hidden');
+          document.getElementById('camera-live-controls').classList.add('hidden');
+          document.getElementById('camera-preview-controls').classList.remove('hidden');
+        }, 'image/jpeg', 0.9);
+      } else {
+        if (camState.recorder && camState.recorder.state === 'recording') {
+          camState.recorder.stop();
+          return;
+        }
+        camState.chunks = [];
+        const mime = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 'video/webm';
+        camState.recorder = new MediaRecorder(camState.stream, { mimeType: mime });
+        camState.recorder.ondataavailable = e => { if (e.data.size > 0) camState.chunks.push(e.data); };
+        camState.recorder.onstop = () => {
+          clearInterval(camState.recTimer);
+          document.getElementById('camera-rec-badge').classList.add('hidden');
+          document.getElementById('camera-shutter-inner').className = 'w-12 h-12 rounded-full bg-red-500 transition-all';
+          const blob = new Blob(camState.chunks, { type: mime });
+          const ext = mime.includes('mp4') ? 'mp4' : 'webm';
+          const file = new File([blob], `reel_${Date.now()}.${ext}`, { type: mime });
+          camState.capturedFile = file;
+          camState.capturedUrl = URL.createObjectURL(file);
+          camState.capturedType = 'video';
+          stopCameraStream();
+          videoEl.classList.add('hidden');
+          const capVid = document.getElementById('camera-captured-video');
+          capVid.src = camState.capturedUrl;
+          capVid.classList.remove('hidden');
+          document.getElementById('camera-live-controls').classList.add('hidden');
+          document.getElementById('camera-preview-controls').classList.remove('hidden');
+        };
+        camState.recorder.start();
+        camState.recSeconds = 0;
+        document.getElementById('camera-rec-timer').textContent = '00:00';
+        document.getElementById('camera-rec-badge').classList.remove('hidden');
+        document.getElementById('camera-shutter-inner').className = 'w-6 h-6 rounded-md bg-red-500 transition-all';
+        camState.recTimer = setInterval(() => {
+          camState.recSeconds += 1;
+          const m = String(Math.floor(camState.recSeconds / 60)).padStart(2, '0');
+          const s = String(camState.recSeconds % 60).padStart(2, '0');
+          document.getElementById('camera-rec-timer').textContent = `${m}:${s}`;
+        }, 1000);
+      }
+    });
+
+    document.getElementById('camera-retake-btn').addEventListener('click', () => {
+      document.getElementById('camera-captured-img').classList.add('hidden');
+      document.getElementById('camera-captured-video').classList.add('hidden');
+      document.getElementById('camera-live-controls').classList.remove('hidden');
+      document.getElementById('camera-preview-controls').classList.add('hidden');
+      startCameraStream();
+    });
+
+    document.getElementById('camera-use-btn').addEventListener('click', () => {
+      if (!camState.capturedFile) return;
+      const captured = camState.capturedFile;
+      closeCameraModal();
+      if (document.getElementById('create-modal').classList.contains('hidden')) {
+        openCreate(camState.capturedType === 'video' ? 'reel' : 'post');
+      } else if (camState.capturedType === 'video' && state.createKind === 'post') {
+        // Keep post or reel as selected
+      }
+      validateAndAddFiles([captured]);
+    });
+
+    // =========================================================================
+    // SUPABASE STORAGE (XHR REAL-TIME PROGRESS) + POSTGRES DATABASE
+    // =========================================================================
+    function uploadFileToSupabase(file, kind, onProgress) {
+      return new Promise((resolve, reject) => {
+        const cfg = loadSupaConfig();
+        if (!cfg.url.startsWith('https://') || !cfg.anonKey) {
+          reject(new Error('Supabase is not configured. Open settings to add your Supabase URL and Key.'));
+          return;
+        }
+        const token = state.currentUser.supaToken || cfg.anonKey;
+        const userId = state.currentUser.supaUserId || state.currentUser.username || 'user';
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `${userId}/${kind}/${Date.now()}_${safeName}`;
+        const endpoint = `${cfg.url}/storage/v1/object/snapgram-media/${path}`;
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', endpoint, true);
+        xhr.setRequestHeader('apikey', cfg.anonKey);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.timeout = 120000;
+
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable && onProgress) {
+            onProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve({
+              publicUrl: `${cfg.url}/storage/v1/object/public/snapgram-media/${path}`,
+              storagePath: path
+            });
+          } else {
+            let msg = `Storage upload failed (${xhr.status})`;
+            try {
+              const j = JSON.parse(xhr.responseText);
+              msg = j.message || j.error || msg;
+            } catch {}
+            reject(new Error(msg));
+          }
+        };
+        xhr.onerror = () => reject(new Error('Network error during upload. Check your internet connection.'));
+        xhr.ontimeout = () => reject(new Error('Upload timed out due to poor connection. Tap Retry.'));
+        xhr.send(file);
+      });
+    }
+
+    async function saveMediaRecordToSupabase(record) {
+      const cfg = loadSupaConfig();
+      const token = state.currentUser.supaToken || cfg.anonKey;
+      const res = await fetch(`${cfg.url}/rest/v1/snapgram_media`, {
+        method: 'POST',
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify(record)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Database save failed (${res.status}). Make sure you ran supabase_setup.sql.`);
+      }
+      const rows = await res.json();
+      return rows[0] || record;
+    }
+
+    async function loadRemoteMedia() {
+      const cfg = loadSupaConfig();
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey) return;
+      try {
+        const token = state.currentUser.supaToken || cfg.anonKey;
+        const res = await fetch(`${cfg.url}/rest/v1/snapgram_media?select=*&order=created_at.desc`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        const now = Date.now();
+        state.posts = [];
+        state.reels = [];
+        state.stories = [];
+
+        rows.forEach(r => {
+          const urls = Array.isArray(r.media_urls) ? r.media_urls : [];
+          const types = Array.isArray(r.media_types) ? r.media_types : [];
+          if (r.kind === 'story') {
+            const exp = r.expires_at ? new Date(r.expires_at).getTime() : (new Date(r.created_at).getTime() + 86400000);
+            if (exp > now) {
+              state.stories.push({
+                id: r.id,
+                userId: r.user_id,
+                username: r.username,
+                privacy: r.privacy === 'private' ? 'Followers' : 'Public',
+                img: urls[0] || '',
+                mediaType: types[0] || 'image',
+                storagePaths: r.storage_paths || [],
+                caption: r.caption || '',
+                expiresAt: exp,
+                viewed: false
+              });
+            }
+          } else if (r.kind === 'reel') {
+            state.reels.push({
+              id: r.id,
+              userId: r.user_id,
+              username: r.username,
+              img: urls[0] || '',
+              videoUrl: urls[0] || '',
+              mediaType: types[0] || 'video',
+              thumbnailUrl: r.thumbnail_url || '',
+              storagePaths: r.storage_paths || [],
+              caption: r.caption || '',
+              audio: 'Original Audio · ' + r.username,
+              views: r.views_count || 0,
+              likes: r.likes_count || 0,
+              liked: false,
+              saved: false,
+              playing: false
+            });
+          } else {
+            state.posts.push({
+              id: r.id,
+              userId: r.user_id,
+              username: r.username,
+              location: r.location || '',
+              img: urls[0] || '',
+              mediaType: types[0] || 'image',
+              media: urls.map((u, i) => ({ url: u, type: types[i] || 'image' })),
+              storagePaths: r.storage_paths || [],
+              caption: r.caption || '',
+              taggedUsers: Array.isArray(r.tagged_users) ? r.tagged_users : [],
+              likes: r.likes_count || 0,
+              liked: false,
+              saved: false,
+              following: true,
+              isFeatured: Boolean(r.is_featured),
+              featuredLabel: r.is_featured ? 'Featured by Snapgram' : '',
+              comments: Array.isArray(r.comments) ? r.comments : []
+            });
+          }
+        });
+        render();
+      } catch {}
+    }
+
+    async function deleteMediaItem(kind, id) {
+      const list = kind === 'post' ? state.posts : kind === 'reel' ? state.reels : state.stories;
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+
+      const isOwner = item.username === state.currentUser.username || (state.currentUser.supaUserId && item.userId === state.currentUser.supaUserId);
+      if (!isOwner) {
+        showToast('You can only delete your own content');
+        return;
+      }
+
+      const cfg = loadSupaConfig();
+      const token = state.currentUser.supaToken || cfg.anonKey;
+      if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken) {
+        try {
+          await fetch(`${cfg.url}/rest/v1/snapgram_media?id=eq.${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+          });
+          for (const sp of (item.storagePaths || [])) {
+            await fetch(`${cfg.url}/storage/v1/object/snapgram-media/${sp}`, {
+              method: 'DELETE',
+              headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+            });
+          }
+        } catch {}
+      }
+
+      if (kind === 'post') state.posts = state.posts.filter(x => x.id !== id);
+      else if (kind === 'reel') state.reels = state.reels.filter(x => x.id !== id);
+      else state.stories = state.stories.filter(x => x.id !== id);
+      showToast(`${kind.charAt(0).toUpperCase() + kind.slice(1)} deleted`);
+      render();
+    }
+
+    async function executePublish() {
+      if (uploadState.isUploading) return;
+      if (!uploadState.files.length) {
+        showToast('Please select or capture a photo or video first');
+        return;
+      }
+      if (!navigator.onLine) {
+        document.getElementById('upload-error-text').textContent = 'You appear to be offline. Connect to the internet and retry.';
+        document.getElementById('upload-error-box').classList.remove('hidden');
+        return;
+      }
+
+      uploadState.isUploading = true;
+      const submitBtn = document.getElementById('create-submit-btn');
+      submitBtn.disabled = true;
+      const progWrap = document.getElementById('upload-progress-wrap');
+      const progBar = document.getElementById('upload-progress-bar');
+      const progPct = document.getElementById('upload-percent-text');
+      const progStatus = document.getElementById('upload-status-text');
+      const errBox = document.getElementById('upload-error-box');
+      errBox.classList.add('hidden');
+      progWrap.classList.remove('hidden');
+      progBar.style.width = '5%';
+      progPct.textContent = '5%';
+
+      try {
+        let filesToUpload = [...uploadState.files];
+        // If story has canvas edits, export composited image
+        if (state.createKind === 'story' && filesToUpload[0].type === 'image') {
+          progStatus.textContent = 'Rendering story edits...';
+          const canvas = document.getElementById('story-editor-canvas');
+          const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+          if (blob) {
+            filesToUpload[0] = { file: new File([blob], `story_${Date.now()}.jpg`, { type: 'image/jpeg' }), url: filesToUpload[0].url, type: 'image' };
+          }
+        }
+
+        const uploadedUrls = [];
+        const uploadedTypes = [];
+        const storagePaths = [];
+        const total = filesToUpload.length + (state.createKind === 'reel' && uploadState.reelThumb ? 1 : 0);
+
+        for (let i = 0; i < filesToUpload.length; i++) {
+          const item = filesToUpload[i];
+          progStatus.textContent = `Uploading ${i + 1} of ${filesToUpload.length}...`;
+          const res = await uploadFileToSupabase(item.file, state.createKind, pct => {
+            const overall = Math.round(((i + pct / 100) / total) * 90);
+            progBar.style.width = overall + '%';
+            progPct.textContent = overall + '%';
+          });
+          uploadedUrls.push(res.publicUrl);
+          uploadedTypes.push(item.type);
+          storagePaths.push(res.storagePath);
+        }
+
+        let thumbUrl = '';
+        if (state.createKind === 'reel' && uploadState.reelThumb) {
+          progStatus.textContent = 'Uploading reel cover...';
+          const tres = await uploadFileToSupabase(uploadState.reelThumb.file, 'thumb', () => {});
+          thumbUrl = tres.publicUrl;
+          storagePaths.push(tres.storagePath);
+        }
+
+        progStatus.textContent = 'Saving to database...';
+        progBar.style.width = '95%';
+        progPct.textContent = '95%';
+
+        const caption = document.getElementById('create-caption').value.trim();
+        const location = document.getElementById('create-location').value.trim();
+        const rawTags = document.getElementById('create-tags').value.trim();
+        const taggedUsers = rawTags ? rawTags.split(/[\s,]+/).filter(Boolean).map(t => t.startsWith('@') ? t : '@' + t) : [];
+        const hashtags = (caption.match(/#[a-zA-Z0-9_]+/g) || []).map(h => h.toLowerCase());
+        const privacy = state.currentUser.isPrivate ? 'private' : 'public';
+        const expiresAt = state.createKind === 'story' ? new Date(Date.now() + 86400000).toISOString() : null;
+
+        let savedRow = null;
+        if (state.currentUser.supaUserId) {
+          savedRow = await saveMediaRecordToSupabase({
+            user_id: state.currentUser.supaUserId,
+            username: state.currentUser.username,
+            kind: state.createKind,
+            media_urls: uploadedUrls,
+            media_types: uploadedTypes,
+            storage_paths: storagePaths,
+            thumbnail_url: thumbUrl,
+            caption,
+            hashtags,
+            tagged_users: taggedUsers,
+            location,
+            privacy,
+            expires_at: expiresAt
+          });
+        }
+
+        const recordId = savedRow?.id || (state.createKind[0] + Date.now());
+        if (state.createKind === 'post') {
+          state.posts.unshift({
+            id: recordId,
+            userId: state.currentUser.supaUserId,
+            username: state.currentUser.username,
+            userAvatar: state.currentUser.avatar,
+            location,
+            img: uploadedUrls[0],
+            mediaType: uploadedTypes[0],
+            media: uploadedUrls.map((u, idx) => ({ url: u, type: uploadedTypes[idx] })),
+            storagePaths,
+            caption,
+            taggedUsers,
+            likes: 0,
+            liked: false,
+            saved: false,
+            following: true,
+            isFeatured: false,
+            featuredLabel: '',
+            comments: []
+          });
+          state.activeTab = 'home';
+        } else if (state.createKind === 'reel') {
+          state.reels.unshift({
+            id: recordId,
+            userId: state.currentUser.supaUserId,
+            username: state.currentUser.username,
+            img: uploadedUrls[0],
+            videoUrl: uploadedUrls[0],
+            mediaType: 'video',
+            thumbnailUrl: thumbUrl,
+            storagePaths,
+            caption,
+            audio: 'Original Audio · ' + state.currentUser.username,
+            views: 1,
+            likes: 0,
+            liked: false,
+            saved: false,
+            playing: false
+          });
+          state.activeTab = 'reels';
+        } else {
+          state.stories.unshift({
+            id: recordId,
+            userId: state.currentUser.supaUserId,
+            username: state.currentUser.username,
+            privacy: state.currentUser.isPrivate ? 'Followers' : 'Public',
+            img: uploadedUrls[0],
+            mediaType: uploadedTypes[0],
+            storagePaths,
+            caption,
+            expiresAt: Date.now() + 86400000,
+            viewed: false
+          });
+          state.activeTab = 'home';
+        }
+
+        progBar.style.width = '100%';
+        progPct.textContent = '100%';
+        uploadState.files = [];
+        uploadState.reelThumb = null;
+        document.getElementById('create-caption').value = '';
+        document.getElementById('create-location').value = '';
+        document.getElementById('create-tags').value = '';
+        document.getElementById('reel-thumb-preview').classList.add('hidden');
+        document.getElementById('create-modal').classList.add('hidden');
+        showToast(`Published ${state.createKind}!`);
+        render();
+      } catch (err) {
+        document.getElementById('upload-error-text').textContent = err.message || 'Upload failed. Please try again.';
+        errBox.classList.remove('hidden');
+        progWrap.classList.add('hidden');
+      } finally {
+        uploadState.isUploading = false;
+        submitBtn.disabled = false;
+      }
+    }
+
+    document.getElementById('create-form').addEventListener('submit', e => {
+      e.preventDefault();
+      executePublish();
+    });
+    document.getElementById('upload-retry-btn').addEventListener('click', executePublish);
+
+    // Periodically clean up expired 24h stories
+    setInterval(() => {
+      const before = state.stories.length;
+      filterActiveStories();
+      if (state.stories.length !== before && state.isAuthenticated && state.activeTab === 'home') {
+        render();
+      }
+    }, 30000);
+
+    window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) loadRemoteMedia(); });
   
     // Pull-to-refresh (drag down from top) for touch & mouse
     (function initPullToRefresh() {
@@ -2098,12 +3178,14 @@
           email = supaData.user?.email || email;
           fullName = meta.full_name || meta.name || fullName;
           avatar = meta.avatar_url || meta.picture || avatar;
+          state.currentUser.supaToken = supaData.access_token || '';
+          state.currentUser.supaUserId = supaData.user?.id || '';
         }
 
         if (!email) throw new Error('Google account email unavailable');
         if (avatar) state.currentUser.avatar = avatar;
         const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9._]/g, '') || 'snapuser';
-        completeLogin(email, username, fullName);
+        completeLogin(email, username, fullName, state.currentUser.supaToken, state.currentUser.supaUserId);
       } catch (err) {
         state.authError = err.message || 'Google One Tap sign-in failed.';
         render();
@@ -2221,7 +3303,7 @@
         }
         const cbType = params.get('type');
         history.replaceState(null, '', window.location.pathname + window.location.search);
-        completeLogin(email, username, fullName);
+        completeLogin(email, username, fullName, accessToken, user.id || '');
         if (cbType === 'signup') {
           showToast('Email confirmed! Welcome to Snapgram.');
         }
