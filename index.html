@@ -315,6 +315,7 @@
       authMode: 'login',
       authError: '',
       authMessage: '',
+      pendingConfirmationEmail: '',
       activeTab: 'home',
       theme: 'light',
       createKind: 'post',
@@ -1382,7 +1383,12 @@
                   <input id="auth-otp" type="text" placeholder="6-digit OTP code" class="w-full px-2.5 py-2 rounded-sm border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-xs focus:outline-none focus:border-zinc-400" />
                 ` : ''}
                 ${state.authError ? `<p class="text-xs text-red-500 text-center pt-1">${state.authError}</p>` : ''}
-                ${state.authMessage ? `<p class="text-xs text-emerald-500 text-center pt-1">${state.authMessage}</p>` : ''}
+                ${state.authMessage ? `<p class="text-xs text-emerald-600 dark:text-emerald-400 text-center pt-1 leading-relaxed">${state.authMessage}</p>` : ''}
+                ${state.pendingConfirmationEmail ? `
+                  <button type="button" id="resend-confirm-btn" class="w-full py-1.5 rounded-lg border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-xs font-semibold hover:bg-emerald-500/10 transition">
+                    Resend confirmation email
+                  </button>
+                ` : ''}
                 <button type="submit" class="w-full mt-2 py-1.5 rounded-lg bg-[#0095F6] hover:bg-[#1877F2] text-white font-semibold text-sm transition">
                   ${m === 'login' ? 'Log in' : m === 'signup' ? 'Sign up' : m === 'otp' ? 'Verify OTP' : 'Send login link'}
                 </button>
@@ -1479,10 +1485,13 @@
         const accounts = loadAccounts();
         const supaCfg = loadSupaConfig();
 
-        // Optional Live Supabase Auth (HTTPS)
+        // Live Supabase Auth (HTTPS) with real confirmation email support
         if (supaCfg.url.startsWith('https://') && supaCfg.anonKey && (state.authMode === 'login' || state.authMode === 'signup')) {
           try {
-            const endpoint = state.authMode === 'signup' ? '/auth/v1/signup' : '/auth/v1/token?grant_type=password';
+            const redirectTo = window.location.origin + window.location.pathname;
+            const endpoint = state.authMode === 'signup'
+              ? `/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`
+              : '/auth/v1/token?grant_type=password';
             const res = await fetch(supaCfg.url.replace(/\/$/, '') + endpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', apikey: supaCfg.anonKey },
@@ -1499,15 +1508,26 @@
             });
             const data = await res.json();
             if (!res.ok) {
-              state.authError = data.error_description || data.msg || 'Supabase authentication failed';
+              const errMsg = data.error_description || data.msg || data.message || 'Authentication failed';
+              state.authError = errMsg;
+              if (errMsg.toLowerCase().includes('not confirmed') && identifier.includes('@')) {
+                state.pendingConfirmationEmail = identifier;
+              }
               render();
               return;
             }
+            if (state.authMode === 'signup' && !data.access_token && !data.session?.access_token) {
+              state.pendingConfirmationEmail = identifier;
+              state.authMessage = `Confirmation email sent to ${identifier}. Check your inbox (and spam) and click the link to verify your account.`;
+              render();
+              return;
+            }
+            state.pendingConfirmationEmail = '';
             const meta = data.user?.user_metadata || {};
             completeLogin(data.user?.email || identifier, meta.username, meta.full_name);
             return;
           } catch {
-            state.authError = 'Could not reach Supabase Auth URL. Falling back check failed.';
+            state.authError = 'Could not reach Supabase Auth URL. Check your Supabase URL and Anon Key.';
             render();
             return;
           }
@@ -1590,11 +1610,43 @@
         }
       });
 
+      const resendBtn = document.getElementById('resend-confirm-btn');
+      if (resendBtn) {
+        resendBtn.addEventListener('click', async () => {
+          const supaCfg = loadSupaConfig();
+          if (!supaCfg.url.startsWith('https://') || !supaCfg.anonKey || !state.pendingConfirmationEmail) return;
+          try {
+            const redirectTo = window.location.origin + window.location.pathname;
+            const res = await fetch(`${supaCfg.url.replace(/\/$/, '')}/auth/v1/resend`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', apikey: supaCfg.anonKey },
+              body: JSON.stringify({
+                type: 'signup',
+                email: state.pendingConfirmationEmail,
+                options: { emailRedirectTo: redirectTo }
+              })
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.msg || err.message || 'Could not resend email');
+            }
+            state.authError = '';
+            state.authMessage = `Confirmation email resent to ${state.pendingConfirmationEmail}.`;
+            showToast('Confirmation email resent');
+            render();
+          } catch (err) {
+            state.authError = err.message || 'Failed to resend confirmation email.';
+            render();
+          }
+        });
+      }
+
       document.querySelectorAll('.auth-mode-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           state.authMode = btn.dataset.mode;
           state.authError = '';
           state.authMessage = '';
+          state.pendingConfirmationEmail = '';
           render();
         });
       });
@@ -2070,6 +2122,7 @@
           auto_select: false,
           cancel_on_tap_outside: true,
           context: 'signin',
+          itp_support: true,
           use_fedcm_for_prompt: true
         });
         googleOneTapInitializedClient = cfg.googleClientId;
@@ -2159,8 +2212,12 @@
         if (meta.avatar_url || meta.picture) {
           state.currentUser.avatar = meta.avatar_url || meta.picture;
         }
+        const cbType = params.get('type');
         history.replaceState(null, '', window.location.pathname + window.location.search);
         completeLogin(email, username, fullName);
+        if (cbType === 'signup') {
+          showToast('Email confirmed! Welcome to Snapgram.');
+        }
       } catch (err) {
         state.authError = 'Google sign-in could not be verified. Check Supabase URL/Key.';
         render();
