@@ -241,6 +241,10 @@
           <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
         </button>
       </div>
+      <div id="create-drafts-wrap" class="hidden pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Saved Drafts</p>
+        <div id="create-drafts-list" class="space-y-1.5 max-h-36 overflow-y-auto"></div>
+      </div>
       <input id="media-file-input" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
     </div>
   </div>
@@ -280,6 +284,17 @@
               <span>Camera</span>
             </button>
           </div>
+          <div id="story-extra-modes" class="hidden pt-2 space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="story-collage-btn" class="py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-900">
+                <i data-lucide="layout-grid" class="w-4 h-4 text-pink-500"></i> Collage (2-4)
+              </button>
+              <button type="button" id="story-template-btn" class="py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-900">
+                <i data-lucide="palette" class="w-4 h-4 text-purple-500"></i> Template
+              </button>
+            </div>
+            <input id="story-collage-input" type="file" multiple accept="image/jpeg,image/png,image/webp" class="hidden" />
+          </div>
         </div>
 
         <!-- Media Preview Stage -->
@@ -315,6 +330,20 @@
               { id: 'sepia(0.35) brightness(1.05)', label: 'Valencia' }
             ].map((f, idx) => `<button type="button" class="post-filter-btn px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-200 dark:border-zinc-700 ${idx === 0 ? 'bg-pink-500 text-white border-pink-500' : ''}" data-filter="${f.id}">${f.label}</button>`).join('')}
           </div>
+          <div class="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+            <div>
+              <label class="text-zinc-500 block">Brightness</label>
+              <input id="post-adj-bright" type="range" min="60" max="150" value="100" class="w-full accent-pink-500" />
+            </div>
+            <div>
+              <label class="text-zinc-500 block">Contrast</label>
+              <input id="post-adj-contrast" type="range" min="60" max="150" value="100" class="w-full accent-pink-500" />
+            </div>
+            <div>
+              <label class="text-zinc-500 block">Saturation</label>
+              <input id="post-adj-sat" type="range" min="0" max="180" value="100" class="w-full accent-pink-500" />
+            </div>
+          </div>
         </div>
 
         <!-- Reel Trimming & Cover Frame Controls (shown for Reel video) -->
@@ -332,6 +361,15 @@
               <label class="text-[11px] text-zinc-500">End (sec)</label>
               <input id="reel-trim-end" type="range" min="1" max="60" step="0.5" value="60" class="w-full accent-pink-500" />
             </div>
+          </div>
+          <div class="flex items-center justify-between gap-2 pt-1">
+            <div class="flex items-center gap-1">
+              <span class="text-[11px] font-semibold text-zinc-500 mr-1">Speed:</span>
+              ${['0.5','1','1.5','2'].map(sp => `<button type="button" class="reel-speed-btn px-2 py-1 rounded-lg text-xs font-semibold ${sp === '1' ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}" data-speed="${sp}">${sp}x</button>`).join('')}
+            </div>
+            <button type="button" id="reel-voiceover-btn" class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="mic" class="w-3.5 h-3.5 text-pink-500"></i> <span id="reel-vo-label">Voiceover</span>
+            </button>
           </div>
           <button type="button" id="reel-capture-cover-btn" class="w-full py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold">
             Set Current Video Frame as Cover
@@ -352,9 +390,21 @@
             </div>
             <button type="button" id="story-clear-edits" class="text-xs font-semibold text-red-500">Reset</button>
           </div>
-          <div class="flex gap-1.5">
-            <input id="story-text-input" type="text" placeholder="Add text to story..." class="flex-1 px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-xs focus:outline-none" />
+          <div class="flex gap-1.5 items-center">
+            <select id="story-font-select" class="px-2 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-[11px] font-semibold">
+              <option value="Inter, sans-serif">Modern</option>
+              <option value="Georgia, serif">Classic</option>
+              <option value="monospace">Typewriter</option>
+              <option value="cursive">Neon</option>
+            </select>
+            <input id="story-font-size" type="range" min="20" max="54" value="32" class="w-16 accent-pink-500" title="Text Size" />
+            <input id="story-text-input" type="text" placeholder="Add text or @mention..." class="flex-1 px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-xs focus:outline-none" />
             <button type="button" id="story-add-text-btn" class="px-3 py-1.5 rounded-lg bg-pink-500 text-white text-xs font-semibold">Add</button>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" id="story-add-poll-btn" class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold">📊 Poll</button>
+            <button type="button" id="story-add-quiz-btn" class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold">❓ Quiz</button>
+            <button type="button" id="story-add-mention-btn" class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold">@ Mention</button>
           </div>
           <div class="flex flex-wrap items-center justify-between gap-1.5 text-lg">
             <div class="flex flex-wrap gap-1.5">
@@ -383,14 +433,15 @@
           <div id="create-preview-grid" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
         </div>
 
-        <!-- Story Bottom Share Bar (Your Story + Share buttons) -->
+        <!-- Story Bottom Share Bar (Save Draft + Close Friends + Your Story) -->
         <div id="story-bottom-bar" class="hidden mt-auto p-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 bg-white dark:bg-zinc-950">
-          <button type="button" id="story-share-your-btn" class="flex-1 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-bold flex items-center justify-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-gradient-to-tr from-amber-500 to-pink-500"></span>
-            <span>Your Story</span>
+          <button type="button" id="story-save-draft-btn" class="px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-xs font-bold">Draft</button>
+          <button type="button" id="story-close-friends-btn" class="flex-1 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Close Friends</span>
           </button>
           <button type="button" id="story-share-now-btn" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold">
-            Share
+            Your Story
           </button>
         </div>
 
@@ -436,9 +487,22 @@
           <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
         </button>
 
+        <div class="px-4 py-3 flex items-center gap-3">
+          <i data-lucide="file-text" class="w-4 h-4 text-zinc-500 shrink-0"></i>
+          <input id="create-alt-text" type="text" placeholder="Alt text (accessibility description)" class="flex-1 text-sm bg-transparent focus:outline-none" />
+        </div>
+        <label class="px-4 py-3 flex items-center justify-between text-sm cursor-pointer">
+          <span class="text-zinc-600 dark:text-zinc-400">Allow Comments</span>
+          <input id="create-allow-comments" type="checkbox" checked class="w-4 h-4 accent-pink-500" />
+        </label>
         <div class="px-4 py-3 flex items-center justify-between text-sm">
           <span class="text-zinc-600 dark:text-zinc-400">Audience</span>
           <span id="create-audience-label" class="font-semibold text-xs px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800">Public</span>
+        </div>
+        <div class="p-4">
+          <button type="button" id="create-save-draft-btn" class="w-full py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 text-xs font-bold hover:bg-zinc-50 dark:hover:bg-zinc-900 transition">
+            Save as Draft
+          </button>
         </div>
       </form>
     </div>
@@ -632,14 +696,31 @@
         <button type="button" class="music-tab-btn flex-1 py-2 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-300" data-mtab="local">Device Audio</button>
       </div>
 
-      <!-- One-Tap Search & Select Music Tab -->
-      <div id="music-tab-browse" class="flex-1 flex flex-col min-h-0 space-y-3">
+      <!-- One-Tap Search, Trending & Recently Used Music Tab -->
+      <div id="music-tab-browse" class="flex-1 flex flex-col min-h-0 space-y-2.5">
         <div class="relative shrink-0">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-zinc-400"></i>
           <input id="music-search-input" type="text" placeholder="Search any song or artist..." class="w-full pl-9 pr-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm focus:outline-none" />
         </div>
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+          ${['Trending','Bollywood','Lo-Fi','Pop Hits','Punjabi','Chill'].map(chip => `<button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="${chip}">${chip}</button>`).join('')}
+        </div>
+        <div id="music-recent-wrap" class="hidden shrink-0 space-y-1">
+          <p class="text-[10px] font-semibold uppercase text-zinc-400">Recently Used</p>
+          <div id="music-recent-list" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
+        </div>
         <div id="music-search-results" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 pr-1">
           <p class="text-xs text-zinc-500 py-8 text-center">Loading songs...</p>
+        </div>
+        <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 grid grid-cols-2 gap-3 text-[11px] shrink-0">
+          <div>
+            <label class="text-zinc-500 block">Start Offset (sec): <span id="music-offset-val">0</span>s</label>
+            <input id="music-offset-slider" type="range" min="0" max="25" value="0" class="w-full accent-pink-500" />
+          </div>
+          <div>
+            <label class="text-zinc-500 block">Volume: <span id="music-vol-val">100</span>%</label>
+            <input id="music-vol-slider" type="range" min="10" max="100" value="100" class="w-full accent-pink-500" />
+          </div>
         </div>
       </div>
 
@@ -723,6 +804,7 @@
         posts: [],
         reels: [],
         stories: [],
+      archivedStories: [],
         followersCount: 0,
         followingCount: 0,
         followStatus: 'none', // 'none' | 'pending' | 'accepted'
@@ -851,7 +933,12 @@
 
     function filterActiveStories() {
       const now = Date.now();
-      state.stories = state.stories.filter(s => !s.expiresAt || s.expiresAt > now);
+      const active = [];
+      state.stories.forEach(s => {
+        if (!s.expiresAt || s.expiresAt > now) active.push(s);
+        else if (!state.archivedStories.some(a => a.id === s.id)) state.archivedStories.push(s);
+      });
+      state.stories = active;
     }
 
     function renderHome() {
@@ -1318,7 +1405,7 @@
       const u = state.currentUser;
       const userPosts = state.posts.filter(p => p.username === u.username);
       const userReels = state.reels.filter(r => r.username === u.username);
-      const items = state.profileTab === 'posts' ? userPosts : state.profileTab === 'reels' ? userReels : state.posts.filter(p => p.saved);
+      const items = state.profileTab === 'posts' ? userPosts : state.profileTab === 'reels' ? userReels : state.profileTab === 'archive' ? state.archivedStories.filter(s => s.username === u.username) : state.posts.filter(p => p.saved);
       return `
         <div class="max-w-3xl mx-auto px-4 py-5 md:py-8 space-y-6">
           <!-- Instagram Profile Top Bar -->
@@ -1410,6 +1497,9 @@
             </button>
             <button class="profile-tab-btn flex-1 py-3 flex justify-center ${state.profileTab === 'saved' ? 'border-t-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white' : 'text-zinc-400'}" data-ptab="saved" aria-label="Saved">
               <i data-lucide="bookmark" class="w-5 h-5"></i>
+            </button>
+            <button class="profile-tab-btn flex-1 py-3 flex justify-center ${state.profileTab === 'archive' ? 'border-t-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white' : 'text-zinc-400'}" data-ptab="archive" aria-label="Story Archive">
+              <i data-lucide="archive" class="w-5 h-5"></i>
             </button>
           </div>
 
@@ -2920,7 +3010,6 @@
       }
     });
 
-    document.getElementById('story-share-your-btn').addEventListener('click', executePublish);
     document.getElementById('story-share-now-btn').addEventListener('click', executePublish);
 
     // Post Crop & Filter buttons
@@ -5079,6 +5168,249 @@
         }
         return;
       }
+    });
+
+
+    // =========================================================================
+    // V2 CREATION ENHANCEMENTS: DRAFTS, TEMPLATES, COLLAGE, ADJUSTMENTS, SPEED, VOICEOVER
+    // =========================================================================
+    Object.assign(uploadState, {
+      bright: 100,
+      contrast: 100,
+      sat: 100,
+      playbackRate: 1,
+      voiceoverFile: null,
+      closeFriends: false,
+      storyFont: 'Inter, sans-serif',
+      storyFontSize: 32,
+      musicOffset: 0,
+      musicVolume: 1
+    });
+
+    function getDraftsKey() {
+      return 'snapgram_drafts_' + (state.currentUser.username || 'user');
+    }
+    function loadLocalDrafts() {
+      try { return JSON.parse(localStorage.getItem(getDraftsKey()) || '[]'); } catch { return []; }
+    }
+    function saveLocalDrafts(list) {
+      try { localStorage.setItem(getDraftsKey(), JSON.stringify(list)); } catch {}
+    }
+
+    function renderCreateDrafts() {
+      const wrap = document.getElementById('create-drafts-wrap');
+      const list = document.getElementById('create-drafts-list');
+      const drafts = loadLocalDrafts();
+      if (!drafts.length) { wrap.classList.add('hidden'); return; }
+      wrap.classList.remove('hidden');
+      list.innerHTML = drafts.map(d => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/70 text-xs">
+          <button type="button" class="resume-draft-btn text-left flex-1 truncate font-semibold" data-did="${d.id}">
+            [${d.kind.toUpperCase()}] ${d.caption || 'Untitled draft'}
+          </button>
+          <button type="button" class="delete-draft-btn text-red-500 px-2 font-bold" data-did="${d.id}">✕</button>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.resume-draft-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const d = loadLocalDrafts().find(x => x.id === btn.dataset.did);
+          if (!d) return;
+          document.getElementById('create-picker-modal').classList.add('hidden');
+          openCreate(d.kind);
+          document.getElementById('create-caption').value = d.caption || '';
+          document.getElementById('create-location').value = d.location || '';
+          document.getElementById('create-tags').value = d.tags || '';
+          showToast('Draft loaded — select media to publish');
+        });
+      });
+
+      document.querySelectorAll('.delete-draft-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          saveLocalDrafts(loadLocalDrafts().filter(x => x.id !== btn.dataset.did));
+          renderCreateDrafts();
+        });
+      });
+    }
+
+    // Show drafts & story extra modes when opening picker / story
+    const origOpenPicker = openCreatePicker;
+    openCreatePicker = function() {
+      renderCreateDrafts();
+      origOpenPicker();
+    };
+
+    const origUpdateKindUI = updateCreateKindUI;
+    updateCreateKindUI = function() {
+      origUpdateKindUI();
+      const extra = document.getElementById('story-extra-modes');
+      if (extra) extra.classList.toggle('hidden', state.createKind !== 'story');
+    };
+
+    // Story Gradient Templates
+    const STORY_TEMPLATES = [
+      ['#f97316', '#ec4899', '#9333ea'],
+      ['#0f172a', '#1e293b', '#334155'],
+      ['#06b6d4', '#3b82f6', '#6366f1'],
+      ['#10b981', '#14b8a6', '#0ea5e9']
+    ];
+    let storyTplIdx = 0;
+    document.getElementById('story-template-btn')?.addEventListener('click', () => {
+      const cols = STORY_TEMPLATES[storyTplIdx % STORY_TEMPLATES.length];
+      storyTplIdx += 1;
+      const c = document.createElement('canvas');
+      c.width = 540; c.height = 960;
+      const ctx = c.getContext('2d');
+      const g = ctx.createLinearGradient(0, 0, c.width, c.height);
+      g.addColorStop(0, cols[0]); g.addColorStop(0.5, cols[1]); g.addColorStop(1, cols[2]);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, c.width, c.height);
+      c.toBlob(blob => {
+        if (!blob) return;
+        validateAndAddFiles([new File([blob], `template_${Date.now()}.jpg`, { type: 'image/jpeg' })]);
+      }, 'image/jpeg', 0.92);
+    });
+
+    // Story Collage (2-4 photos)
+    document.getElementById('story-collage-btn')?.addEventListener('click', () => {
+      document.getElementById('story-collage-input').click();
+    });
+    document.getElementById('story-collage-input')?.addEventListener('change', async e => {
+      const files = Array.from(e.target.files || []).slice(0, 4);
+      if (files.length < 2) { showToast('Select 2 to 4 photos for a collage'); return; }
+      const c = document.createElement('canvas');
+      c.width = 540; c.height = 960;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#09090b'; ctx.fillRect(0, 0, c.width, c.height);
+      const imgs = await Promise.all(files.map(f => new Promise(res => {
+        const im = new Image(); im.onload = () => res(im); im.src = URL.createObjectURL(f);
+      })));
+      const cols = imgs.length <= 2 ? 1 : 2;
+      const rows = Math.ceil(imgs.length / cols);
+      const cw = c.width / cols, ch = c.height / rows;
+      imgs.forEach((im, idx) => {
+        const x = (idx % cols) * cw, y = Math.floor(idx / cols) * ch;
+        ctx.drawImage(im, x + 4, y + 4, cw - 8, ch - 8);
+      });
+      c.toBlob(blob => {
+        if (blob) validateAndAddFiles([new File([blob], `collage_${Date.now()}.jpg`, { type: 'image/jpeg' })]);
+      }, 'image/jpeg', 0.9);
+      e.target.value = '';
+    });
+
+    // Story Fonts, Size, Poll, Quiz, @Mention
+    document.getElementById('story-font-select')?.addEventListener('change', e => { uploadState.storyFont = e.target.value; });
+    document.getElementById('story-font-size')?.addEventListener('input', e => { uploadState.storyFontSize = Number(e.target.value); });
+    document.getElementById('story-add-poll-btn')?.addEventListener('click', () => {
+      uploadState.storyOverlays.push({ type: 'text', value: '📊 Poll: Yes  |  No', x: 270, y: 520, color: '#ffffff' });
+      redrawStoryCanvas();
+    });
+    document.getElementById('story-add-quiz-btn')?.addEventListener('click', () => {
+      uploadState.storyOverlays.push({ type: 'text', value: '❓ Quiz: Tap to answer!', x: 270, y: 580, color: '#facc15' });
+      redrawStoryCanvas();
+    });
+    document.getElementById('story-add-mention-btn')?.addEventListener('click', () => {
+      const inp = document.getElementById('story-text-input');
+      inp.value = '@' + (state.exploreUsers[0]?.username || 'username') + ' ';
+      inp.focus();
+    });
+
+    // Close Friends & Drafts
+    document.getElementById('story-close-friends-btn')?.addEventListener('click', () => {
+      uploadState.closeFriends = true;
+      executePublish();
+    });
+    document.getElementById('story-share-now-btn')?.addEventListener('click', () => {
+      uploadState.closeFriends = false;
+    });
+    function saveCurrentAsDraft() {
+      const drafts = loadLocalDrafts();
+      drafts.unshift({
+        id: 'dr_' + Date.now(),
+        kind: state.createKind,
+        caption: document.getElementById('create-caption').value.trim(),
+        location: document.getElementById('create-location').value.trim(),
+        tags: document.getElementById('create-tags').value.trim(),
+        createdAt: Date.now()
+      });
+      saveLocalDrafts(drafts.slice(0, 15));
+      document.getElementById('create-modal').classList.add('hidden');
+      showToast('Saved to Drafts ✓');
+    }
+    document.getElementById('story-save-draft-btn')?.addEventListener('click', saveCurrentAsDraft);
+    document.getElementById('create-save-draft-btn')?.addEventListener('click', saveCurrentAsDraft);
+
+    // Post Brightness, Contrast, Saturation Live Preview
+    function applyPostAdjustments() {
+      const b = document.getElementById('post-adj-bright')?.value || 100;
+      const c = document.getElementById('post-adj-contrast')?.value || 100;
+      const s = document.getElementById('post-adj-sat')?.value || 100;
+      uploadState.bright = b; uploadState.contrast = c; uploadState.sat = s;
+      const adj = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
+      const base = uploadState.filter === 'none' ? '' : uploadState.filter;
+      const combined = `${base} ${adj}`.trim();
+      const heroImg = document.getElementById('create-hero-img');
+      if (heroImg) heroImg.style.filter = combined;
+    }
+    ['post-adj-bright', 'post-adj-contrast', 'post-adj-sat'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', applyPostAdjustments);
+    });
+
+    // Reel Speed & Voiceover
+    document.querySelectorAll('.reel-speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        uploadState.playbackRate = Number(btn.dataset.speed || 1);
+        document.querySelectorAll('.reel-speed-btn').forEach(b => {
+          const active = Number(b.dataset.speed) === uploadState.playbackRate;
+          b.className = `reel-speed-btn px-2 py-1 rounded-lg text-xs font-semibold ${active ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
+        });
+        const v = document.getElementById('create-hero-video');
+        if (v) v.playbackRate = uploadState.playbackRate;
+      });
+    });
+
+    let voRecorder = null, voChunks = [];
+    document.getElementById('reel-voiceover-btn')?.addEventListener('click', async () => {
+      const lbl = document.getElementById('reel-vo-label');
+      if (voRecorder && voRecorder.state === 'recording') {
+        voRecorder.stop();
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        voChunks = [];
+        voRecorder = new MediaRecorder(stream);
+        voRecorder.ondataavailable = e => { if (e.data.size) voChunks.push(e.data); };
+        voRecorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          const blob = new Blob(voChunks, { type: 'audio/webm' });
+          uploadState.voiceoverFile = new File([blob], `vo_${Date.now()}.webm`, { type: 'audio/webm' });
+          lbl.textContent = 'VO Recorded ✓';
+          showToast('Voiceover recorded ✓');
+        };
+        voRecorder.start();
+        lbl.textContent = 'Stop VO...';
+        showToast('Recording voiceover...');
+      } catch {
+        showToast('Microphone permission denied');
+      }
+    });
+
+    // Music Trending Chips, Recently Used, Volume & Offset
+    document.querySelectorAll('.music-trend-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('music-search-input').value = btn.dataset.q;
+        searchOnlineMusic(btn.dataset.q);
+      });
+    });
+    document.getElementById('music-offset-slider')?.addEventListener('input', e => {
+      uploadState.musicOffset = Number(e.target.value);
+      document.getElementById('music-offset-val').textContent = e.target.value;
+    });
+    document.getElementById('music-vol-slider')?.addEventListener('input', e => {
+      uploadState.musicVolume = Number(e.target.value) / 100;
+      document.getElementById('music-vol-val').textContent = e.target.value;
+      musicPreviewAudio.volume = uploadState.musicVolume;
     });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
