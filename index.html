@@ -424,6 +424,15 @@
               <i data-lucide="mic" class="w-3.5 h-3.5 text-pink-500"></i> <span id="reel-vo-label">Voiceover</span>
             </button>
           </div>
+          <div class="flex items-center justify-between gap-2 pt-1">
+            <span class="text-[11px] font-semibold text-zinc-400">Upload Quality:</span>
+            <div class="flex items-center gap-1">
+              <button type="button" class="reel-quality-btn px-2 py-1 rounded-lg text-[11px] font-semibold bg-pink-500 text-white" data-rqual="4K">4K</button>
+              <button type="button" class="reel-quality-btn px-2 py-1 rounded-lg text-[11px] font-semibold bg-zinc-800 text-zinc-200" data-rqual="1080p">1080p HD</button>
+              <button type="button" class="reel-quality-btn px-2 py-1 rounded-lg text-[11px] font-semibold bg-zinc-800 text-zinc-200" data-rqual="720p">720p</button>
+            </div>
+          </div>
+          <p id="reel-duration-info" class="text-[11px] text-zinc-400">Max Reel duration: 3 minutes (180s)</p>
           <button type="button" id="reel-capture-cover-btn" class="w-full py-1.5 rounded-xl bg-zinc-800 text-xs font-semibold">Set Current Frame as Cover</button>
         </div>
 
@@ -1544,11 +1553,11 @@
             return `
             <div class="relative w-full max-w-sm aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-xl flex items-end">
               ${r.mediaType === 'video' || (r.videoUrl || r.img || '').match(/\.(mp4|mov|webm)|video/i) || r.isVideo
-                ? `<video id="reel-vid-${r.id}" src="${r.videoUrl || r.img}" ${r.thumbnailUrl ? `poster="${r.thumbnailUrl}"` : ''} playsinline loop muted class="absolute inset-0 w-full h-full object-cover"></video>`
+                ? `<video id="reel-vid-${r.id}" src="${r.videoUrl || r.img}" ${r.thumbnailUrl ? `poster="${r.thumbnailUrl}"` : ''} preload="metadata" playsinline loop class="absolute inset-0 w-full h-full object-cover bg-black"></video>`
                 : `<img src="${r.img}" alt="Reel" class="absolute inset-0 w-full h-full object-cover" />`
               }
               <button class="reel-play-toggle absolute inset-0 flex items-center justify-center z-10" data-reel-id="${r.id}" aria-label="Toggle Play">
-                ${r.playing ? '' : '<div class="p-4 rounded-full bg-black/60 text-white"><i data-lucide="play" class="w-8 h-8"></i></div>'}
+                <div id="reel-play-icon-${r.id}" class="p-4 rounded-full bg-black/60 text-white ${r.playing ? 'hidden' : ''}"><i data-lucide="play" class="w-8 h-8"></i></div>
               </button>
               ${isOwner ? `
                 <button class="delete-reel-btn absolute top-3 right-3 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-red-500 transition" data-reel-id="${r.id}" title="Delete Reel" aria-label="Delete Reel">
@@ -2750,13 +2759,28 @@
         btn.addEventListener('click', () => {
           const r = state.reels.find(x => x.id === btn.dataset.reelId);
           if (!r) return;
-          r.playing = !r.playing;
           const vid = document.getElementById(`reel-vid-${r.id}`);
-          if (vid) {
-            if (r.playing) { vid.muted = false; vid.play().catch(() => {}); r.views += 1; }
-            else { vid.pause(); }
+          const iconEl = document.getElementById(`reel-play-icon-${r.id}`);
+          if (!vid) return;
+          if (vid.paused) {
+            // Pause any other playing reels
+            document.querySelectorAll('video[id^="reel-vid-"]').forEach(v => {
+              if (v !== vid) { v.pause(); }
+            });
+            document.querySelectorAll('[id^="reel-play-icon-"]').forEach(ic => ic.classList.remove('hidden'));
+            state.reels.forEach(x => { x.playing = (x.id === r.id); });
+            vid.muted = false;
+            vid.play().catch(() => {
+              vid.muted = true;
+              vid.play().catch(() => {});
+            });
+            if (iconEl) iconEl.classList.add('hidden');
+            r.views += 1;
+          } else {
+            vid.pause();
+            r.playing = false;
+            if (iconEl) iconEl.classList.remove('hidden');
           }
-          render();
         });
       });
 
@@ -3533,7 +3557,7 @@
     const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
     const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'];
     const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
-    const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+    const MAX_VIDEO_BYTES = 500 * 1024 * 1024;
 
     const uploadState = {
       files: [],       // [{ file, url, type: 'image'|'video' }]
@@ -3891,11 +3915,28 @@
           heroImg.classList.add('hidden');
           heroVid.src = activeItem.url;
           heroVid.onloadedmetadata = () => {
-            const dur = Math.max(1, Math.round(heroVid.duration || 60));
+            const rawDur = heroVid.duration || 0;
+            const dur = Math.max(1, Math.round(rawDur || 60));
             const sInp = document.getElementById('reel-trim-start');
             const eInp = document.getElementById('reel-trim-end');
-            sInp.max = dur; eInp.max = dur; eInp.value = dur;
+            sInp.max = dur; eInp.max = dur; eInp.value = Math.min(dur, 180);
             updateReelTrimLabel();
+            const durInfo = document.getElementById('reel-duration-info');
+            const errBox = document.getElementById('upload-error-box');
+            const errTxt = document.getElementById('upload-error-text');
+            const nextBtn = document.getElementById('create-header-action');
+            if (state.createKind === 'reel' && rawDur > 180) {
+              const mins = Math.floor(rawDur / 60);
+              const secs = Math.round(rawDur % 60);
+              if (errTxt) errTxt.textContent = `Video is ${mins}m ${secs}s. Reels must be 3 minutes (180s) or shorter.`;
+              if (errBox) errBox.classList.remove('hidden');
+              if (nextBtn) nextBtn.disabled = true;
+              if (durInfo) durInfo.textContent = `Too long (${mins}m ${secs}s) — max 3 minutes allowed`;
+            } else {
+              if (errBox) errBox.classList.add('hidden');
+              if (nextBtn) nextBtn.disabled = false;
+              if (durInfo) durInfo.textContent = `Duration: ${rawDur.toFixed(1)}s (Max 3:00) · Quality: ${uploadState.reelQuality}`;
+            }
           };
           heroVid.classList.remove('hidden');
         } else {
@@ -4190,12 +4231,12 @@
         const needAudio = camState.mode === 'video';
         try {
           camState.stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: camState.facingMode },
+            video: { facingMode: camState.facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
             audio: needAudio
           });
         } catch {
           camState.stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: camState.facingMode },
+            video: { facingMode: camState.facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
             audio: false
           });
         }
@@ -5898,6 +5939,7 @@
       contrast: 100,
       sat: 100,
       playbackRate: 1,
+      reelQuality: '4K',
       voiceoverFile: null,
       closeFriends: false,
       storyFont: 'Inter, sans-serif',
@@ -7060,6 +7102,20 @@
           showToast('Please select a video for Reel');
           return;
         }
+        if (igpState.mode === 'reel') {
+          const checkUrl = URL.createObjectURL(f);
+          const probe = document.createElement('video');
+          probe.preload = 'metadata';
+          probe.onloadedmetadata = () => {
+            if (probe.duration > 180) {
+              showToast('Reel cannot be longer than 3 minutes (180s)');
+              igpState.files = [];
+              renderIgpPreviewAndGrid();
+            }
+            URL.revokeObjectURL(checkUrl);
+          };
+          probe.src = checkUrl;
+        }
         const item = { file: f, url: URL.createObjectURL(f), type: isVid ? 'video' : 'image' };
         if (igpState.mode === 'post') igpState.files.push(item);
         else igpState.files = [item];
@@ -7241,6 +7297,20 @@
     setInterval(() => {
       if (state.isAuthenticated) loadNotifications();
     }, 15000);
+
+
+    document.querySelectorAll('.reel-quality-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        uploadState.reelQuality = btn.dataset.rqual || '4K';
+        document.querySelectorAll('.reel-quality-btn').forEach(b => {
+          const active = b.dataset.rqual === uploadState.reelQuality;
+          b.className = `reel-quality-btn px-2 py-1 rounded-lg text-[11px] font-semibold ${active ? 'bg-pink-500 text-white' : 'bg-zinc-800 text-zinc-200'}`;
+        });
+        const durInfo = document.getElementById('reel-duration-info');
+        if (durInfo) durInfo.textContent = `Max Reel duration: 3 minutes (180s) · Selected: ${uploadState.reelQuality}`;
+        showToast(`Reel quality set to ${uploadState.reelQuality}`);
+      });
+    });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); loadNotifications(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
