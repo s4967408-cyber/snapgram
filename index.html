@@ -540,6 +540,222 @@
     </div>
   </div>
 
+  <!-- 3-Screen Instagram-Style Story Creation System (Matches User Screenshots) -->
+  <div id="story-flow-modal" class="hidden fixed inset-0 z-[55] bg-black text-white flex flex-col select-none">
+
+    <!-- SCREEN 1: Add to story (Dark Gallery Picker) -->
+    <div id="sf-screen-1" class="flex-1 flex flex-col overflow-hidden">
+      <header class="h-14 px-4 flex items-center justify-between shrink-0">
+        <button id="sf-close-1" type="button" class="p-2 -ml-2 rounded-full hover:bg-white/10" aria-label="Close"><i data-lucide="x" class="w-6 h-6"></i></button>
+        <h3 class="text-base font-bold">Add to story</h3>
+        <button id="sf-settings-btn" type="button" class="p-2 -mr-2 rounded-full hover:bg-white/10" aria-label="Story Settings"><i data-lucide="settings" class="w-5 h-5"></i></button>
+      </header>
+
+      <!-- Top 3 Cards: Templates | Music | Collage -->
+      <div class="px-4 pb-3 grid grid-cols-3 gap-2.5 shrink-0">
+        <button id="sf-card-templates" type="button" class="py-3 px-2 rounded-2xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1.5 transition">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center">
+            <i data-lucide="palette" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="text-xs font-semibold">Templates</span>
+        </button>
+        <button id="sf-card-music" type="button" class="py-3 px-2 rounded-2xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1.5 transition">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-pink-500 flex items-center justify-center">
+            <i data-lucide="music" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="text-xs font-semibold">Music</span>
+        </button>
+        <button id="sf-card-collage" type="button" class="py-3 px-2 rounded-2xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1.5 transition">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-500 flex items-center justify-center">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="text-xs font-semibold">Collage</span>
+        </button>
+      </div>
+
+      <!-- Recents & Select Bar -->
+      <div class="px-4 py-2 flex items-center justify-between shrink-0">
+        <button id="sf-recents-btn" type="button" class="flex items-center gap-1 text-sm font-bold">
+          <span>Recents</span>
+          <i data-lucide="chevron-down" class="w-4 h-4"></i>
+        </button>
+        <button id="sf-select-btn" type="button" class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold flex items-center gap-1.5">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Select</span>
+        </button>
+      </div>
+
+      <!-- 3-Column Dark Grid (Camera Tile + Gallery Tiles) -->
+      <div class="flex-1 overflow-y-auto px-1 pb-4">
+        <div id="sf-gallery-grid" class="grid grid-cols-3 gap-0.5">
+          <button id="sf-tile-camera" type="button" class="aspect-[9/16] bg-zinc-900 hover:bg-zinc-800 flex flex-col items-center justify-center gap-2 transition">
+            <i data-lucide="camera" class="w-7 h-7 text-white"></i>
+            <span class="text-[11px] text-zinc-400 font-medium">Camera</span>
+          </button>
+          <button id="sf-tile-gallery" type="button" class="col-span-2 aspect-[18/16] bg-zinc-900/70 hover:bg-zinc-800/80 flex flex-col items-center justify-center gap-2 p-4 text-center transition">
+            <i data-lucide="images" class="w-7 h-7 text-pink-500"></i>
+            <span class="text-xs font-semibold">Tap to choose Photo or Video from Phone Gallery</span>
+            <span class="text-[11px] text-zinc-400">JPG, PNG, WEBP, MP4, MOV</span>
+          </button>
+        </div>
+      </div>
+
+      <input id="sf-file-input" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
+      <input id="sf-collage-input" type="file" multiple accept="image/jpeg,image/png,image/webp" class="hidden" />
+    </div>
+
+    <!-- SCREEN 2: Full-Screen Story Editor -->
+    <div id="sf-screen-2" class="hidden flex-1 flex flex-col relative overflow-hidden bg-black">
+      <!-- Story Media Canvas / Video Stage -->
+      <div class="relative flex-1 flex items-center justify-center overflow-hidden bg-black">
+        <canvas id="sf-editor-canvas" class="hidden max-w-full max-h-full aspect-[9/16] touch-none cursor-crosshair"></canvas>
+        <video id="sf-editor-video" playsinline autoplay loop muted class="hidden w-full h-full object-contain"></video>
+
+        <!-- Top-Left Back Button -->
+        <button id="sf-back-to-1" type="button" class="absolute top-4 left-4 z-30 w-10 h-10 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center hover:bg-black/80" aria-label="Back">
+          <i data-lucide="arrow-left" class="w-5 h-5 text-white"></i>
+        </button>
+
+        <!-- Top-Right Vertical Floating Tool Column (Aa, Sticker, Music, Effects, Draw, More) -->
+        <div class="absolute top-4 right-3 z-30 flex flex-col items-center gap-2.5">
+          <button id="sf-tool-text" type="button" class="w-10 h-10 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center text-sm font-extrabold hover:bg-black/80" title="Add Text">Aa</button>
+          <button id="sf-tool-sticker" type="button" class="w-10 h-10 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center hover:bg-black/80" title="Stickers & @Mention"><i data-lucide="smile" class="w-5 h-5"></i></button>
+          <button id="sf-tool-music" type="button" class="w-10 h-10 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center hover:bg-black/80" title="Add Music"><i data-lucide="music" class="w-5 h-5"></i></button>
+          <button id="sf-tool-filter" type="button" class="w-10 h-10 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center hover:bg-black/80" title="Effects & Filters"><i data-lucide="sparkles" class="w-5 h-5"></i></button>
+          <button id="sf-tool-draw" type="button" class="w-10 h-10 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center hover:bg-black/80" title="Draw"><i data-lucide="pen-tool" class="w-5 h-5"></i></button>
+          <button id="sf-tool-more" type="button" class="w-8 h-8 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center hover:bg-black/80" title="More"><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+        </div>
+
+        <!-- Floating Tool Drawer (opens when Aa, Sticker, Draw, or More is tapped) -->
+        <div id="sf-tool-drawer" class="hidden absolute inset-x-3 top-16 z-30 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 rounded-2xl p-3 space-y-2.5">
+          <div id="sf-drawer-text" class="hidden space-y-2">
+            <div class="flex gap-1.5 items-center">
+              <select id="sf-font-select" class="px-2 py-1.5 rounded-lg bg-zinc-800 text-xs font-semibold">
+                <option value="Inter, sans-serif">Modern</option>
+                <option value="Georgia, serif">Classic</option>
+                <option value="monospace">Typewriter</option>
+                <option value="cursive">Neon</option>
+              </select>
+              <input id="sf-text-input" type="text" placeholder="Type text or @mention..." class="flex-1 px-2.5 py-1.5 rounded-lg bg-zinc-800 text-xs focus:outline-none" />
+              <button id="sf-text-add-btn" type="button" class="px-3 py-1.5 rounded-lg bg-pink-500 text-xs font-bold">Done</button>
+            </div>
+            <div class="flex gap-2 items-center">
+              ${['#ffffff','#ec4899','#facc15','#38bdf8','#22c55e','#000000'].map(c => `<button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:${c}" data-color="${c}"></button>`).join('')}
+            </div>
+          </div>
+
+          <div id="sf-drawer-sticker" class="hidden space-y-2">
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" id="sf-st-mention" class="px-2.5 py-1 rounded-lg bg-zinc-800 text-xs font-semibold">@Mention</button>
+              <button type="button" id="sf-st-location" class="px-2.5 py-1 rounded-lg bg-zinc-800 text-xs font-semibold">📍 Location</button>
+              <button type="button" id="sf-st-poll" class="px-2.5 py-1 rounded-lg bg-zinc-800 text-xs font-semibold">📊 Poll</button>
+              <button type="button" id="sf-st-quiz" class="px-2.5 py-1 rounded-lg bg-zinc-800 text-xs font-semibold">❓ Quiz</button>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xl">
+              ${['❤️','🔥','😂','✨','😍','🙌','🎵','💯','🦋','😎'].map(e => `<button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="${e}">${e}</button>`).join('')}
+            </div>
+          </div>
+
+          <div id="sf-drawer-draw" class="hidden flex items-center justify-between gap-2">
+            <div class="flex gap-2 items-center">
+              ${['#ffffff','#ec4899','#facc15','#38bdf8','#22c55e'].map(c => `<button type="button" class="sf-color-dot w-6 h-6 rounded-full border border-white/50" style="background:${c}" data-color="${c}"></button>`).join('')}
+            </div>
+            <button id="sf-draw-reset" type="button" class="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold">Clear</button>
+          </div>
+
+          <div id="sf-drawer-more" class="hidden space-y-2 text-xs">
+            <input id="sf-hide-from-input" type="text" placeholder="Hide story from (@user1, @user2)" class="w-full px-2.5 py-1.5 rounded-lg bg-zinc-800 focus:outline-none" />
+            <button id="sf-save-draft-btn" type="button" class="w-full py-1.5 rounded-lg bg-zinc-800 font-semibold">Save Draft</button>
+          </div>
+        </div>
+
+        <!-- Bottom-Left "Add a caption..." overlay -->
+        <div class="absolute bottom-3 left-3 right-3 z-20">
+          <input id="sf-caption-input" type="text" placeholder="Add a caption..." class="w-full px-3 py-2 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs placeholder:text-white/75 focus:outline-none" />
+        </div>
+      </div>
+
+      <!-- Screen 2 Bottom Action Bar: [Your story] [Close Friends] [Blue >] -->
+      <div class="p-3 bg-black flex items-center gap-2 shrink-0">
+        <button id="sf-quick-your-story" type="button" class="flex-1 py-2.5 px-3 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center gap-2 text-xs font-semibold hover:bg-zinc-800 transition">
+          <span id="sf-your-mini-avatar" class="w-5 h-5 rounded-full overflow-hidden bg-zinc-700 inline-flex items-center justify-center text-[10px] font-bold">Y</span>
+          <span>Your story</span>
+        </button>
+        <button id="sf-quick-close-friends" type="button" class="flex-1 py-2.5 px-3 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center gap-2 text-xs font-semibold hover:bg-zinc-800 transition">
+          <span class="w-5 h-5 rounded-full bg-emerald-500 text-white inline-flex items-center justify-center text-[10px]">★</span>
+          <span>Close Friends</span>
+        </button>
+        <button id="sf-go-step-3" type="button" class="w-11 h-11 rounded-full bg-[#4F5BD5] text-white flex items-center justify-center shrink-0 hover:opacity-90 transition" aria-label="Next">
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: Story Share Bottom Sheet (Mini preview top + White Share sheet bottom) -->
+    <div id="sf-screen-3" class="hidden flex-1 flex flex-col justify-between bg-black/95">
+      <div class="flex-1 flex items-center justify-center p-4 relative">
+        <button id="sf-back-to-2" type="button" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-zinc-900 flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+        <div class="w-36 aspect-[9/16] rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-2xl">
+          <img id="sf-step3-preview-img" src="" alt="Story preview" class="hidden w-full h-full object-cover" />
+          <video id="sf-step3-preview-vid" muted playsinline autoplay loop class="hidden w-full h-full object-cover"></video>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-t-3xl p-5 space-y-4 shadow-2xl">
+        <div class="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700 mx-auto"></div>
+        <h3 class="text-center text-base font-bold">Share</h3>
+
+        <div class="space-y-2.5">
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div id="sf-share-avatar" class="w-10 h-10 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm"></div>
+              <div>
+                <p class="text-sm font-semibold">Your story</p>
+                <p class="text-xs text-zinc-500">Visible to your followers</p>
+              </div>
+            </div>
+            <input type="radio" name="sf-audience" value="your_story" checked class="w-5 h-5 accent-[#4F5BD5]" />
+          </label>
+
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center text-base">★</div>
+              <div>
+                <p class="text-sm font-semibold">Close Friends</p>
+                <p class="text-xs text-zinc-500">Only close friends can view</p>
+              </div>
+            </div>
+            <input type="radio" name="sf-audience" value="close_friends" class="w-5 h-5 accent-emerald-500" />
+          </label>
+
+          <button id="sf-share-dm-btn" type="button" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full border border-zinc-200 dark:border-zinc-700 flex items-center justify-center"><i data-lucide="send" class="w-4 h-4"></i></div>
+              <span class="text-sm font-semibold">Message</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
+          </button>
+
+          <button id="sf-step3-draft-btn" type="button" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full border border-zinc-200 dark:border-zinc-700 flex items-center justify-center"><i data-lucide="plus" class="w-5 h-5"></i></div>
+              <div class="text-left">
+                <p class="text-sm font-semibold">Save as Draft</p>
+                <p class="text-[11px] text-zinc-500">Keep in drafts to finish later</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
+          </button>
+        </div>
+
+        <button id="sf-final-share-btn" type="button" class="w-full py-3 rounded-xl bg-[#4F5BD5] text-white font-bold text-sm hover:opacity-95 transition">
+          Share
+        </button>
+      </div>
+    </div>
+
+  </div>
+
   <!-- Live Camera Modal -->
   <div id="camera-modal" class="hidden fixed inset-0 z-[60] bg-black flex flex-col justify-between text-white select-none">
     <div class="relative z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
@@ -2080,7 +2296,7 @@
       if (myStoryAddBtn) {
         myStoryAddBtn.addEventListener('click', e => {
           e.stopPropagation();
-          openCreate('story');
+          openStoryFlow();
         });
       }
 
@@ -2092,7 +2308,7 @@
           if (myStories.length) {
             openStoryViewer(myStories, 0);
           } else {
-            openCreate('story');
+            openStoryFlow();
           }
         });
       }
@@ -3324,8 +3540,7 @@
     });
     document.getElementById('pick-create-story').addEventListener('click', () => {
       document.getElementById('create-picker-modal').classList.add('hidden');
-      uploadState.files = [];
-      openCreate('story');
+      openStoryFlow();
     });
     document.getElementById('pick-create-reel').addEventListener('click', () => {
       document.getElementById('create-picker-modal').classList.add('hidden');
@@ -4108,6 +4323,10 @@
       if (!camState.capturedFile) return;
       const captured = camState.capturedFile;
       closeCameraModal();
+      if (!document.getElementById('story-flow-modal').classList.contains('hidden')) {
+        loadMediaIntoStoryEditor(captured);
+        return;
+      }
       if (document.getElementById('create-modal').classList.contains('hidden')) {
         openCreate(camState.capturedType === 'video' ? 'reel' : 'post');
       } else if (camState.capturedType === 'video' && state.createKind === 'post') {
@@ -6363,6 +6582,287 @@
       if (!s) return;
       const list = (s.viewers || []).join(', ') || 'No views yet';
       showToast(`Viewed by: ${list}`);
+    });
+
+
+    // =========================================================================
+    // 3-SCREEN INSTAGRAM-STYLE STORY FLOW CONTROLLER (MATCHES SCREENSHOTS)
+    // =========================================================================
+    const sfState = {
+      screen: 1,
+      file: null,
+      url: '',
+      type: 'image',
+      filterIdx: 0,
+      drawMode: false,
+      color: '#ffffff',
+      font: 'Inter, sans-serif',
+      strokes: [],
+      overlays: [],
+      baseImg: null
+    };
+    const SF_FILTERS = ['none', 'sepia(0.28) saturate(1.35) brightness(1.06)', 'grayscale(1) contrast(1.2)', 'saturate(1.6) contrast(1.1)', 'sepia(0.45) brightness(0.95)'];
+
+    function openStoryFlow() {
+      sfState.screen = 1;
+      sfState.file = null;
+      sfState.url = '';
+      sfState.strokes = [];
+      sfState.overlays = [];
+      sfState.drawMode = false;
+      sfState.filterIdx = 0;
+      document.getElementById('sf-caption-input').value = '';
+      document.getElementById('sf-tool-drawer').classList.add('hidden');
+      showStoryFlowScreen(1);
+      document.getElementById('story-flow-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function showStoryFlowScreen(n) {
+      sfState.screen = n;
+      document.getElementById('sf-screen-1').classList.toggle('hidden', n !== 1);
+      document.getElementById('sf-screen-2').classList.toggle('hidden', n !== 2);
+      document.getElementById('sf-screen-3').classList.toggle('hidden', n !== 3);
+
+      const u = state.currentUser;
+      const miniAv = document.getElementById('sf-your-mini-avatar');
+      const shAv = document.getElementById('sf-share-avatar');
+      if (u.avatar) {
+        if (miniAv) miniAv.innerHTML = `<img src="${u.avatar}" class="w-full h-full object-cover" />`;
+        if (shAv) shAv.innerHTML = `<img src="${u.avatar}" class="w-full h-full object-cover" />`;
+      } else {
+        const ch = (u.fullName || u.username || 'Y').charAt(0).toUpperCase();
+        if (miniAv) miniAv.textContent = ch;
+        if (shAv) shAv.textContent = ch;
+      }
+
+      if (n === 3) {
+        const pImg = document.getElementById('sf-step3-preview-img');
+        const pVid = document.getElementById('sf-step3-preview-vid');
+        if (sfState.type === 'video') {
+          pImg.classList.add('hidden');
+          pVid.src = sfState.url;
+          pVid.classList.remove('hidden');
+        } else {
+          pVid.pause();
+          pVid.classList.add('hidden');
+          pImg.src = document.getElementById('sf-editor-canvas').toDataURL('image/jpeg', 0.8);
+          pImg.classList.remove('hidden');
+        }
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function redrawSfCanvas() {
+      const canvas = document.getElementById('sf-editor-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (sfState.baseImg) {
+        ctx.filter = SF_FILTERS[sfState.filterIdx] || 'none';
+        const img = sfState.baseImg;
+        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+        const w = img.width * scale, h = img.height * scale;
+        ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+        ctx.filter = 'none';
+      }
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      sfState.strokes.forEach(s => {
+        if (s.points.length < 2) return;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(s.points[0].x, s.points[0].y);
+        for (let i = 1; i < s.points.length; i++) ctx.lineTo(s.points[i].x, s.points[i].y);
+        ctx.stroke();
+      });
+      sfState.overlays.forEach(o => {
+        ctx.textAlign = 'center';
+        if (o.type === 'emoji') {
+          ctx.font = '68px sans-serif';
+          ctx.fillText(o.value, o.x, o.y);
+        } else {
+          ctx.font = `bold 32px ${o.font || 'Inter, sans-serif'}`;
+          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          const m = ctx.measureText(o.value);
+          ctx.fillRect(o.x - m.width / 2 - 16, o.y - 32, m.width + 32, 46);
+          ctx.fillStyle = o.color || '#ffffff';
+          ctx.fillText(o.value, o.x, o.y);
+        }
+      });
+    }
+
+    function loadMediaIntoStoryEditor(file) {
+      const isVid = ALLOWED_VIDEO_TYPES.includes(file.type) || /\.(mp4|mov|webm)$/i.test(file.name);
+      sfState.file = file;
+      sfState.url = URL.createObjectURL(file);
+      sfState.type = isVid ? 'video' : 'image';
+      sfState.strokes = [];
+      sfState.overlays = [];
+
+      const c = document.getElementById('sf-editor-canvas');
+      const v = document.getElementById('sf-editor-video');
+      if (isVid) {
+        c.classList.add('hidden');
+        v.src = sfState.url;
+        v.classList.remove('hidden');
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+        v.classList.add('hidden');
+        c.width = 540; c.height = 960;
+        c.classList.remove('hidden');
+        const im = new Image();
+        im.onload = () => { sfState.baseImg = im; redrawSfCanvas(); };
+        im.src = sfState.url;
+      }
+      showStoryFlowScreen(2);
+    }
+
+    // Screen 1 bindings
+    document.getElementById('sf-close-1').addEventListener('click', () => {
+      document.getElementById('sf-editor-video')?.pause();
+      document.getElementById('story-flow-modal').classList.add('hidden');
+    });
+    document.getElementById('sf-settings-btn').addEventListener('click', () => {
+      showStoryFlowScreen(2);
+      openSfDrawer('more');
+    });
+    document.getElementById('sf-tile-gallery').addEventListener('click', () => document.getElementById('sf-file-input').click());
+    document.getElementById('sf-recents-btn').addEventListener('click', () => document.getElementById('sf-file-input').click());
+    document.getElementById('sf-select-btn').addEventListener('click', () => document.getElementById('sf-file-input').click());
+    document.getElementById('sf-file-input').addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (f) loadMediaIntoStoryEditor(f);
+      e.target.value = '';
+    });
+    document.getElementById('sf-tile-camera').addEventListener('click', () => {
+      state.createKind = 'story';
+      openCameraModal();
+    });
+    document.getElementById('sf-card-music').addEventListener('click', openMusicModal);
+    document.getElementById('sf-card-templates').addEventListener('click', () => {
+      const cols = STORY_TEMPLATES[storyTplIdx % STORY_TEMPLATES.length];
+      storyTplIdx += 1;
+      const c = document.createElement('canvas');
+      c.width = 540; c.height = 960;
+      const ctx = c.getContext('2d');
+      const g = ctx.createLinearGradient(0, 0, c.width, c.height);
+      g.addColorStop(0, cols[0]); g.addColorStop(0.5, cols[1]); g.addColorStop(1, cols[2]);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
+      c.toBlob(b => { if (b) loadMediaIntoStoryEditor(new File([b], `tpl_${Date.now()}.jpg`, { type: 'image/jpeg' })); }, 'image/jpeg', 0.92);
+    });
+    document.getElementById('sf-card-collage').addEventListener('click', () => document.getElementById('sf-collage-input').click());
+    document.getElementById('sf-collage-input').addEventListener('change', async e => {
+      const files = Array.from(e.target.files || []).slice(0, 4);
+      if (files.length < 2) { showToast('Pick 2-4 photos for a collage'); return; }
+      const c = document.createElement('canvas'); c.width = 540; c.height = 960;
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#09090b'; ctx.fillRect(0, 0, c.width, c.height);
+      const imgs = await Promise.all(files.map(f => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.src = URL.createObjectURL(f); })));
+      const cols = imgs.length <= 2 ? 1 : 2, rows = Math.ceil(imgs.length / cols), cw = c.width / cols, ch = c.height / rows;
+      imgs.forEach((im, idx) => ctx.drawImage(im, (idx % cols) * cw + 4, Math.floor(idx / cols) * ch + 4, cw - 8, ch - 8));
+      c.toBlob(b => { if (b) loadMediaIntoStoryEditor(new File([b], `col_${Date.now()}.jpg`, { type: 'image/jpeg' })); }, 'image/jpeg', 0.9);
+      e.target.value = '';
+    });
+
+    // Screen 2 bindings (Right floating tools + Canvas draw + Bottom bar)
+    function openSfDrawer(which) {
+      const drawer = document.getElementById('sf-tool-drawer');
+      const panels = ['text', 'sticker', 'draw', 'more'];
+      const curVisible = !drawer.classList.contains('hidden') && !document.getElementById('sf-drawer-' + which).classList.contains('hidden');
+      if (curVisible) { drawer.classList.add('hidden'); sfState.drawMode = false; return; }
+      drawer.classList.remove('hidden');
+      panels.forEach(p => document.getElementById('sf-drawer-' + p).classList.toggle('hidden', p !== which));
+      sfState.drawMode = (which === 'draw');
+    }
+    document.getElementById('sf-back-to-1').addEventListener('click', () => { document.getElementById('sf-editor-video')?.pause(); showStoryFlowScreen(1); });
+    document.getElementById('sf-tool-text').addEventListener('click', () => openSfDrawer('text'));
+    document.getElementById('sf-tool-sticker').addEventListener('click', () => openSfDrawer('sticker'));
+    document.getElementById('sf-tool-music').addEventListener('click', openMusicModal);
+    document.getElementById('sf-tool-filter').addEventListener('click', () => {
+      sfState.filterIdx = (sfState.filterIdx + 1) % SF_FILTERS.length;
+      redrawSfCanvas();
+      showToast('Filter applied');
+    });
+    document.getElementById('sf-tool-draw').addEventListener('click', () => openSfDrawer('draw'));
+    document.getElementById('sf-tool-more').addEventListener('click', () => openSfDrawer('more'));
+    document.getElementById('sf-draw-reset').addEventListener('click', () => { sfState.strokes = []; sfState.overlays = []; redrawSfCanvas(); });
+
+    document.querySelectorAll('.sf-color-dot').forEach(d => d.addEventListener('click', () => { sfState.color = d.dataset.color; }));
+    document.getElementById('sf-font-select').addEventListener('change', e => { sfState.font = e.target.value; });
+    document.getElementById('sf-text-add-btn').addEventListener('click', () => {
+      const inp = document.getElementById('sf-text-input');
+      if (!inp.value.trim()) return;
+      sfState.overlays.push({ type: 'text', value: inp.value.trim(), x: 270, y: 260 + (sfState.overlays.length * 55) % 400, color: sfState.color, font: sfState.font });
+      inp.value = '';
+      document.getElementById('sf-tool-drawer').classList.add('hidden');
+      redrawSfCanvas();
+    });
+    document.querySelectorAll('.sf-emoji-pick').forEach(b => b.addEventListener('click', () => {
+      sfState.overlays.push({ type: 'emoji', value: b.dataset.emoji, x: 140 + (sfState.overlays.length * 70) % 280, y: 380 + (sfState.overlays.length * 60) % 280 });
+      document.getElementById('sf-tool-drawer').classList.add('hidden');
+      redrawSfCanvas();
+    }));
+    document.getElementById('sf-st-mention').addEventListener('click', () => { openSfDrawer('text'); document.getElementById('sf-text-input').value = '@'; document.getElementById('sf-text-input').focus(); });
+    document.getElementById('sf-st-location').addEventListener('click', () => { sfState.overlays.push({ type: 'text', value: '📍 ' + (state.currentUser.username || 'Location'), x: 270, y: 460, color: '#ffffff', font: sfState.font }); document.getElementById('sf-tool-drawer').classList.add('hidden'); redrawSfCanvas(); });
+    document.getElementById('sf-st-poll').addEventListener('click', () => { sfState.overlays.push({ type: 'text', value: '📊 Poll: Yes  |  No', x: 270, y: 520, color: '#ffffff', font: sfState.font }); document.getElementById('sf-tool-drawer').classList.add('hidden'); redrawSfCanvas(); });
+    document.getElementById('sf-st-quiz').addEventListener('click', () => { sfState.overlays.push({ type: 'text', value: '❓ Quiz: Tap to answer!', x: 270, y: 580, color: '#facc15', font: sfState.font }); document.getElementById('sf-tool-drawer').classList.add('hidden'); redrawSfCanvas(); });
+
+    (function bindSfCanvasDraw() {
+      const c = document.getElementById('sf-editor-canvas');
+      let drawing = false;
+      const pos = e => {
+        const r = c.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (cx - r.left) * (c.width / r.width), y: (cy - r.top) * (c.height / r.height) };
+      };
+      c.addEventListener('mousedown', e => { if (!sfState.drawMode) return; drawing = true; sfState.strokes.push({ color: sfState.color, points: [pos(e)] }); });
+      c.addEventListener('mousemove', e => { if (!drawing || !sfState.drawMode) return; sfState.strokes[sfState.strokes.length - 1].points.push(pos(e)); redrawSfCanvas(); });
+      window.addEventListener('mouseup', () => { drawing = false; });
+      c.addEventListener('touchstart', e => { if (!sfState.drawMode) return; drawing = true; sfState.strokes.push({ color: sfState.color, points: [pos(e)] }); }, { passive: true });
+      c.addEventListener('touchmove', e => { if (!drawing || !sfState.drawMode) return; if (e.cancelable) e.preventDefault(); sfState.strokes[sfState.strokes.length - 1].points.push(pos(e)); redrawSfCanvas(); }, { passive: false });
+      c.addEventListener('touchend', () => { drawing = false; });
+    })();
+
+    async function publishFromStoryFlow(closeFriendsOnly = false) {
+      if (!sfState.file) return;
+      let finalFile = sfState.file;
+      if (sfState.type === 'image') {
+        const c = document.getElementById('sf-editor-canvas');
+        const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.9));
+        if (blob) finalFile = new File([blob], `story_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      }
+      state.createKind = 'story';
+      uploadState.closeFriends = closeFriendsOnly;
+      uploadState.files = [{ file: finalFile, url: URL.createObjectURL(finalFile), type: sfState.type }];
+      document.getElementById('create-caption').value = document.getElementById('sf-caption-input').value.trim();
+      document.getElementById('sf-editor-video')?.pause();
+      document.getElementById('story-flow-modal').classList.add('hidden');
+      executePublish();
+    }
+
+    document.getElementById('sf-quick-your-story').addEventListener('click', () => publishFromStoryFlow(false));
+    document.getElementById('sf-quick-close-friends').addEventListener('click', () => publishFromStoryFlow(true));
+    document.getElementById('sf-go-step-3').addEventListener('click', () => showStoryFlowScreen(3));
+    document.getElementById('sf-back-to-2').addEventListener('click', () => showStoryFlowScreen(2));
+    document.getElementById('sf-final-share-btn').addEventListener('click', () => {
+      const aud = document.querySelector('input[name="sf-audience"]:checked')?.value || 'your_story';
+      publishFromStoryFlow(aud === 'close_friends');
+    });
+    document.getElementById('sf-save-draft-btn').addEventListener('click', () => {
+      const drafts = loadLocalDrafts();
+      drafts.unshift({ id: 'dr_' + Date.now(), kind: 'story', caption: document.getElementById('sf-caption-input').value.trim(), createdAt: Date.now() });
+      saveLocalDrafts(drafts.slice(0, 15));
+      document.getElementById('story-flow-modal').classList.add('hidden');
+      showToast('Story saved to Drafts ✓');
+    });
+    document.getElementById('sf-step3-draft-btn').addEventListener('click', () => document.getElementById('sf-save-draft-btn').click());
+    document.getElementById('sf-share-dm-btn').addEventListener('click', () => {
+      document.getElementById('story-flow-modal').classList.add('hidden');
+      state.activeTab = 'messages';
+      render();
+      openNewChatModal();
     });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
