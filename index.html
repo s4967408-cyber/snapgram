@@ -203,6 +203,77 @@
     </div>
   </div>
 
+  <!-- Instagram-Style Center (+) Create Screen (Matches Screenshot 14969.png: POST | STORY | REEL | LIVE) -->
+  <div id="ig-plus-modal" class="hidden fixed inset-0 z-[54] bg-black text-white flex flex-col select-none">
+    <!-- Top Header: X | New post | Next -->
+    <header class="h-14 px-4 flex items-center justify-between shrink-0 bg-black">
+      <button id="igp-close-btn" type="button" class="p-2 -ml-2 rounded-full hover:bg-white/10" aria-label="Close"><i data-lucide="x" class="w-6 h-6"></i></button>
+      <h3 id="igp-title" class="text-base font-bold">New post</h3>
+      <button id="igp-next-btn" type="button" class="text-sm font-bold text-[#4F5BD5] hover:opacity-80 disabled:opacity-40" disabled>Next</button>
+    </header>
+
+    <!-- Large Square Preview / Live Camera Stage -->
+    <div class="relative w-full aspect-square max-h-[46vh] bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0">
+      <div id="igp-empty-preview" class="text-center p-6 space-y-3">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center mx-auto">
+          <i data-lucide="image" class="w-8 h-8 text-white"></i>
+        </div>
+        <p class="text-sm font-semibold">Select a photo or video</p>
+        <button id="igp-hero-pick-btn" type="button" class="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-semibold">Choose from Gallery</button>
+      </div>
+      <img id="igp-preview-img" src="" alt="Preview" class="hidden w-full h-full object-contain" />
+      <video id="igp-preview-vid" controls playsinline class="hidden w-full h-full object-contain"></video>
+
+      <!-- LIVE Mode Stage -->
+      <div id="igp-live-stage" class="hidden absolute inset-0 bg-black flex flex-col items-center justify-center">
+        <video id="igp-live-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <div id="igp-live-badge" class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-md bg-red-600 text-[11px] font-bold flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+          <span>LIVE</span>
+          <span id="igp-live-timer">00:00</span>
+        </div>
+        <button id="igp-go-live-btn" type="button" class="absolute bottom-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 text-white text-xs font-bold shadow-lg">
+          Go Live
+        </button>
+      </div>
+    </div>
+
+    <!-- Recents & Select Bar -->
+    <div id="igp-recents-bar" class="px-4 py-2.5 flex items-center justify-between bg-black shrink-0">
+      <button id="igp-recents-btn" type="button" class="flex items-center gap-1 text-sm font-bold">
+        <span>Recents</span>
+        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+      </button>
+      <button id="igp-select-btn" type="button" class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold flex items-center gap-1.5">
+        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+        <span>Select</span>
+      </button>
+    </div>
+
+    <!-- 4-Column Gallery Grid + Floating Bottom-Right Mode Pill -->
+    <div class="relative flex-1 overflow-y-auto bg-black pb-20">
+      <div id="igp-grid" class="grid grid-cols-4 gap-0.5">
+        <button id="igp-tile-camera" type="button" class="aspect-square bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center">
+          <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+        </button>
+        <button id="igp-tile-gallery" type="button" class="aspect-square bg-zinc-900/70 hover:bg-zinc-800 flex flex-col items-center justify-center gap-1 p-1 text-center">
+          <i data-lucide="plus" class="w-5 h-5 text-pink-500"></i>
+          <span class="text-[10px] text-zinc-300 font-semibold">Gallery</span>
+        </button>
+      </div>
+
+      <!-- Floating Dark Pill: POST | STORY | REEL | LIVE -->
+      <div class="fixed bottom-4 right-3 z-30 bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-full px-2 py-1.5 flex items-center gap-1 shadow-2xl">
+        <button type="button" class="igp-mode-btn px-3 py-1.5 rounded-full text-xs font-bold tracking-wide text-white bg-white/15" data-igpmode="post">POST</button>
+        <button type="button" class="igp-mode-btn px-3 py-1.5 rounded-full text-xs font-bold tracking-wide text-zinc-400 hover:text-white" data-igpmode="story">STORY</button>
+        <button type="button" class="igp-mode-btn px-3 py-1.5 rounded-full text-xs font-bold tracking-wide text-zinc-400 hover:text-white" data-igpmode="reel">REEL</button>
+        <button type="button" class="igp-mode-btn px-3 py-1.5 rounded-full text-xs font-bold tracking-wide text-zinc-400 hover:text-white" data-igpmode="live">LIVE</button>
+      </div>
+    </div>
+
+    <input id="igp-file-input" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
+  </div>
+
   <!-- Clean Instagram-Style Create Picker Sheet (+ Button) -->
   <div id="create-picker-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
     <div class="w-full sm:max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl">
@@ -4327,6 +4398,14 @@
         loadMediaIntoStoryEditor(captured);
         return;
       }
+      if (!document.getElementById('ig-plus-modal').classList.contains('hidden')) {
+        const item = { file: captured, url: URL.createObjectURL(captured), type: camState.capturedType };
+        if (igpState.mode === 'post') igpState.files.push(item);
+        else igpState.files = [item];
+        igpState.activeIdx = igpState.files.length - 1;
+        renderIgpPreviewAndGrid();
+        return;
+      }
       if (document.getElementById('create-modal').classList.contains('hidden')) {
         openCreate(camState.capturedType === 'video' ? 'reel' : 'post');
       } else if (camState.capturedType === 'video' && state.createKind === 'post') {
@@ -6864,6 +6943,245 @@
       render();
       openNewChatModal();
     });
+
+
+    // =========================================================================
+    // CENTER (+) INSTAGRAM CREATE SCREEN CONTROLLER (POST | STORY | REEL | LIVE)
+    // =========================================================================
+    const igpState = {
+      mode: 'post', // 'post' | 'story' | 'reel' | 'live'
+      files: [],    // [{ file, url, type }]
+      activeIdx: 0,
+      liveStream: null,
+      isLive: false,
+      liveTimer: null,
+      liveSec: 0
+    };
+
+    function stopIgpLive() {
+      clearInterval(igpState.liveTimer);
+      igpState.isLive = false;
+      document.getElementById('igp-live-badge')?.classList.add('hidden');
+      const goBtn = document.getElementById('igp-go-live-btn');
+      if (goBtn) goBtn.textContent = 'Go Live';
+      if (igpState.liveStream) {
+        igpState.liveStream.getTracks().forEach(t => t.stop());
+        igpState.liveStream = null;
+      }
+    }
+
+    async function startIgpLivePreview() {
+      stopIgpLive();
+      const vid = document.getElementById('igp-live-video');
+      try {
+        igpState.liveStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+        vid.srcObject = igpState.liveStream;
+        await vid.play().catch(() => {});
+      } catch {
+        try {
+          igpState.liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          vid.srcObject = igpState.liveStream;
+          await vid.play().catch(() => {});
+        } catch {
+          showToast('Camera permission needed for Live');
+        }
+      }
+    }
+
+    function openIgPlusScreen(mode = 'post') {
+      igpState.mode = mode;
+      igpState.files = [];
+      igpState.activeIdx = 0;
+      document.getElementById('ig-plus-modal').classList.remove('hidden');
+      updateIgpModeUI();
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function updateIgpModeUI() {
+      const m = igpState.mode;
+      const titleEl = document.getElementById('igp-title');
+      const nextBtn = document.getElementById('igp-next-btn');
+      const liveStage = document.getElementById('igp-live-stage');
+      const recBar = document.getElementById('igp-recents-bar');
+      const grid = document.getElementById('igp-grid');
+      const fileInp = document.getElementById('igp-file-input');
+
+      titleEl.textContent = m === 'reel' ? 'New reel' : m === 'story' ? 'Add to story' : m === 'live' ? 'Live' : 'New post';
+      document.querySelectorAll('.igp-mode-btn').forEach(b => {
+        const active = b.dataset.igpmode === m;
+        b.className = `igp-mode-btn px-3 py-1.5 rounded-full text-xs font-bold tracking-wide transition ${active ? 'text-white bg-white/15' : 'text-zinc-400 hover:text-white'}`;
+      });
+
+      if (m === 'live') {
+        liveStage.classList.remove('hidden');
+        recBar.classList.add('hidden');
+        grid.classList.add('hidden');
+        nextBtn.classList.add('hidden');
+        startIgpLivePreview();
+        return;
+      }
+
+      stopIgpLive();
+      liveStage.classList.add('hidden');
+      recBar.classList.remove('hidden');
+      grid.classList.remove('hidden');
+      nextBtn.classList.remove('hidden');
+
+      if (m === 'reel') {
+        fileInp.multiple = false;
+        fileInp.accept = 'video/mp4,video/quicktime,video/webm';
+      } else if (m === 'story') {
+        fileInp.multiple = false;
+        fileInp.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
+      } else {
+        fileInp.multiple = true;
+        fileInp.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
+      }
+      renderIgpPreviewAndGrid();
+    }
+
+    function renderIgpPreviewAndGrid() {
+      const emptyEl = document.getElementById('igp-empty-preview');
+      const imgEl = document.getElementById('igp-preview-img');
+      const vidEl = document.getElementById('igp-preview-vid');
+      const nextBtn = document.getElementById('igp-next-btn');
+      const grid = document.getElementById('igp-grid');
+
+      const cur = igpState.files[igpState.activeIdx];
+      nextBtn.disabled = !igpState.files.length;
+
+      if (!cur) {
+        emptyEl.classList.remove('hidden');
+        imgEl.classList.add('hidden');
+        vidEl.pause();
+        vidEl.classList.add('hidden');
+      } else {
+        emptyEl.classList.add('hidden');
+        if (cur.type === 'video') {
+          imgEl.classList.add('hidden');
+          vidEl.src = cur.url;
+          vidEl.classList.remove('hidden');
+        } else {
+          vidEl.pause();
+          vidEl.classList.add('hidden');
+          imgEl.src = cur.url;
+          imgEl.classList.remove('hidden');
+        }
+      }
+
+      const thumbsHtml = igpState.files.map((item, idx) => `
+        <button type="button" class="igp-thumb-btn relative aspect-square bg-zinc-900 overflow-hidden border-2 ${idx === igpState.activeIdx ? 'border-pink-500' : 'border-transparent'}" data-idx="${idx}">
+          ${item.type === 'video'
+            ? `<video src="${item.url}" muted playsinline class="w-full h-full object-cover"></video>`
+            : `<img src="${item.url}" class="w-full h-full object-cover" />`
+          }
+        </button>
+      `).join('');
+
+      grid.innerHTML = `
+        <button id="igp-tile-camera" type="button" class="aspect-square bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center">
+          <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+        </button>
+        <button id="igp-tile-gallery" type="button" class="aspect-square bg-zinc-900/70 hover:bg-zinc-800 flex flex-col items-center justify-center gap-1 p-1 text-center">
+          <i data-lucide="plus" class="w-5 h-5 text-pink-500"></i>
+          <span class="text-[10px] text-zinc-300 font-semibold">Gallery</span>
+        </button>
+        ${thumbsHtml}
+      `;
+
+      document.getElementById('igp-tile-camera').addEventListener('click', () => {
+        state.createKind = igpState.mode === 'story' ? 'story' : igpState.mode === 'reel' ? 'reel' : 'post';
+        openCameraModal();
+      });
+      document.getElementById('igp-tile-gallery').addEventListener('click', () => document.getElementById('igp-file-input').click());
+      document.querySelectorAll('.igp-thumb-btn').forEach(b => {
+        b.addEventListener('click', () => {
+          igpState.activeIdx = Number(b.dataset.idx);
+          renderIgpPreviewAndGrid();
+        });
+      });
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    document.getElementById('igp-close-btn').addEventListener('click', () => {
+      stopIgpLive();
+      document.getElementById('igp-preview-vid')?.pause();
+      document.getElementById('ig-plus-modal').classList.add('hidden');
+    });
+    document.getElementById('igp-hero-pick-btn').addEventListener('click', () => document.getElementById('igp-file-input').click());
+    document.getElementById('igp-recents-btn').addEventListener('click', () => document.getElementById('igp-file-input').click());
+    document.getElementById('igp-select-btn').addEventListener('click', () => document.getElementById('igp-file-input').click());
+
+    document.getElementById('igp-file-input').addEventListener('change', e => {
+      const list = Array.from(e.target.files || []);
+      if (!list.length) return;
+      for (const f of list) {
+        const isVid = ALLOWED_VIDEO_TYPES.includes(f.type) || /\.(mp4|mov|webm)$/i.test(f.name);
+        if (igpState.mode === 'reel' && !isVid) {
+          showToast('Please select a video for Reel');
+          return;
+        }
+        const item = { file: f, url: URL.createObjectURL(f), type: isVid ? 'video' : 'image' };
+        if (igpState.mode === 'post') igpState.files.push(item);
+        else igpState.files = [item];
+      }
+      igpState.activeIdx = igpState.files.length - 1;
+      renderIgpPreviewAndGrid();
+      e.target.value = '';
+    });
+
+    document.querySelectorAll('.igp-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        igpState.mode = btn.dataset.igpmode;
+        updateIgpModeUI();
+      });
+    });
+
+    document.getElementById('igp-go-live-btn').addEventListener('click', () => {
+      if (igpState.isLive) {
+        clearInterval(igpState.liveTimer);
+        igpState.isLive = false;
+        document.getElementById('igp-live-badge').classList.add('hidden');
+        document.getElementById('igp-go-live-btn').textContent = 'Go Live';
+        showToast('Live stream ended');
+      } else {
+        igpState.isLive = true;
+        igpState.liveSec = 0;
+        document.getElementById('igp-live-timer').textContent = '00:00';
+        document.getElementById('igp-live-badge').classList.remove('hidden');
+        document.getElementById('igp-go-live-btn').textContent = 'End Live';
+        igpState.liveTimer = setInterval(() => {
+          igpState.liveSec += 1;
+          const mm = String(Math.floor(igpState.liveSec / 60)).padStart(2, '0');
+          const ss = String(igpState.liveSec % 60).padStart(2, '0');
+          document.getElementById('igp-live-timer').textContent = `${mm}:${ss}`;
+        }, 1000);
+        showToast('You are LIVE 🔴');
+      }
+    });
+
+    document.getElementById('igp-next-btn').addEventListener('click', () => {
+      if (!igpState.files.length) return;
+      document.getElementById('igp-preview-vid')?.pause();
+      document.getElementById('ig-plus-modal').classList.add('hidden');
+
+      if (igpState.mode === 'story') {
+        openStoryFlow();
+        loadMediaIntoStoryEditor(igpState.files[0].file);
+      } else {
+        state.createKind = igpState.mode === 'reel' ? 'reel' : 'post';
+        uploadState.files = [...igpState.files];
+        uploadState.activeIdx = 0;
+        uploadState.step = 1;
+        document.getElementById('create-modal').classList.remove('hidden');
+        updateCreateKindUI();
+      }
+    });
+
+    // Override openCreatePicker so tapping center + opens #ig-plus-modal directly
+    openCreatePicker = function() {
+      openIgPlusScreen('post');
+    };
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
