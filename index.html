@@ -2,9 +2,12 @@
 <html lang="en" class="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>SNAPGRAM — Interactive Social Media Platform</title>
-  <meta name="theme-color" content="#ec4899" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta id="meta-theme-color" name="theme-color" content="#ffffff" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -196,11 +199,57 @@
     </div>
   </div>
 
-  <!-- Full-Screen Instagram-Style Create Flow -->
-  <div id="create-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center md:p-6">
+  <!-- Clean Instagram-Style Create Picker Sheet (+ Button) -->
+  <div id="create-picker-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="w-full sm:max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700 mx-auto sm:hidden"></div>
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold">Create</h3>
+        <button id="close-create-picker" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-2">
+        <button type="button" id="pick-create-post" class="w-full flex items-center gap-3.5 p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/70 transition text-left border border-zinc-100 dark:border-zinc-800">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white flex items-center justify-center shrink-0">
+            <i data-lucide="grid-3x3" class="w-5 h-5"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold">Post</p>
+            <p class="text-xs text-zinc-500">Share photos & videos from your gallery</p>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
+        </button>
+
+        <button type="button" id="pick-create-story" class="w-full flex items-center gap-3.5 p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/70 transition text-left border border-zinc-100 dark:border-zinc-800">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white flex items-center justify-center shrink-0">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold">Story</p>
+            <p class="text-xs text-zinc-500">Photo or video with text, stickers & music</p>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
+        </button>
+
+        <button type="button" id="pick-create-reel" class="w-full flex items-center gap-3.5 p-3 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/70 transition text-left border border-zinc-100 dark:border-zinc-800">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center shrink-0">
+            <i data-lucide="film" class="w-5 h-5"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold">Reel</p>
+            <p class="text-xs text-zinc-500">Upload or record short videos with cover & trim</p>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
+        </button>
+      </div>
+      <input id="media-file-input" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
+    </div>
+  </div>
+
+  <!-- Clean Instagram-Style Editor & Share Modal (Post / Story / Reel) -->
+  <div id="create-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center md:p-6">
     <div class="w-full h-full md:h-[88vh] md:max-w-xl bg-white dark:bg-zinc-950 md:border md:border-zinc-200 md:dark:border-zinc-800 md:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
-      <!-- Instagram Top Bar -->
-      <header class="h-14 px-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+      <!-- Top Bar -->
+      <header class="h-14 px-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-950">
         <button id="close-create-modal" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Close">
           <i id="create-back-icon" data-lucide="x" class="w-6 h-6"></i>
         </button>
@@ -210,38 +259,83 @@
         </button>
       </header>
 
-      <!-- Step 1: Large Media Hero Preview + Gallery/Camera + Story Studio -->
-      <div id="create-step-1" class="flex-1 flex flex-col overflow-y-auto">
-        <!-- Hero Preview Stage -->
-        <div class="relative w-full aspect-square max-h-[52vh] bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0">
-          <div id="create-empty-stage" class="text-center p-6 space-y-4">
-            <div class="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-400">
-              <i data-lucide="images" class="w-8 h-8"></i>
-            </div>
-            <div class="space-y-1">
-              <p class="text-sm font-semibold text-white">Select photos or videos</p>
-              <p class="text-xs text-zinc-400">Choose from your gallery or capture live</p>
-            </div>
-            <div class="flex items-center justify-center gap-3">
-              <label class="px-4 py-2.5 rounded-xl bg-[#0095F6] text-white text-xs font-semibold cursor-pointer hover:opacity-95 transition flex items-center gap-2">
-                <i data-lucide="image" class="w-4 h-4"></i>
-                <span>Gallery</span>
-                <input id="media-file-input" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
-              </label>
-              <button type="button" id="open-camera-btn" class="px-4 py-2.5 rounded-xl bg-zinc-800 text-white text-xs font-semibold hover:bg-zinc-700 transition flex items-center gap-2">
-                <i data-lucide="camera" class="w-4 h-4"></i>
-                <span>Camera</span>
-              </button>
-            </div>
+      <!-- Step 1: Source Picker (only shown for Story/Reel before choosing media) + Preview / Crop / Filter / Story Studio / Reel Trim -->
+      <div id="create-step-1" class="flex-1 flex flex-col overflow-y-auto bg-white dark:bg-zinc-950">
+        <!-- Clean Light Source Stage (for Story & Reel) -->
+        <div id="create-empty-stage" class="p-6 my-auto text-center space-y-5 max-w-sm mx-auto w-full">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white flex items-center justify-center mx-auto shadow-lg">
+            <i id="create-empty-icon" data-lucide="sparkles" class="w-8 h-8"></i>
           </div>
+          <div class="space-y-1">
+            <p id="create-empty-title" class="text-base font-bold">Create a Story</p>
+            <p id="create-empty-sub" class="text-xs text-zinc-500">Pick from your phone gallery or capture live with camera</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" id="stage-gallery-btn" class="py-3 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold flex flex-col items-center gap-2 transition">
+              <i data-lucide="image" class="w-5 h-5 text-pink-500"></i>
+              <span>Gallery</span>
+            </button>
+            <button type="button" id="open-camera-btn" class="py-3 px-4 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white text-xs font-semibold flex flex-col items-center gap-2 hover:opacity-95 transition">
+              <i data-lucide="camera" class="w-5 h-5"></i>
+              <span>Camera</span>
+            </button>
+          </div>
+        </div>
 
-          <img id="create-hero-img" src="" alt="Preview" class="hidden w-full h-full object-contain" />
-          <video id="create-hero-video" controls playsinline class="hidden w-full h-full object-contain"></video>
+        <!-- Media Preview Stage -->
+        <div id="create-hero-stage" class="hidden relative w-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden shrink-0" style="max-height: 48vh;">
+          <img id="create-hero-img" src="" alt="Preview" class="hidden w-full h-full object-contain max-h-[48vh] transition-all" />
+          <video id="create-hero-video" controls playsinline class="hidden w-full h-full object-contain max-h-[48vh]"></video>
 
           <!-- Story Canvas Editor (replaces hero when editing a Story photo) -->
-          <div id="story-editor-wrap" class="hidden w-full h-full flex items-center justify-center bg-black">
-            <canvas id="story-editor-canvas" class="h-full max-w-full aspect-[9/16] touch-none cursor-crosshair"></canvas>
+          <div id="story-editor-wrap" class="hidden w-full flex items-center justify-center bg-zinc-950 py-2">
+            <canvas id="story-editor-canvas" class="max-h-[46vh] aspect-[9/16] touch-none cursor-crosshair rounded-xl"></canvas>
           </div>
+        </div>
+
+        <!-- Post Crop & Filter Controls (shown for Post photos) -->
+        <div id="post-edit-tools" class="hidden px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 space-y-3">
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <span class="text-[11px] font-semibold text-zinc-500 shrink-0">Crop:</span>
+            ${[
+              { id: 'original', label: 'Original' },
+              { id: '1:1', label: '1:1' },
+              { id: '4:5', label: '4:5' },
+              { id: '16:9', label: '16:9' }
+            ].map(c => `<button type="button" class="post-crop-btn px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-200 dark:border-zinc-700 ${c.id === 'original' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : ''}" data-crop="${c.id}">${c.label}</button>`).join('')}
+          </div>
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <span class="text-[11px] font-semibold text-zinc-500 shrink-0">Filter:</span>
+            ${[
+              { id: 'none', label: 'Original' },
+              { id: 'contrast(1.18) saturate(1.3)', label: 'Clarendon' },
+              { id: 'sepia(0.15) saturate(1.4) brightness(1.05)', label: 'Juno' },
+              { id: 'brightness(1.08) contrast(0.95) saturate(1.15)', label: 'Lark' },
+              { id: 'grayscale(1) contrast(1.15)', label: 'Moon' },
+              { id: 'sepia(0.35) brightness(1.05)', label: 'Valencia' }
+            ].map((f, idx) => `<button type="button" class="post-filter-btn px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-200 dark:border-zinc-700 ${idx === 0 ? 'bg-pink-500 text-white border-pink-500' : ''}" data-filter="${f.id}">${f.label}</button>`).join('')}
+          </div>
+        </div>
+
+        <!-- Reel Trimming & Cover Frame Controls (shown for Reel video) -->
+        <div id="reel-trim-tools" class="hidden px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 space-y-2.5">
+          <div class="flex items-center justify-between text-xs font-semibold">
+            <span>Trim Video</span>
+            <span id="reel-trim-label" class="text-pink-500">0.0s – Full</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="text-[11px] text-zinc-500">Start (sec)</label>
+              <input id="reel-trim-start" type="range" min="0" max="60" step="0.5" value="0" class="w-full accent-pink-500" />
+            </div>
+            <div>
+              <label class="text-[11px] text-zinc-500">End (sec)</label>
+              <input id="reel-trim-end" type="range" min="1" max="60" step="0.5" value="60" class="w-full accent-pink-500" />
+            </div>
+          </div>
+          <button type="button" id="reel-capture-cover-btn" class="w-full py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold">
+            Set Current Video Frame as Cover
+          </button>
         </div>
 
         <!-- Story Tools Bar (shown for Story photo) -->
@@ -289,13 +383,24 @@
           <div id="create-preview-grid" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
         </div>
 
+        <!-- Story Bottom Share Bar (Your Story + Share buttons) -->
+        <div id="story-bottom-bar" class="hidden mt-auto p-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 bg-white dark:bg-zinc-950">
+          <button type="button" id="story-share-your-btn" class="flex-1 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-bold flex items-center justify-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-gradient-to-tr from-amber-500 to-pink-500"></span>
+            <span>Your Story</span>
+          </button>
+          <button type="button" id="story-share-now-btn" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold">
+            Share
+          </button>
+        </div>
+
         <div id="upload-error-box" class="hidden mx-4 my-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-600 dark:text-red-400">
           <p id="upload-error-text"></p>
         </div>
       </div>
 
-      <!-- Step 2: Instagram "New post" Caption, Tags, Location & Cover -->
-      <form id="create-form" class="hidden flex-1 flex flex-col overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-800">
+      <!-- Step 2: Instagram "New post / New reel" Caption, Tags, Location, Music & Cover -->
+      <form id="create-form" class="hidden flex-1 flex flex-col overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-zinc-950">
         <div class="p-4 flex gap-3 items-start">
           <img id="create-step2-thumb" src="" alt="Thumb" class="w-16 h-16 rounded-lg object-cover bg-zinc-200 dark:bg-zinc-800 shrink-0" />
           <textarea id="create-caption" rows="3" placeholder="Write a caption... #hashtags" class="flex-1 text-sm bg-transparent focus:outline-none resize-none"></textarea>
@@ -336,13 +441,6 @@
           <span id="create-audience-label" class="font-semibold text-xs px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800">Public</span>
         </div>
       </form>
-
-      <!-- Bottom Instagram Mode Bar (POST / REEL / STORY) -->
-      <div id="create-mode-bar" class="h-12 px-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center gap-3 shrink-0">
-        <button type="button" class="create-kind-btn px-4 py-1.5 rounded-full text-xs font-bold tracking-wide bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" data-kind="post">POST</button>
-        <button type="button" class="create-kind-btn px-4 py-1.5 rounded-full text-xs font-bold tracking-wide text-zinc-500" data-kind="reel">REEL</button>
-        <button type="button" class="create-kind-btn px-4 py-1.5 rounded-full text-xs font-bold tracking-wide text-zinc-500" data-kind="story">STORY</button>
-      </div>
     </div>
   </div>
 
@@ -703,7 +801,7 @@
         </button>`;
       }).join('');
       const mobCreateBtn = document.getElementById('create-btn-mobile');
-      if (mobCreateBtn) mobCreateBtn.addEventListener('click', () => openCreate('post'));
+      if (mobCreateBtn) mobCreateBtn.addEventListener('click', openCreatePicker);
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -2617,6 +2715,8 @@
       state.theme = state.theme === 'light' ? 'dark' : 'light';
       document.documentElement.classList.toggle('dark', state.theme === 'dark');
       document.getElementById('theme-label').textContent = state.theme === 'light' ? 'Dark Mode' : 'Light Mode';
+      const metaTheme = document.getElementById('meta-theme-color');
+      if (metaTheme) metaTheme.setAttribute('content', state.theme === 'dark' ? '#09090b' : '#ffffff');
     }
 
     document.getElementById('theme-toggle-desktop').addEventListener('click', toggleTheme);
@@ -2658,9 +2758,13 @@
     const uploadState = {
       files: [],       // [{ file, url, type: 'image'|'video' }]
       activeIdx: 0,
-      step: 1,         // 1 = Media Select/Preview, 2 = Caption/Details
+      step: 1,         // 1 = Editor/Preview, 2 = Caption/Details
+      crop: 'original',
+      filter: 'none',
+      trimStart: 0,
+      trimEnd: 60,
       reelThumb: null, // { file, url }
-      music: null,     // { title, artist, url, source: 'upload'|'ytmusic', file? }
+      music: null,     // { title, artist, url, source, file? }
       isUploading: false,
       storyDrawMode: false,
       storyColor: '#ffffff',
@@ -2669,19 +2773,77 @@
       storyBaseImg: null
     };
 
-    function openCreate(kind = 'post') {
-      state.createKind = kind;
-      uploadState.step = 1;
-      document.getElementById('upload-error-box').classList.add('hidden');
-      updateCreateKindUI();
-      document.getElementById('create-modal').classList.remove('hidden');
+    function openCreatePicker() {
+      document.getElementById('create-picker-modal').classList.remove('hidden');
       if (window.lucide) window.lucide.createIcons();
     }
+
+    function configureFileInputForKind(kind) {
+      const fileInput = document.getElementById('media-file-input');
+      const addMore = document.getElementById('media-add-more-input');
+      if (kind === 'post') {
+        fileInput.multiple = true;
+        if (addMore) addMore.multiple = true;
+        fileInput.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
+      } else if (kind === 'reel') {
+        fileInput.multiple = false;
+        if (addMore) addMore.multiple = false;
+        fileInput.accept = 'video/mp4,video/quicktime,video/webm';
+      } else {
+        fileInput.multiple = false;
+        if (addMore) addMore.multiple = false;
+        fileInput.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
+      }
+    }
+
+    function openCreate(kind = 'post', skipEmptyIfPost = false) {
+      state.createKind = kind;
+      uploadState.step = 1;
+      uploadState.crop = 'original';
+      uploadState.filter = 'none';
+      document.getElementById('upload-error-box').classList.add('hidden');
+      configureFileInputForKind(kind);
+      updateCreateKindUI();
+      if (!skipEmptyIfPost) {
+        document.getElementById('create-modal').classList.remove('hidden');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Center + Button & Desktop Create -> Open clean 3-option Create Picker
+    document.getElementById('create-btn-desktop').addEventListener('click', openCreatePicker);
+    const camBtnMob = document.getElementById('camera-btn-mobile');
+    if (camBtnMob) camBtnMob.addEventListener('click', () => openCameraModal());
+
+    // Override mobile center + button binding in renderNav so it opens Create Picker
+    document.getElementById('close-create-picker').addEventListener('click', () => {
+      document.getElementById('create-picker-modal').classList.add('hidden');
+    });
+    document.getElementById('pick-create-post').addEventListener('click', () => {
+      document.getElementById('create-picker-modal').classList.add('hidden');
+      state.createKind = 'post';
+      uploadState.files = [];
+      configureFileInputForKind('post');
+      document.getElementById('media-file-input').click();
+    });
+    document.getElementById('pick-create-story').addEventListener('click', () => {
+      document.getElementById('create-picker-modal').classList.add('hidden');
+      uploadState.files = [];
+      openCreate('story');
+    });
+    document.getElementById('pick-create-reel').addEventListener('click', () => {
+      document.getElementById('create-picker-modal').classList.add('hidden');
+      uploadState.files = [];
+      openCreate('reel');
+    });
+    document.getElementById('stage-gallery-btn').addEventListener('click', () => {
+      configureFileInputForKind(state.createKind);
+      document.getElementById('media-file-input').click();
+    });
 
     function updateCreateStepUI() {
       const s1 = document.getElementById('create-step-1');
       const s2 = document.getElementById('create-form');
-      const modeBar = document.getElementById('create-mode-bar');
       const headerTitle = document.getElementById('create-header-title');
       const headerAction = document.getElementById('create-header-action');
       const backIcon = document.getElementById('create-back-icon');
@@ -2691,20 +2853,19 @@
       if (uploadState.step === 1) {
         s1.classList.remove('hidden');
         s2.classList.add('hidden');
-        modeBar.classList.remove('hidden');
         backIcon.setAttribute('data-lucide', 'x');
-        headerAction.textContent = state.createKind === 'story' ? 'Share' : 'Next';
+        headerAction.textContent = state.createKind === 'story' ? 'Share' : state.createKind === 'reel' ? 'Next' : 'Next';
         headerAction.disabled = uploadState.files.length === 0;
       } else {
         s1.classList.add('hidden');
         s2.classList.remove('hidden');
-        modeBar.classList.add('hidden');
         backIcon.setAttribute('data-lucide', 'arrow-left');
-        headerAction.textContent = 'Share';
+        headerAction.textContent = state.createKind === 'reel' ? 'Share Reel' : 'Share';
         headerAction.disabled = uploadState.files.length === 0 || uploadState.isUploading;
         const thumb = document.getElementById('create-step2-thumb');
         const first = uploadState.files[0];
         if (first && first.type === 'image') thumb.src = first.url;
+        else if (uploadState.reelThumb) thumb.src = uploadState.reelThumb.url;
         else thumb.removeAttribute('src');
         document.getElementById('create-audience-label').textContent = state.currentUser.isPrivate ? 'Private (Followers)' : 'Public';
       }
@@ -2712,42 +2873,33 @@
     }
 
     function updateCreateKindUI() {
-      document.querySelectorAll('.create-kind-btn').forEach(b => {
-        const active = b.dataset.kind === state.createKind;
-        b.className = `create-kind-btn px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition ${
-          active ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-500'
-        }`;
-      });
-      const fileInput = document.getElementById('media-file-input');
-      const addMore = document.getElementById('media-add-more-input');
       const extras = document.getElementById('create-post-extras');
       const reelThumbWrap = document.getElementById('reel-thumb-wrap');
+      const emptyIcon = document.getElementById('create-empty-icon');
+      const emptyTitle = document.getElementById('create-empty-title');
+      const emptySub = document.getElementById('create-empty-sub');
+
       if (state.createKind === 'post') {
-        fileInput.multiple = true;
-        if (addMore) addMore.multiple = true;
-        fileInput.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
         extras.classList.remove('hidden');
         reelThumbWrap.classList.add('hidden');
+        emptyTitle.textContent = 'Create a Post';
+        emptySub.textContent = 'Select photos or videos from your gallery';
       } else if (state.createKind === 'reel') {
-        fileInput.multiple = false;
-        if (addMore) addMore.multiple = false;
-        fileInput.accept = 'video/mp4,video/quicktime,video/webm';
         extras.classList.add('hidden');
         reelThumbWrap.classList.remove('hidden');
+        if (emptyIcon) emptyIcon.setAttribute('data-lucide', 'film');
+        emptyTitle.textContent = 'Create a Reel';
+        emptySub.textContent = 'Select a video from gallery or record with camera';
       } else {
-        fileInput.multiple = false;
-        if (addMore) addMore.multiple = false;
-        fileInput.accept = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm';
         extras.classList.add('hidden');
         reelThumbWrap.classList.add('hidden');
+        if (emptyIcon) emptyIcon.setAttribute('data-lucide', 'sparkles');
+        emptyTitle.textContent = 'Create a Story';
+        emptySub.textContent = 'Pick a photo or video from gallery or camera';
       }
       renderCreatePreviews();
       updateCreateStepUI();
     }
-
-    document.getElementById('create-btn-desktop').addEventListener('click', () => openCreate('post'));
-    const camBtnMob = document.getElementById('camera-btn-mobile');
-    if (camBtnMob) camBtnMob.addEventListener('click', () => openCameraModal());
 
     document.getElementById('close-create-modal').addEventListener('click', () => {
       if (uploadState.step === 2) {
@@ -2768,12 +2920,70 @@
       }
     });
 
-    document.querySelectorAll('.create-kind-btn').forEach(btn => {
+    document.getElementById('story-share-your-btn').addEventListener('click', executePublish);
+    document.getElementById('story-share-now-btn').addEventListener('click', executePublish);
+
+    // Post Crop & Filter buttons
+    document.querySelectorAll('.post-crop-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (uploadState.isUploading) return;
-        state.createKind = btn.dataset.kind;
-        updateCreateKindUI();
+        uploadState.crop = btn.dataset.crop;
+        document.querySelectorAll('.post-crop-btn').forEach(b => {
+          const active = b.dataset.crop === uploadState.crop;
+          b.className = `post-crop-btn px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-200 dark:border-zinc-700 ${active ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : ''}`;
+        });
+        const heroImg = document.getElementById('create-hero-img');
+        heroImg.className = uploadState.crop === '1:1'
+          ? 'w-full aspect-square object-cover max-h-[48vh]'
+          : uploadState.crop === '4:5'
+            ? 'w-full aspect-[4/5] object-cover max-h-[48vh]'
+            : uploadState.crop === '16:9'
+              ? 'w-full aspect-video object-cover max-h-[48vh]'
+              : 'w-full h-full object-contain max-h-[48vh]';
       });
+    });
+
+    document.querySelectorAll('.post-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        uploadState.filter = btn.dataset.filter;
+        document.querySelectorAll('.post-filter-btn').forEach(b => {
+          const active = b.dataset.filter === uploadState.filter;
+          b.className = `post-filter-btn px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-200 dark:border-zinc-700 ${active ? 'bg-pink-500 text-white border-pink-500' : ''}`;
+        });
+        document.getElementById('create-hero-img').style.filter = uploadState.filter;
+      });
+    });
+
+    // Reel Trim & Cover Frame Capture
+    function updateReelTrimLabel() {
+      const s = Number(document.getElementById('reel-trim-start').value || 0);
+      const e = Number(document.getElementById('reel-trim-end').value || 60);
+      uploadState.trimStart = s;
+      uploadState.trimEnd = Math.max(s + 1, e);
+      document.getElementById('reel-trim-label').textContent = `${s.toFixed(1)}s – ${uploadState.trimEnd.toFixed(1)}s`;
+    }
+    document.getElementById('reel-trim-start').addEventListener('input', e => {
+      const v = document.getElementById('create-hero-video');
+      if (v) v.currentTime = Number(e.target.value);
+      updateReelTrimLabel();
+    });
+    document.getElementById('reel-trim-end').addEventListener('input', updateReelTrimLabel);
+    document.getElementById('reel-capture-cover-btn').addEventListener('click', () => {
+      const v = document.getElementById('create-hero-video');
+      if (!v || !v.videoWidth) { showToast('Play video briefly to capture cover'); return; }
+      const c = document.createElement('canvas');
+      c.width = v.videoWidth;
+      c.height = v.videoHeight;
+      c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+      c.toBlob(blob => {
+        if (!blob) return;
+        const file = new File([blob], `cover_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const url = URL.createObjectURL(file);
+        uploadState.reelThumb = { file, url };
+        const prev = document.getElementById('reel-thumb-preview');
+        prev.src = url;
+        prev.classList.remove('hidden');
+        showToast('Cover frame captured ✓');
+      }, 'image/jpeg', 0.85);
     });
 
     function validateAndAddFiles(fileList) {
@@ -2818,8 +3028,9 @@
           uploadState.activeIdx = 0;
         }
       }
-      renderCreatePreviews();
-      updateCreateStepUI();
+      // Open editor modal immediately after selecting files from gallery
+      document.getElementById('create-modal').classList.remove('hidden');
+      updateCreateKindUI();
     }
 
     document.getElementById('media-file-input').addEventListener('change', e => {
@@ -2852,28 +3063,41 @@
 
     function renderCreatePreviews() {
       const emptyStage = document.getElementById('create-empty-stage');
+      const heroStage = document.getElementById('create-hero-stage');
       const heroImg = document.getElementById('create-hero-img');
       const heroVid = document.getElementById('create-hero-video');
       const wrap = document.getElementById('create-preview-area');
       const grid = document.getElementById('create-preview-grid');
       const storyWrap = document.getElementById('story-editor-wrap');
       const storyTools = document.getElementById('story-tools-bar');
+      const storyBottom = document.getElementById('story-bottom-bar');
+      const postTools = document.getElementById('post-edit-tools');
+      const reelTools = document.getElementById('reel-trim-tools');
 
       if (!uploadState.files.length) {
         emptyStage.classList.remove('hidden');
+        heroStage.classList.add('hidden');
         heroImg.classList.add('hidden');
         heroVid.classList.add('hidden');
         heroVid.pause();
         wrap.classList.add('hidden');
         storyWrap.classList.add('hidden');
         storyTools.classList.add('hidden');
+        storyBottom.classList.add('hidden');
+        postTools.classList.add('hidden');
+        reelTools.classList.add('hidden');
         return;
       }
 
       emptyStage.classList.add('hidden');
+      heroStage.classList.remove('hidden');
       wrap.classList.remove('hidden');
       const activeIdx = Math.min(uploadState.activeIdx, uploadState.files.length - 1);
       const activeItem = uploadState.files[activeIdx];
+
+      postTools.classList.toggle('hidden', !(state.createKind === 'post' && activeItem.type === 'image'));
+      reelTools.classList.toggle('hidden', !(state.createKind === 'reel' && activeItem.type === 'video'));
+      storyBottom.classList.toggle('hidden', state.createKind !== 'story');
 
       if (state.createKind === 'story' && activeItem.type === 'image') {
         heroImg.classList.add('hidden');
@@ -2887,11 +3111,19 @@
         if (activeItem.type === 'video') {
           heroImg.classList.add('hidden');
           heroVid.src = activeItem.url;
+          heroVid.onloadedmetadata = () => {
+            const dur = Math.max(1, Math.round(heroVid.duration || 60));
+            const sInp = document.getElementById('reel-trim-start');
+            const eInp = document.getElementById('reel-trim-end');
+            sInp.max = dur; eInp.max = dur; eInp.value = dur;
+            updateReelTrimLabel();
+          };
           heroVid.classList.remove('hidden');
         } else {
           heroVid.pause();
           heroVid.classList.add('hidden');
           heroImg.src = activeItem.url;
+          heroImg.style.filter = uploadState.filter || 'none';
           heroImg.classList.remove('hidden');
         }
       }
@@ -3694,6 +3926,39 @@
           const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
           if (blob) {
             filesToUpload[0] = { file: new File([blob], `story_${Date.now()}.jpg`, { type: 'image/jpeg' }), url: filesToUpload[0].url, type: 'image' };
+          }
+        } else if (kind === 'post' && (uploadState.crop !== 'original' || uploadState.filter !== 'none')) {
+          bStatus.textContent = 'Applying crop & filter...';
+          for (let i = 0; i < filesToUpload.length; i++) {
+            if (filesToUpload[i].type !== 'image') continue;
+            const processed = await new Promise(resolve => {
+              const img = new Image();
+              img.onload = () => {
+                let sw = img.width, sh = img.height, sx = 0, sy = 0;
+                const targetRatio = uploadState.crop === '1:1' ? 1 : uploadState.crop === '4:5' ? 0.8 : uploadState.crop === '16:9' ? (16/9) : (sw / sh);
+                const curRatio = sw / sh;
+                if (curRatio > targetRatio) {
+                  sw = sh * targetRatio;
+                  sx = (img.width - sw) / 2;
+                } else if (curRatio < targetRatio) {
+                  sh = sw / targetRatio;
+                  sy = (img.height - sh) / 2;
+                }
+                const c = document.createElement('canvas');
+                c.width = Math.min(1080, Math.round(sw));
+                c.height = Math.round(c.width / targetRatio);
+                const ctx = c.getContext('2d');
+                ctx.filter = uploadState.filter || 'none';
+                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+                c.toBlob(blob => {
+                  if (blob) resolve({ file: new File([blob], `post_${Date.now()}_${i}.jpg`, { type: 'image/jpeg' }), url: filesToUpload[i].url, type: 'image' });
+                  else resolve(filesToUpload[i]);
+                }, 'image/jpeg', 0.9);
+              };
+              img.onerror = () => resolve(filesToUpload[i]);
+              img.src = filesToUpload[i].url;
+            });
+            filesToUpload[i] = processed;
           }
         }
 
