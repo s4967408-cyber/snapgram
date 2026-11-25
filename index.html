@@ -22,6 +22,7 @@
     };
   </script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -811,6 +812,22 @@
         tab: 'posts'
       },
       exploreUsers: [],
+      migration: {
+        igAppId: '',
+        igConnected: false,
+        igHandle: '',
+        parsing: false,
+        importing: false,
+        progress: 0,
+        statusMsg: '',
+        errorMsg: '',
+        parsedProfile: null,   // { username, fullName, bio, avatarBlob, avatarUrl }
+        parsedMedia: [],       // [{ id, kind: 'post'|'reel'|'story', type: 'image'|'video', file, url, caption, timestamp, selected }]
+        parsedFriends: [],     // [{ username, onSnapgram, userId }]
+        parsedChats: [],       // [{ title, count }]
+        stats: { profile: false, photos: 0, videos: 0, reels: 0, stories: 0, invited: 0, unavailable: 0 },
+        importedIds: []
+      },
       stories: [],
       posts: [],
       reels: [],
@@ -1466,6 +1483,9 @@
             <button id="share-profile-btn" class="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition">
               Share profile
             </button>
+            <button id="open-migrate-btn" class="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 text-white text-xs font-semibold hover:opacity-95 transition">
+              Migrate IG
+            </button>
             ${u.isAdmin ? `<button id="open-admin-btn" class="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold">Admin</button>` : ''}
           </div>
 
@@ -1676,6 +1696,157 @@
       `;
     }
 
+    function renderMigrate() {
+      const m = state.migration;
+      return `
+        <div class="max-w-3xl mx-auto px-4 py-5 md:py-8 space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <button type="button" id="migrate-back-btn" class="p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Back">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+              </button>
+              <div>
+                <h1 class="text-xl font-bold">Migrate Instagram to Snapgram</h1>
+                <p class="text-xs text-zinc-500">Policy-compliant import using Meta OAuth or your official Instagram Data Export ZIP</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Migration Dashboard Stats -->
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5 text-center">
+            <div class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"><p class="text-[11px] text-zinc-500">Profile</p><p class="text-base font-bold ${m.stats.profile ? 'text-emerald-500' : ''}">${m.stats.profile ? 'Done ✓' : '—'}</p></div>
+            <div class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"><p class="text-[11px] text-zinc-500">Photos</p><p class="text-base font-bold">${m.stats.photos}</p></div>
+            <div class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"><p class="text-[11px] text-zinc-500">Videos</p><p class="text-base font-bold">${m.stats.videos}</p></div>
+            <div class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"><p class="text-[11px] text-zinc-500">Reels</p><p class="text-base font-bold">${m.stats.reels}</p></div>
+            <div class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"><p class="text-[11px] text-zinc-500">Stories</p><p class="text-base font-bold">${m.stats.stories}</p></div>
+            <div class="p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"><p class="text-[11px] text-zinc-500">Invited</p><p class="text-base font-bold text-pink-500">${m.stats.invited}</p></div>
+          </div>
+
+          ${m.statusMsg || m.errorMsg ? `
+            <div class="p-3.5 rounded-2xl border ${m.errorMsg ? 'border-red-500/30 bg-red-500/10 text-red-500' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'} text-xs font-semibold space-y-1.5">
+              <p>${m.errorMsg || m.statusMsg}</p>
+              ${m.importing ? `<div class="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden"><div class="h-full bg-pink-500 transition-all" style="width:${m.progress}%"></div></div>` : ''}
+            </div>
+          ` : ''}
+
+          <!-- 1. Official Meta OAuth Connection -->
+          <section class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-pink-500"></i> 1. Connect Instagram Account (Meta OAuth)</h2>
+              ${m.igConnected ? '<span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 font-semibold">Connected</span>' : ''}
+            </div>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              We never ask for your Instagram password. Connect via Meta's official OAuth (requires an approved Meta Instagram App ID for Business/Creator API access) or use your official Instagram Data Export ZIP below.
+            </p>
+            ${m.igConnected ? `
+              <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 text-xs">
+                <span>Connected: <strong>@${m.igHandle || 'instagram_user'}</strong></span>
+                <button type="button" id="ig-disconnect-btn" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 font-semibold">Disconnect</button>
+              </div>
+            ` : `
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input id="ig-app-id-input" type="text" value="${m.igAppId || ''}" placeholder="Meta Instagram App ID (for OAuth)" class="flex-1 px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-xs focus:outline-none" />
+                <button type="button" id="ig-oauth-connect-btn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 text-white text-xs font-semibold shrink-0">Connect Instagram Account</button>
+              </div>
+            `}
+          </section>
+
+          <!-- 2. Official Instagram Data Export ZIP Importer -->
+          <section class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+            <h2 class="text-sm font-bold flex items-center gap-2"><i data-lucide="file-archive" class="w-4 h-4 text-pink-500"></i> 2. Import Official Instagram Data Export (ZIP)</h2>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              In Instagram, go to <strong>Accounts Center → Your information and permissions → Download your information</strong> (select <strong>JSON format</strong>), then upload that ZIP file here. Nothing is published until you review and confirm.
+            </p>
+            <label class="flex flex-col items-center justify-center gap-2 py-6 px-4 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-pink-500 cursor-pointer text-xs font-semibold transition text-center">
+              <i data-lucide="upload-cloud" class="w-6 h-6 text-pink-500"></i>
+              <span>${m.parsing ? 'Reading ZIP archive...' : 'Select your Instagram Data Export (.zip)'}</span>
+              <input id="ig-zip-input" type="file" accept=".zip,application/zip" class="hidden" />
+            </label>
+          </section>
+
+          <!-- Parsed Profile Preview -->
+          ${m.parsedProfile ? `
+            <section class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+              <div class="flex items-center justify-between">
+                <h2 class="text-sm font-bold">Profile Preview</h2>
+                <button type="button" id="ig-import-profile-btn" class="px-3.5 py-1.5 rounded-xl bg-[#0095F6] text-white text-xs font-semibold">Import Profile Details</button>
+              </div>
+              <div class="flex items-center gap-3">
+                ${renderAvatar(m.parsedProfile.avatarUrl, m.parsedProfile.username, 'w-14 h-14')}
+                <div class="min-w-0 text-xs space-y-0.5">
+                  <p class="font-bold text-sm">@${m.parsedProfile.username}</p>
+                  <p class="text-zinc-600 dark:text-zinc-300">${m.parsedProfile.fullName || ''}</p>
+                  <p class="text-zinc-500 line-clamp-2">${m.parsedProfile.bio || ''}</p>
+                </div>
+              </div>
+            </section>
+          ` : ''}
+
+          <!-- Parsed Posts, Reels & Archived Stories Preview -->
+          ${m.parsedMedia.length ? `
+            <section class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-sm font-bold">Media Ready to Import (${m.parsedMedia.filter(x => x.selected).length}/${m.parsedMedia.length} selected)</h2>
+                <button type="button" id="ig-import-media-btn" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-semibold disabled:opacity-50" ${m.importing ? 'disabled' : ''}>
+                  ${m.importing ? `Importing (${m.progress}%)` : 'Confirm & Import Selected'}
+                </button>
+              </div>
+              <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-80 overflow-y-auto">
+                ${m.parsedMedia.map((item, idx) => `
+                  <button type="button" class="ig-toggle-media relative aspect-square rounded-xl overflow-hidden bg-black border-2 ${item.selected ? 'border-pink-500' : 'border-transparent opacity-60'}" data-midx="${idx}">
+                    ${item.type === 'video'
+                      ? `<video src="${item.url}" muted playsinline class="w-full h-full object-cover"></video>`
+                      : `<img src="${item.url}" alt="IG Media" class="w-full h-full object-cover" />`
+                    }
+                    <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold uppercase">${item.kind}</span>
+                    <span class="absolute top-1 right-1 w-5 h-5 rounded-full ${item.selected ? 'bg-pink-500 text-white' : 'bg-black/60 text-white/60'} flex items-center justify-center text-[10px] font-bold">✓</span>
+                  </button>
+                `).join('')}
+              </div>
+            </section>
+          ` : ''}
+
+          <!-- Find Instagram Friends & Invite -->
+          ${m.parsedFriends.length ? `
+            <section class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+              <h2 class="text-sm font-bold">Find Instagram Friends (${m.parsedFriends.length})</h2>
+              <p class="text-xs text-zinc-500">We never auto-follow anyone without your consent. Invite friends or follow those already on Snapgram.</p>
+              <div class="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-64 overflow-y-auto">
+                ${m.parsedFriends.slice(0, 40).map(f => `
+                  <div class="py-2.5 flex items-center justify-between gap-2 text-xs">
+                    <span class="font-semibold">@${f.username}</span>
+                    ${f.onSnapgram
+                      ? `<button type="button" class="open-user-profile px-3 py-1 rounded-lg bg-[#0095F6] text-white font-semibold" data-user-id="${f.userId}" data-username="${f.username}">View Profile</button>`
+                      : `<button type="button" class="ig-invite-friend px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 font-semibold" data-uname="${f.username}">Invite to Snapgram</button>`
+                    }
+                  </div>
+                `).join('')}
+              </div>
+            </section>
+          ` : ''}
+
+          <!-- Read-Only Chat Export Summary + Delete Imported Data -->
+          ${m.parsedChats.length ? `
+            <section class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2">
+              <h2 class="text-sm font-bold">Exported Conversations (Personal Archive)</h2>
+              <p class="text-xs text-zinc-500">Private Instagram DMs cannot be automatically transferred into third-party chats due to Meta privacy rules. Your exported thread summaries are shown below for reference:</p>
+              <div class="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-40 overflow-y-auto text-xs">
+                ${m.parsedChats.slice(0, 20).map(c => `<div class="py-2 flex justify-between"><span class="font-semibold">${c.title}</span><span class="text-zinc-500">${c.count} messages</span></div>`).join('')}
+              </div>
+            </section>
+          ` : ''}
+
+          ${m.importedIds.length ? `
+            <div class="text-right">
+              <button type="button" id="ig-delete-imported-btn" class="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-semibold transition">
+                Delete All Imported Data (${m.importedIds.length})
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
     function formatTs(ts) {
       if (!ts) return '—';
       try { return new Date(ts).toLocaleString(); } catch { return ts; }
@@ -1875,6 +2046,90 @@
           render();
         });
       }
+
+      const openMigrateBtn = document.getElementById('open-migrate-btn');
+      if (openMigrateBtn) {
+        openMigrateBtn.addEventListener('click', () => {
+          state.activeTab = 'migrate';
+          render();
+        });
+      }
+
+      const migrateBackBtn = document.getElementById('migrate-back-btn');
+      if (migrateBackBtn) {
+        migrateBackBtn.addEventListener('click', () => {
+          state.activeTab = 'profile';
+          render();
+        });
+      }
+
+      const igConnectBtn = document.getElementById('ig-oauth-connect-btn');
+      if (igConnectBtn) {
+        igConnectBtn.addEventListener('click', () => {
+          const appId = (document.getElementById('ig-app-id-input')?.value || '').trim();
+          state.migration.igAppId = appId;
+          if (!appId) {
+            state.migration.errorMsg = 'Enter your approved Meta Instagram App ID to launch OAuth, or use the official Instagram Data Export ZIP below.';
+            render();
+            return;
+          }
+          const redirectUri = window.location.origin + window.location.pathname;
+          window.location.href = `https://api.instagram.com/oauth/authorize?client_id=${encodeURIComponent(appId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=instagram_business_basic&response_type=code&state=ig_migrate`;
+        });
+      }
+
+      const igDisconnectBtn = document.getElementById('ig-disconnect-btn');
+      if (igDisconnectBtn) {
+        igDisconnectBtn.addEventListener('click', () => {
+          state.migration.igConnected = false;
+          state.migration.igHandle = '';
+          showToast('Instagram disconnected');
+          render();
+        });
+      }
+
+      const igZipInput = document.getElementById('ig-zip-input');
+      if (igZipInput) {
+        igZipInput.addEventListener('change', e => {
+          const file = e.target.files && e.target.files[0];
+          if (file) parseInstagramExportZip(file);
+        });
+      }
+
+      const igImportProfBtn = document.getElementById('ig-import-profile-btn');
+      if (igImportProfBtn) igImportProfBtn.addEventListener('click', importParsedInstagramProfile);
+
+      const igImportMediaBtn = document.getElementById('ig-import-media-btn');
+      if (igImportMediaBtn) igImportMediaBtn.addEventListener('click', importSelectedInstagramMedia);
+
+      const igDelImpBtn = document.getElementById('ig-delete-imported-btn');
+      if (igDelImpBtn) igDelImpBtn.addEventListener('click', deleteAllImportedInstagramData);
+
+      document.querySelectorAll('.ig-toggle-media').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.midx);
+          if (state.migration.parsedMedia[idx]) {
+            state.migration.parsedMedia[idx].selected = !state.migration.parsedMedia[idx].selected;
+            render();
+          }
+        });
+      });
+
+      document.querySelectorAll('.ig-invite-friend').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const uname = btn.dataset.uname;
+          const shareUrl = window.location.origin + window.location.pathname;
+          const text = `Hey @${uname}, I moved to SNAPGRAM! Join me here: ${shareUrl}`;
+          if (navigator.share) {
+            try { await navigator.share({ title: 'Join me on SNAPGRAM', text, url: shareUrl }); } catch {}
+          } else if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text).catch(() => {});
+          }
+          state.migration.stats.invited += 1;
+          showToast(`Invite ready for @${uname}`);
+          render();
+        });
+      });
 
       const vpBackBtn = document.getElementById('user-profile-back-btn');
       if (vpBackBtn) {
@@ -2796,6 +3051,7 @@
       else if (state.activeTab === 'profile') main.innerHTML = renderProfile();
       else if (state.activeTab === 'admin') main.innerHTML = renderAdmin();
       else if (state.activeTab === 'user-profile') main.innerHTML = renderUserProfileView();
+      else if (state.activeTab === 'migrate') main.innerHTML = renderMigrate();
 
       bindViewEvents();
       if (window.lucide) window.lucide.createIcons();
@@ -5412,6 +5668,234 @@
       document.getElementById('music-vol-val').textContent = e.target.value;
       musicPreviewAudio.volume = uploadState.musicVolume;
     });
+
+
+    // =========================================================================
+    // MIGRATE INSTAGRAM TO SNAPGRAM (OFFICIAL ZIP PARSER + META OAUTH)
+    // =========================================================================
+    async function parseInstagramExportZip(zipFile) {
+      if (!window.JSZip) {
+        state.migration.errorMsg = 'ZIP library failed to load. Check your internet connection.';
+        render();
+        return;
+      }
+      state.migration.parsing = true;
+      state.migration.errorMsg = '';
+      state.migration.statusMsg = 'Extracting Instagram export archive...';
+      render();
+
+      try {
+        const zip = await window.JSZip.loadAsync(zipFile);
+        const entries = Object.keys(zip.files);
+
+        const readJson = async (pattern) => {
+          const key = entries.find(k => pattern.test(k) && !zip.files[k].dir);
+          if (!key) return null;
+          try { return JSON.parse(await zip.files[key].async('string')); } catch { return null; }
+        };
+
+        // 1. Parse Profile
+        const profJson = await readJson(/profile_information\.json$/i);
+        let parsedProfile = null;
+        if (profJson && profJson.profile_user && profJson.profile_user[0]) {
+          const sm = profJson.profile_user[0].string_map_data || {};
+          parsedProfile = {
+            username: sm.Username?.value || state.currentUser.username,
+            fullName: sm.Name?.value || '',
+            bio: sm.Bio?.value || '',
+            avatarUrl: '',
+            avatarFile: null
+          };
+        }
+        const profPicKey = entries.find(k => /media\/profile\/.*\.(jpe?g|png|webp)$/i.test(k));
+        if (profPicKey) {
+          const blob = await zip.files[profPicKey].async('blob');
+          const file = new File([blob], 'ig_avatar.jpg', { type: blob.type || 'image/jpeg' });
+          if (!parsedProfile) parsedProfile = { username: state.currentUser.username, fullName: state.currentUser.fullName, bio: '' };
+          parsedProfile.avatarFile = file;
+          parsedProfile.avatarUrl = URL.createObjectURL(file);
+        }
+        state.migration.parsedProfile = parsedProfile;
+
+        // 2. Parse Media (Posts, Reels, Archived Stories)
+        const parsedMedia = [];
+        let unavailable = 0;
+        const addMediaFromZipPath = async (uri, kind, caption, ts) => {
+          const cleanUri = (uri || '').replace(/^\/+/, '');
+          const matchKey = entries.find(k => k.endsWith(cleanUri) && !zip.files[k].dir);
+          if (!matchKey) { unavailable += 1; return; }
+          const isVid = /\.(mp4|mov|webm)$/i.test(matchKey);
+          const isImg = /\.(jpe?g|png|webp)$/i.test(matchKey);
+          if (!isVid && !isImg) { unavailable += 1; return; }
+          const blob = await zip.files[matchKey].async('blob');
+          const mime = isVid ? 'video/mp4' : 'image/jpeg';
+          const file = new File([blob], matchKey.split('/').pop(), { type: mime });
+          parsedMedia.push({
+            id: 'mig_' + parsedMedia.length,
+            kind,
+            type: isVid ? 'video' : 'image',
+            file,
+            url: URL.createObjectURL(file),
+            caption: caption || '',
+            timestamp: ts ? new Date(ts * 1000).toISOString() : new Date().toISOString(),
+            selected: parsedMedia.length < 25
+          });
+        };
+
+        const postsJson = await readJson(/posts_1\.json$/i);
+        if (Array.isArray(postsJson)) {
+          for (const post of postsJson.slice(0, 30)) {
+            const cap = post.title || post.media?.[0]?.title || '';
+            for (const m of (post.media || [])) {
+              await addMediaFromZipPath(m.uri, 'post', m.title || cap, m.creation_timestamp);
+            }
+          }
+        }
+        const reelsJson = await readJson(/reels\.json$/i);
+        if (reelsJson?.ig_reels_media) {
+          for (const r of reelsJson.ig_reels_media.slice(0, 20)) {
+            for (const m of (r.media || [])) {
+              await addMediaFromZipPath(m.uri, 'reel', m.title || '', m.creation_timestamp);
+            }
+          }
+        }
+        const storiesJson = await readJson(/stories\.json$/i);
+        if (storiesJson?.ig_stories) {
+          for (const s of storiesJson.ig_stories.slice(0, 20)) {
+            await addMediaFromZipPath(s.uri, 'story', s.title || '', s.creation_timestamp);
+          }
+        }
+
+        // Fallback scan if JSON structure differs
+        if (!parsedMedia.length) {
+          const mediaKeys = entries.filter(k => /media\/(posts|reels|stories)\/.*\.(jpe?g|png|webp|mp4|mov)$/i.test(k)).slice(0, 25);
+          for (const k of mediaKeys) {
+            const kind = k.includes('/reels/') ? 'reel' : k.includes('/stories/') ? 'story' : 'post';
+            await addMediaFromZipPath(k, kind, '', null);
+          }
+        }
+        state.migration.parsedMedia = parsedMedia;
+        state.migration.stats.unavailable = unavailable;
+
+        // 3. Parse Followers/Following
+        await loadExploreUsers();
+        const followersJson = await readJson(/followers_1\.json$/i);
+        const followingJson = await readJson(/following\.json$/i);
+        const friendNames = new Set();
+        (Array.isArray(followersJson) ? followersJson : []).forEach(x => x.string_list_data?.forEach(d => d.value && friendNames.add(d.value)));
+        (followingJson?.relationships_following || []).forEach(x => x.string_list_data?.forEach(d => d.value && friendNames.add(d.value)));
+        state.migration.parsedFriends = Array.from(friendNames).map(uname => {
+          const found = state.exploreUsers.find(u => (u.username || '').toLowerCase() === uname.toLowerCase());
+          return { username: uname, onSnapgram: Boolean(found), userId: found?.id || '' };
+        });
+
+        // 4. Parse Chat Archive Summaries (Read-only)
+        const chatKeys = entries.filter(k => /messages\/inbox\/.*\/message_1\.json$/i.test(k)).slice(0, 20);
+        const chats = [];
+        for (const ck of chatKeys) {
+          try {
+            const cj = JSON.parse(await zip.files[ck].async('string'));
+            chats.push({ title: cj.title || 'Conversation', count: (cj.messages || []).length });
+          } catch {}
+        }
+        state.migration.parsedChats = chats;
+
+        state.migration.statusMsg = `Archive ready: ${parsedMedia.length} media items, ${state.migration.parsedFriends.length} connections found.`;
+      } catch (err) {
+        state.migration.errorMsg = err.message || 'Could not read Instagram ZIP file.';
+      } finally {
+        state.migration.parsing = false;
+        render();
+      }
+    }
+
+    async function importParsedInstagramProfile() {
+      const p = state.migration.parsedProfile;
+      if (!p) return;
+      state.migration.importing = true;
+      state.migration.errorMsg = '';
+      state.migration.statusMsg = 'Importing profile details...';
+      render();
+      try {
+        if (p.avatarFile && state.currentUser.supaToken) {
+          const up = await uploadFileToSupabase(p.avatarFile, 'avatar', () => {});
+          state.currentUser.avatar = up.publicUrl;
+        }
+        if (p.fullName) state.currentUser.fullName = p.fullName;
+        if (p.bio) state.currentUser.bio = p.bio;
+        saveSession(state.currentUser);
+        await syncUserActivity('login');
+        state.migration.stats.profile = true;
+        state.migration.statusMsg = 'Profile imported successfully ✓';
+        showToast('Profile imported ✓');
+      } catch (err) {
+        state.migration.errorMsg = err.message || 'Profile import failed.';
+      } finally {
+        state.migration.importing = false;
+        render();
+      }
+    }
+
+    async function importSelectedInstagramMedia() {
+      const selected = state.migration.parsedMedia.filter(x => x.selected);
+      if (!selected.length) { showToast('Select at least one item to import'); return; }
+      state.migration.importing = true;
+      state.migration.progress = 0;
+      state.migration.errorMsg = '';
+      render();
+
+      try {
+        for (let i = 0; i < selected.length; i++) {
+          const item = selected[i];
+          state.migration.statusMsg = `Importing ${i + 1} of ${selected.length}...`;
+          const up = await uploadFileToSupabase(item.file, item.kind, () => {});
+          let savedId = 'imp_' + Date.now() + '_' + i;
+          if (state.currentUser.supaUserId) {
+            const row = await saveMediaRecordToSupabase({
+              user_id: state.currentUser.supaUserId,
+              username: state.currentUser.username,
+              kind: item.kind,
+              media_urls: [up.publicUrl],
+              media_types: [item.type],
+              storage_paths: [up.storagePath],
+              caption: item.caption || '',
+              privacy: state.currentUser.isPrivate ? 'private' : 'public',
+              expires_at: item.kind === 'story' ? new Date(Date.now() + 86400000).toISOString() : null
+            });
+            if (row?.id) savedId = row.id;
+          }
+          state.migration.importedIds.push(savedId);
+          if (item.kind === 'reel') state.migration.stats.reels += 1;
+          else if (item.kind === 'story') state.migration.stats.stories += 1;
+          else if (item.type === 'video') state.migration.stats.videos += 1;
+          else state.migration.stats.photos += 1;
+
+          state.migration.progress = Math.round(((i + 1) / selected.length) * 100);
+          render();
+        }
+        await loadRemoteMedia();
+        state.migration.statusMsg = `Successfully imported ${selected.length} item(s) to Snapgram ✓`;
+        showToast('Instagram media imported ✓');
+      } catch (err) {
+        state.migration.errorMsg = err.message || 'Import interrupted.';
+      } finally {
+        state.migration.importing = false;
+        render();
+      }
+    }
+
+    async function deleteAllImportedInstagramData() {
+      const ids = [...state.migration.importedIds];
+      for (const id of ids) {
+        await deleteMediaItem('post', id);
+        await deleteMediaItem('reel', id);
+        await deleteMediaItem('story', id);
+      }
+      state.migration.importedIds = [];
+      state.migration.stats = { profile: false, photos: 0, videos: 0, reels: 0, stories: 0, invited: state.migration.stats.invited, unavailable: 0 };
+      state.migration.statusMsg = 'All imported data deleted.';
+      render();
+    }
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
