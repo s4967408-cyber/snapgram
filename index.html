@@ -759,6 +759,25 @@
     </div>
   </div>
 
+  <!-- Instagram-Style Account Switcher Modal -->
+  <div id="account-switcher-modal" class="hidden fixed inset-0 z-[85] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="w-full sm:max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700 mx-auto sm:hidden"></div>
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold">Switch Accounts</h3>
+        <button id="close-account-switcher" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="account-switcher-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+      <button type="button" id="add-another-account-btn" class="w-full py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-3 text-sm font-semibold transition">
+        <div class="w-9 h-9 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center">
+          <i data-lucide="plus" class="w-5 h-5"></i>
+        </div>
+        <span>Add Snapgram account</span>
+      </button>
+      <p id="account-limit-note" class="text-[11px] text-zinc-400 text-center"></p>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast" class="hidden fixed bottom-20 md:bottom-6 right-6 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold shadow-lg"></div>
 
@@ -1427,13 +1446,14 @@
         <div class="max-w-3xl mx-auto px-4 py-5 md:py-8 space-y-6">
           <!-- Instagram Profile Top Bar -->
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
+            <button type="button" id="open-account-switcher-top" class="flex items-center gap-1.5 hover:opacity-80 transition">
               ${u.isPrivate ? '<i data-lucide="lock" class="w-4 h-4"></i>' : ''}
               <h1 class="text-xl font-bold tracking-tight inline-flex items-center gap-1.5">${u.username}${renderVerifiedBadge(u.username)}</h1>
               <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-500"></i>
               ${u.isAdmin ? '<span class="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 font-semibold">Admin</span>' : ''}
-            </div>
-            <div class="flex items-center gap-2">
+            </button>
+            <div class="flex items-center gap-1.5">
+              <button id="open-account-switcher-btn" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-xs font-semibold">Switch</button>
               <button id="toggle-privacy-btn" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-xs font-semibold">
                 ${u.isPrivate ? 'Private' : 'Public'}
               </button>
@@ -2484,6 +2504,11 @@
         });
       });
 
+      const swTop = document.getElementById('open-account-switcher-top');
+      if (swTop) swTop.addEventListener('click', openAccountSwitcher);
+      const swBtn = document.getElementById('open-account-switcher-btn');
+      if (swBtn) swBtn.addEventListener('click', openAccountSwitcher);
+
       const privBtn = document.getElementById('toggle-privacy-btn');
       if (privBtn) {
         privBtn.addEventListener('click', () => {
@@ -2620,6 +2645,7 @@
           isPrivate: Boolean(userObj.isPrivate),
           issuedAt: Date.now()
         }));
+        if (typeof upsertSavedDeviceAccount === 'function' && userObj.email) upsertSavedDeviceAccount(userObj);
       } catch {}
     }
 
@@ -2693,6 +2719,7 @@
       if (supaUserId) state.currentUser.supaUserId = supaUserId;
       state.currentUser.followers = 0;
       state.currentUser.following = 0;
+      state.addingAccount = false;
       state.isAuthenticated = true;
       state.activeTab = isAdmin ? 'admin' : 'home';
       state.authError = '';
@@ -2731,6 +2758,7 @@
           <div class="w-full max-w-[350px] space-y-3">
             <div class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 px-8 py-9 space-y-5">
               <div class="text-center space-y-2">
+                ${state.addingAccount ? `<div class="flex justify-end mb-1"><button type="button" id="cancel-add-account-btn" class="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white">Cancel</button></div>` : ''}
                 <h1 class="text-4xl font-extrabold tracking-tight italic bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 bg-clip-text text-transparent">SNAPGRAM</h1>
                 ${m === 'signup' ? '<p class="text-xs font-semibold text-zinc-500 leading-snug">Sign up to see photos and videos from your friends.</p>' : ''}
                 ${m === 'otp' ? '<p class="text-xs text-zinc-500">Enter your email or phone to verify with OTP.</p>' : ''}
@@ -3015,6 +3043,17 @@
             state.authError = err.message || 'Failed to resend confirmation email.';
             render();
           }
+        });
+      }
+
+      const cancelAddBtn = document.getElementById('cancel-add-account-btn');
+      if (cancelAddBtn) {
+        cancelAddBtn.addEventListener('click', () => {
+          state.addingAccount = false;
+          state.isAuthenticated = true;
+          state.authError = '';
+          state.authMessage = '';
+          render();
         });
       }
 
@@ -5896,6 +5935,236 @@
       state.migration.statusMsg = 'All imported data deleted.';
       render();
     }
+
+
+    // =========================================================================
+    // MULTIPLE ACCOUNT SWITCHING SYSTEM (MAX 5 ACCOUNTS, ISOLATED SESSIONS)
+    // =========================================================================
+    const MULTI_ACCOUNTS_KEY = 'snapgram_multi_accounts_v1';
+    const MAX_SAVED_ACCOUNTS = 5;
+
+    function loadSavedDeviceAccounts() {
+      try {
+        const raw = localStorage.getItem(MULTI_ACCOUNTS_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
+    }
+
+    function saveDeviceAccounts(list) {
+      try { localStorage.setItem(MULTI_ACCOUNTS_KEY, JSON.stringify(list)); } catch {}
+    }
+
+    function upsertSavedDeviceAccount(userObj) {
+      if (!userObj || !userObj.email) return;
+      const list = loadSavedDeviceAccounts();
+      const idx = list.findIndex(a => (a.email || '').toLowerCase() === userObj.email.toLowerCase());
+      const record = {
+        email: userObj.email,
+        username: userObj.username,
+        fullName: userObj.fullName || userObj.username,
+        category: userObj.category || '',
+        bio: userObj.bio || '',
+        website: userObj.website || '',
+        avatar: userObj.avatar || '',
+        isPrivate: Boolean(userObj.isPrivate),
+        supaToken: userObj.supaToken || '',
+        supaRefreshToken: userObj.supaRefreshToken || '',
+        supaUserId: userObj.supaUserId || '',
+        isAdmin: Boolean(userObj.isAdmin),
+        lastUsedAt: Date.now()
+      };
+      if (idx >= 0) {
+        list[idx] = record;
+      } else {
+        if (list.length >= MAX_SAVED_ACCOUNTS) {
+          showToast(`Max ${MAX_SAVED_ACCOUNTS} accounts saved. Remove one to save more.`);
+          return;
+        }
+        list.unshift(record);
+      }
+      saveDeviceAccounts(list);
+    }
+
+    function removeSavedDeviceAccount(email) {
+      const list = loadSavedDeviceAccounts().filter(a => (a.email || '').toLowerCase() !== (email || '').toLowerCase());
+      saveDeviceAccounts(list);
+      renderAccountSwitcherList();
+      showToast('Account removed from device');
+    }
+
+    function resetIsolatedAccountState() {
+      state.posts = [];
+      state.reels = [];
+      state.stories = [];
+      state.archivedStories = [];
+      state.conversations = [];
+      state.activeConvId = null;
+      state.followRequests = [];
+      state.notifications = [];
+      state.profileStack = [];
+      state.exploreUsers = [];
+      state.verifiedUsers = {};
+      state.admin.users = [];
+      state.admin.allMessages = [];
+      state.searchQuery = '';
+      state.chatSearch = '';
+    }
+
+    async function switchToSavedAccount(email) {
+      const list = loadSavedDeviceAccounts();
+      const target = list.find(a => (a.email || '').toLowerCase() === (email || '').toLowerCase());
+      if (!target) return;
+
+      if ((target.email || '').toLowerCase() === (state.currentUser.email || '').toLowerCase()) {
+        document.getElementById('account-switcher-modal').classList.add('hidden');
+        return;
+      }
+
+      // Verify token / refresh if expired before switching
+      let activeToken = target.supaToken || '';
+      let activeRefresh = target.supaRefreshToken || '';
+      if (activeToken && isJwtExpired(activeToken)) {
+        const cfg = loadSupaConfig();
+        let refreshed = false;
+        if (cfg.url.startsWith('https://') && cfg.anonKey && activeRefresh) {
+          try {
+            const res = await fetch(`${cfg.url}/auth/v1/token?grant_type=refresh_token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', apikey: cfg.anonKey },
+              body: JSON.stringify({ refresh_token: activeRefresh })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.access_token) {
+                activeToken = data.access_token;
+                if (data.refresh_token) activeRefresh = data.refresh_token;
+                refreshed = true;
+              }
+            }
+          } catch {}
+        }
+        if (!refreshed) {
+          document.getElementById('account-switcher-modal').classList.add('hidden');
+          state.addingAccount = true;
+          state.isAuthenticated = false;
+          state.authMode = 'login';
+          state.authError = `Session expired for @${target.username}. Please sign in again.`;
+          render();
+          const emailInp = document.getElementById('auth-email');
+          if (emailInp) emailInp.value = target.email;
+          return;
+        }
+      }
+
+      // Isolate state & switch active user
+      resetIsolatedAccountState();
+      state.currentUser = {
+        email: target.email,
+        supaUserId: target.supaUserId || '',
+        supaToken: activeToken,
+        supaRefreshToken: activeRefresh,
+        isAdmin: (target.email || '').toLowerCase() === ADMIN_EMAIL,
+        username: target.username,
+        fullName: target.fullName || target.username,
+        category: target.category || '',
+        bio: target.bio || '',
+        website: target.website || '',
+        avatar: target.avatar || '',
+        isPrivate: Boolean(target.isPrivate),
+        followers: 0,
+        following: 0
+      };
+      state.isAuthenticated = true;
+      state.addingAccount = false;
+      state.activeTab = 'home';
+
+      saveSession(state.currentUser);
+      upsertSavedDeviceAccount(state.currentUser);
+      document.getElementById('account-switcher-modal').classList.add('hidden');
+      showToast(`Switched to @${state.currentUser.username}`);
+      render();
+
+      syncUserActivity('login');
+      loadRemoteMedia();
+      loadMyMessages();
+      loadOwnFollowData();
+      loadExploreUsers();
+      if (state.currentUser.isAdmin) loadAdminData();
+    }
+
+    function renderAccountSwitcherList() {
+      const listEl = document.getElementById('account-switcher-list');
+      const noteEl = document.getElementById('account-limit-note');
+      const addBtn = document.getElementById('add-another-account-btn');
+      const accounts = loadSavedDeviceAccounts();
+      const activeEmail = (state.currentUser.email || '').toLowerCase();
+
+      if (!accounts.length && state.currentUser.email) {
+        upsertSavedDeviceAccount(state.currentUser);
+      }
+      const freshList = loadSavedDeviceAccounts();
+      listEl.innerHTML = freshList.map(acc => {
+        const isActive = (acc.email || '').toLowerCase() === activeEmail;
+        return `
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-2xl border ${isActive ? 'border-pink-500 bg-pink-500/5' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/60'} transition">
+            <button type="button" class="switch-acc-btn flex-1 flex items-center gap-3 text-left min-w-0" data-email="${acc.email}">
+              ${renderAvatar(acc.avatar, acc.username, 'w-10 h-10 shrink-0')}
+              <div class="min-w-0">
+                <p class="text-sm font-bold truncate inline-flex items-center gap-1">@${acc.username}${acc.isAdmin ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-500">Admin</span>' : ''}</p>
+                <p class="text-[11px] text-zinc-500 truncate">${acc.email}</p>
+              </div>
+            </button>
+            <div class="flex items-center gap-1.5 shrink-0">
+              ${isActive
+                ? '<span class="w-5 h-5 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs font-bold">✓</span>'
+                : `<button type="button" class="remove-saved-acc-btn p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-500/10" data-email="${acc.email}" title="Remove from device"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      noteEl.textContent = `${freshList.length} of ${MAX_SAVED_ACCOUNTS} accounts saved on this device`;
+      if (addBtn) addBtn.disabled = freshList.length >= MAX_SAVED_ACCOUNTS;
+
+      document.querySelectorAll('.switch-acc-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchToSavedAccount(btn.dataset.email));
+      });
+      document.querySelectorAll('.remove-saved-acc-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          removeSavedDeviceAccount(btn.dataset.email);
+        });
+      });
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function openAccountSwitcher() {
+      upsertSavedDeviceAccount(state.currentUser);
+      renderAccountSwitcherList();
+      document.getElementById('account-switcher-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    document.getElementById('close-account-switcher').addEventListener('click', () => {
+      document.getElementById('account-switcher-modal').classList.add('hidden');
+    });
+
+    document.getElementById('add-another-account-btn').addEventListener('click', () => {
+      const accounts = loadSavedDeviceAccounts();
+      if (accounts.length >= MAX_SAVED_ACCOUNTS) {
+        showToast(`Maximum ${MAX_SAVED_ACCOUNTS} accounts per device reached`);
+        return;
+      }
+      document.getElementById('account-switcher-modal').classList.add('hidden');
+      state.addingAccount = true;
+      state.isAuthenticated = false;
+      state.authMode = 'login';
+      state.authError = '';
+      state.authMessage = '';
+      render();
+    });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
