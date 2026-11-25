@@ -953,9 +953,54 @@
       if (mobCreateBtn) mobCreateBtn.addEventListener('click', openCreatePicker);
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.activeTab = btn.dataset.tab;
-          render();
+        if (btn.dataset.tab !== 'profile') {
+          btn.addEventListener('click', () => {
+            state.activeTab = btn.dataset.tab;
+            render();
+          });
+          return;
+        }
+
+        // Profile icon: Single-tap -> Profile | Double-tap -> Cycle next account | Long-press -> Account list
+        let holdTimer = null;
+        let held = false;
+        let lastTapTime = 0;
+        let singleTapTimer = null;
+
+        const startHold = () => {
+          held = false;
+          clearTimeout(holdTimer);
+          holdTimer = setTimeout(() => {
+            held = true;
+            clearTimeout(singleTapTimer);
+            openAccountSwitcher();
+          }, 450);
+        };
+        const cancelHold = () => { clearTimeout(holdTimer); };
+
+        btn.addEventListener('touchstart', startHold, { passive: true });
+        btn.addEventListener('touchend', cancelHold);
+        btn.addEventListener('touchmove', cancelHold, { passive: true });
+        btn.addEventListener('touchcancel', cancelHold);
+        btn.addEventListener('mousedown', startHold);
+        btn.addEventListener('mouseup', cancelHold);
+        btn.addEventListener('mouseleave', cancelHold);
+        btn.addEventListener('contextmenu', e => e.preventDefault());
+
+        btn.addEventListener('click', e => {
+          if (held) { e.preventDefault(); held = false; return; }
+          const now = Date.now();
+          if (now - lastTapTime < 300) {
+            clearTimeout(singleTapTimer);
+            lastTapTime = 0;
+            cycleNextSavedAccount();
+          } else {
+            lastTapTime = now;
+            singleTapTimer = setTimeout(() => {
+              state.activeTab = 'profile';
+              render();
+            }, 220);
+          }
         });
       });
     }
@@ -1490,7 +1535,6 @@
               ${u.isAdmin ? '<span class="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 font-semibold">Admin</span>' : ''}
             </button>
             <div class="flex items-center gap-1.5">
-              <button id="open-account-switcher-btn" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-xs font-semibold">Switch</button>
               <button id="toggle-privacy-btn" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-xs font-semibold">
                 ${u.isPrivate ? 'Private' : 'Public'}
               </button>
@@ -2564,8 +2608,6 @@
 
       const swTop = document.getElementById('open-account-switcher-top');
       if (swTop) swTop.addEventListener('click', openAccountSwitcher);
-      const swBtn = document.getElementById('open-account-switcher-btn');
-      if (swBtn) swBtn.addEventListener('click', openAccountSwitcher);
 
       const privBtn = document.getElementById('toggle-privacy-btn');
       if (privBtn) {
@@ -6170,6 +6212,20 @@
       loadOwnFollowData();
       loadExploreUsers();
       if (state.currentUser.isAdmin) loadAdminData();
+    }
+
+
+    async function cycleNextSavedAccount() {
+      upsertSavedDeviceAccount(state.currentUser);
+      const list = loadSavedDeviceAccounts();
+      if (list.length < 2) {
+        showToast('Add another account (long-press Profile) to double-tap switch');
+        return;
+      }
+      const curEmail = (state.currentUser.email || '').toLowerCase();
+      const curIdx = list.findIndex(a => (a.email || '').toLowerCase() === curEmail);
+      const nextIdx = (curIdx + 1) % list.length;
+      await switchToSavedAccount(list[nextIdx].email);
     }
 
     function renderAccountSwitcherList() {
