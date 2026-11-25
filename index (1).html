@@ -170,7 +170,7 @@
         <div id="story-progress-bars" class="flex gap-1 mb-3"></div>
         <div class="flex items-center justify-between text-white">
           <div class="flex items-center gap-2">
-            <span id="story-modal-user" class="text-sm font-semibold"></span>
+            <button type="button" id="story-modal-user" class="text-sm font-semibold hover:underline text-left"></button>
             <span id="story-modal-privacy" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/80 font-medium"></span>
           </div>
           <div class="flex items-center gap-1">
@@ -760,25 +760,61 @@
       filterActiveStories();
       return `
         <div class="max-w-xl mx-auto py-5 px-4 space-y-6">
-          <!-- Stories -->
+          <!-- Instagram-Style Stories Bar (My Story with + overlay + Grouped Other Users) -->
           <div class="flex gap-4 overflow-x-auto no-scrollbar pb-1">
-            ${state.stories.map(s => `
-              <button class="open-story flex flex-col items-center gap-1.5 shrink-0" data-story-id="${s.id}">
-                <div class="w-16 h-16 rounded-full p-[2.5px] ${s.viewed ? 'bg-zinc-300 dark:bg-zinc-700' : 'story-ring'}">
-                  ${s.mediaType === 'video'
-                    ? `<video src="${s.img}" muted playsinline class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950"></video>`
-                    : `<img src="${s.img}" alt="${s.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
-                  }
+            ${(() => {
+              const me = state.currentUser;
+              const myUname = (me.username || '').toLowerCase();
+              const myStories = state.stories.filter(s => (s.username || '').toLowerCase() === myUname);
+              const myHasUnseen = myStories.some(s => !s.viewed);
+              const myRingClass = myStories.length
+                ? (myHasUnseen ? 'story-ring' : 'bg-zinc-300 dark:bg-zinc-700')
+                : 'bg-zinc-200 dark:bg-zinc-800';
+
+              const otherMap = {};
+              state.stories.forEach(s => {
+                const u = (s.username || '').toLowerCase();
+                if (!u || u === myUname) return;
+                if (!otherMap[u]) otherMap[u] = { username: s.username, stories: [] };
+                otherMap[u].stories.push(s);
+              });
+              const otherGroups = Object.values(otherMap);
+
+              const myCircle = `
+                <div class="flex flex-col items-center gap-1.5 shrink-0">
+                  <div class="relative w-16 h-16">
+                    <button type="button" id="my-story-avatar-btn" class="w-16 h-16 rounded-full p-[2.5px] ${myRingClass} block">
+                      ${me.avatar
+                        ? `<img src="${me.avatar}" alt="${me.username || 'Your story'}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
+                        : `<div class="w-full h-full rounded-full bg-zinc-100 dark:bg-zinc-900 border-2 border-white dark:border-zinc-950 flex items-center justify-center text-lg font-bold text-zinc-600 dark:text-zinc-300">${(me.fullName || me.username || 'Y').charAt(0).toUpperCase()}</div>`
+                      }
+                    </button>
+                    <button type="button" id="my-story-add-btn" class="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white border-2 border-white dark:border-zinc-950 flex items-center justify-center shadow hover:scale-110 transition" aria-label="Add to story" title="Add to story">
+                      <i data-lucide="plus" class="w-3 h-3 stroke-[3]"></i>
+                    </button>
+                  </div>
+                  <span class="text-[11px] font-medium truncate w-16 text-center">Your story</span>
                 </div>
-                <span class="text-[11px] font-medium truncate w-16 text-center">${s.username}</span>
-              </button>
-            `).join('')}
-            <button id="empty-create-story-btn" class="flex flex-col items-center gap-1.5 shrink-0">
-              <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-500 hover:border-pink-500 hover:text-pink-500 transition">
-                <i data-lucide="plus" class="w-6 h-6"></i>
-              </div>
-              <span class="text-[11px] font-medium text-zinc-500">Add Story</span>
-            </button>
+              `;
+
+              const otherCircles = otherGroups.map(g => {
+                const hasUnseen = g.stories.some(s => !s.viewed);
+                const first = g.stories[0];
+                return `
+                  <button type="button" class="open-story-group flex flex-col items-center gap-1.5 shrink-0" data-username="${g.username}">
+                    <div class="w-16 h-16 rounded-full p-[2.5px] ${hasUnseen ? 'story-ring' : 'bg-zinc-300 dark:bg-zinc-700'}">
+                      ${first.mediaType === 'video'
+                        ? `<video src="${first.img}" muted playsinline class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950"></video>`
+                        : `<img src="${first.img}" alt="${g.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
+                      }
+                    </div>
+                    <span class="text-[11px] font-medium truncate w-16 text-center">${g.username}</span>
+                  </button>
+                `;
+              }).join('');
+
+              return myCircle + otherCircles;
+            })()}
           </div>
 
           <!-- Posts -->
@@ -1580,16 +1616,34 @@
           openCreate();
         });
       }
-      const emptyCreateStory = document.getElementById('empty-create-story-btn');
-      if (emptyCreateStory) {
-        emptyCreateStory.addEventListener('click', () => {
-          state.createKind = 'story';
-          document.querySelectorAll('.create-kind-btn').forEach(b => {
-            b.className = `create-kind-btn flex-1 py-2 rounded-xl text-xs font-semibold ${b.dataset.kind === 'story' ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
-          });
-          openCreate();
+      const myStoryAddBtn = document.getElementById('my-story-add-btn');
+      if (myStoryAddBtn) {
+        myStoryAddBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          openCreate('story');
         });
       }
+
+      const myStoryAvatarBtn = document.getElementById('my-story-avatar-btn');
+      if (myStoryAvatarBtn) {
+        myStoryAvatarBtn.addEventListener('click', () => {
+          const myUname = (state.currentUser.username || '').toLowerCase();
+          const myStories = state.stories.filter(s => (s.username || '').toLowerCase() === myUname);
+          if (myStories.length) {
+            openStoryViewer(myStories, 0);
+          } else {
+            openCreate('story');
+          }
+        });
+      }
+
+      document.querySelectorAll('.open-story-group').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const uname = (btn.dataset.username || '').toLowerCase();
+          const userStories = state.stories.filter(st => (st.username || '').toLowerCase() === uname);
+          if (userStories.length) openStoryViewer(userStories, 0);
+        });
+      });
 
       document.querySelectorAll('.audio-toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -4408,23 +4462,61 @@
         const token = fresh || cfg.anonKey;
         const filter = userId
           ? `id=eq.${encodeURIComponent(userId)}`
-          : `username=eq.${encodeURIComponent(cleanUname)}`;
-        const uRes = await fetch(`${cfg.url}/rest/v1/snapgram_users?${filter}&select=*&limit=1`, {
-          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
-        });
-        if (!uRes.ok) throw new Error('Could not load profile');
-        const users = await uRes.json();
-        const userRow = users[0];
-        if (!userRow) throw new Error('User not found');
+          : `username=ilike.${encodeURIComponent(cleanUname)}`;
+        let userRow = null;
+        try {
+          const uRes = await fetch(`${cfg.url}/rest/v1/snapgram_users?${filter}&select=*&limit=1`, {
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+          });
+          if (uRes.ok) {
+            const users = await uRes.json();
+            userRow = users[0] || null;
+          }
+        } catch {}
+
+        // Fallback if user row isn't in snapgram_users yet
+        if (!userRow) {
+          const isMeFallback = (userId && userId === state.currentUser.supaUserId) || (cleanUname && cleanUname === (state.currentUser.username || '').toLowerCase());
+          if (isMeFallback) {
+            userRow = {
+              id: state.currentUser.supaUserId || '',
+              username: state.currentUser.username,
+              full_name: state.currentUser.fullName,
+              avatar_url: state.currentUser.avatar,
+              category: state.currentUser.category,
+              bio: state.currentUser.bio,
+              website: state.currentUser.website,
+              is_private: state.currentUser.isPrivate,
+              is_verified: Boolean(state.verifiedUsers[(state.currentUser.username || '').toLowerCase()])
+            };
+          } else {
+            userRow = {
+              id: userId || '',
+              username: cleanUname,
+              full_name: cleanUname,
+              avatar_url: '',
+              category: '',
+              bio: '',
+              website: '',
+              is_private: false,
+              is_verified: Boolean(state.verifiedUsers[cleanUname])
+            };
+          }
+        }
 
         const targetId = userRow.id;
+        const mediaQuery = targetId
+          ? `user_id=eq.${encodeURIComponent(targetId)}`
+          : `username=ilike.${encodeURIComponent(userRow.username)}`;
         const [mRes, fRes] = await Promise.all([
-          fetch(`${cfg.url}/rest/v1/snapgram_media?user_id=eq.${encodeURIComponent(targetId)}&order=created_at.desc`, {
+          fetch(`${cfg.url}/rest/v1/snapgram_media?${mediaQuery}&order=created_at.desc`, {
             headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
           }),
-          fetch(`${cfg.url}/rest/v1/snapgram_follows?or=(follower_id.eq.${encodeURIComponent(targetId)},following_id.eq.${encodeURIComponent(targetId)})`, {
-            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
-          })
+          targetId
+            ? fetch(`${cfg.url}/rest/v1/snapgram_follows?or=(follower_id.eq.${encodeURIComponent(targetId)},following_id.eq.${encodeURIComponent(targetId)})`, {
+                headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+              })
+            : Promise.resolve({ ok: false })
         ]);
 
         const mediaRows = mRes.ok ? await mRes.json() : [];
@@ -4700,6 +4792,29 @@
         }
       } catch {}
     }
+
+
+    // Global click delegation so profile, post detail, and follow-list taps always work
+    document.addEventListener('click', e => {
+      const profBtn = e.target.closest('.open-user-profile');
+      if (profBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openUserProfile({ userId: profBtn.dataset.userId || '', username: profBtn.dataset.username || '' });
+        return;
+      }
+      const smUser = e.target.closest('#story-modal-user');
+      if (smUser) {
+        const uname = (smUser.textContent || '').replace(/^@/, '').trim();
+        if (uname) {
+          clearTimeout(storyAutoTimer);
+          document.getElementById('story-modal-video')?.pause();
+          document.getElementById('story-modal').classList.add('hidden');
+          openUserProfile({ username: uname });
+        }
+        return;
+      }
+    });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
