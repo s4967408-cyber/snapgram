@@ -1788,6 +1788,7 @@
           website: userObj.website || '',
           avatar: userObj.avatar || '',
           supaToken: userObj.supaToken || '',
+          supaRefreshToken: userObj.supaRefreshToken || '',
           supaUserId: userObj.supaUserId || '',
           isPrivate: Boolean(userObj.isPrivate),
           issuedAt: Date.now()
@@ -1815,6 +1816,7 @@
           if (typeof sess.website === 'string') state.currentUser.website = sess.website;
           if (sess.avatar) state.currentUser.avatar = sess.avatar;
           if (sess.supaToken) state.currentUser.supaToken = sess.supaToken;
+          if (sess.supaRefreshToken) state.currentUser.supaRefreshToken = sess.supaRefreshToken;
           if (sess.supaUserId) state.currentUser.supaUserId = sess.supaUserId;
           if (typeof sess.isPrivate === 'boolean') state.currentUser.isPrivate = sess.isPrivate;
           state.currentUser.isAdmin = isAdmin;
@@ -1852,7 +1854,7 @@
       } catch {}
     }
 
-    function completeLogin(email, username, fullName, supaToken = '', supaUserId = '') {
+    function completeLogin(email, username, fullName, supaToken = '', supaUserId = '', supaRefreshToken = '') {
       const cleanEmail = email.trim().toLowerCase();
       const isAdmin = cleanEmail === ADMIN_EMAIL;
       state.currentUser.email = cleanEmail;
@@ -1860,6 +1862,7 @@
       state.currentUser.username = username ? username.trim().toLowerCase() : (isAdmin ? 'admin.snapgram' : cleanEmail.split('@')[0]);
       state.currentUser.fullName = fullName ? fullName.trim() : (isAdmin ? 'Snapgram Admin' : state.currentUser.username);
       if (supaToken) state.currentUser.supaToken = supaToken;
+      if (supaRefreshToken) state.currentUser.supaRefreshToken = supaRefreshToken;
       if (supaUserId) state.currentUser.supaUserId = supaUserId;
       state.currentUser.followers = 0;
       state.currentUser.following = 0;
@@ -2071,7 +2074,7 @@
             }
             state.pendingConfirmationEmail = '';
             const meta = data.user?.user_metadata || {};
-            completeLogin(data.user?.email || identifier, meta.username, meta.full_name, data.access_token || data.session?.access_token || '', data.user?.id || '');
+            completeLogin(data.user?.email || identifier, meta.username, meta.full_name, data.access_token || data.session?.access_token || '', data.user?.id || '', data.refresh_token || data.session?.refresh_token || '');
             return;
           } catch {
             state.authError = 'Could not reach Supabase Auth URL. Check your Supabase URL and Anon Key.';
@@ -3003,14 +3006,65 @@
     // =========================================================================
     // SUPABASE STORAGE (XHR REAL-TIME PROGRESS) + POSTGRES DATABASE
     // =========================================================================
-    function uploadFileToSupabase(file, kind, onProgress) {
+
+    function isJwtExpired(token) {
+      if (!token) return true;
+      try {
+        const part = token.split('.')[1];
+        if (!part) return false;
+        const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(atob(b64));
+        if (!payload.exp) return false;
+        return (Date.now() / 1000) >= (payload.exp - 60);
+      } catch {
+        return false;
+      }
+    }
+
+    async function ensureFreshSupaToken() {
+      const token = state.currentUser.supaToken;
+      if (!token) return '';
+      if (!isJwtExpired(token)) return token;
+
+      const cfg = loadSupaConfig();
+      const ref = state.currentUser.supaRefreshToken;
+      if (cfg.url.startsWith('https://') && cfg.anonKey && ref) {
+        try {
+          const res = await fetch(`${cfg.url}/auth/v1/token?grant_type=refresh_token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', apikey: cfg.anonKey },
+            body: JSON.stringify({ refresh_token: ref })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.access_token) {
+              state.currentUser.supaToken = data.access_token;
+              if (data.refresh_token) state.currentUser.supaRefreshToken = data.refresh_token;
+              saveSession(state.currentUser);
+              return data.access_token;
+            }
+          }
+        } catch {}
+      }
+      // Token expired and could not be refreshed -> prompt clean re-login
+      clearSession();
+      state.currentUser.supaToken = '';
+      state.currentUser.supaRefreshToken = '';
+      state.isAuthenticated = false;
+      state.authError = 'Your session expired. Please sign in again to upload.';
+      render();
+      throw new Error('Session expired. Please sign in again.');
+    }
+
+    async function uploadFileToSupabase(file, kind, onProgress) {
+      const fresh = await ensureFreshSupaToken();
       return new Promise((resolve, reject) => {
         const cfg = loadSupaConfig();
         if (!cfg.url.startsWith('https://') || !cfg.anonKey) {
           reject(new Error('Supabase is not configured. Open settings to add your Supabase URL and Key.'));
           return;
         }
-        const token = state.currentUser.supaToken || cfg.anonKey;
+        const token = fresh || cfg.anonKey;
         const userId = state.currentUser.supaUserId || state.currentUser.username || 'user';
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         const path = `${userId}/${kind}/${Date.now()}_${safeName}`;
@@ -3051,7 +3105,8 @@
 
     async function saveMediaRecordToSupabase(record) {
       const cfg = loadSupaConfig();
-      const token = state.currentUser.supaToken || cfg.anonKey;
+      const fresh = await ensureFreshSupaToken();
+      const token = fresh || cfg.anonKey;
       const res = await fetch(`${cfg.url}/rest/v1/snapgram_media`, {
         method: 'POST',
         headers: {
@@ -4212,13 +4267,14 @@
           fullName = meta.full_name || meta.name || fullName;
           avatar = meta.avatar_url || meta.picture || avatar;
           state.currentUser.supaToken = supaData.access_token || '';
+          state.currentUser.supaRefreshToken = supaData.refresh_token || '';
           state.currentUser.supaUserId = supaData.user?.id || '';
         }
 
         if (!email) throw new Error('Google account email unavailable');
         if (avatar) state.currentUser.avatar = avatar;
         const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9._]/g, '') || 'snapuser';
-        completeLogin(email, username, fullName, state.currentUser.supaToken, state.currentUser.supaUserId);
+        completeLogin(email, username, fullName, state.currentUser.supaToken, state.currentUser.supaUserId, state.currentUser.supaRefreshToken);
       } catch (err) {
         state.authError = err.message || 'Google One Tap sign-in failed.';
         render();
@@ -4336,7 +4392,7 @@
         }
         const cbType = params.get('type');
         history.replaceState(null, '', window.location.pathname + window.location.search);
-        completeLogin(email, username, fullName, accessToken, user.id || '');
+        completeLogin(email, username, fullName, accessToken, user.id || '', params.get('refresh_token') || '');
         if (cbType === 'signup') {
           showToast('Email confirmed! Welcome to Snapgram.');
         }
