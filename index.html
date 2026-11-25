@@ -184,6 +184,9 @@
         </div>
       </div>
       <div class="relative z-10 p-4 bg-gradient-to-t from-black/85 to-transparent space-y-3">
+        <button type="button" id="story-views-btn" class="hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 text-white text-[11px] font-semibold">
+          <i data-lucide="eye" class="w-3.5 h-3.5"></i> <span id="story-views-count">0 views</span>
+        </button>
         <div id="story-modal-music" class="hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 text-white text-[11px] font-medium"></div>
         <p id="story-modal-caption" class="text-white text-xs"></p>
         <div class="flex justify-center gap-4 text-2xl">
@@ -372,6 +375,16 @@
               <i data-lucide="mic" class="w-3.5 h-3.5 text-pink-500"></i> <span id="reel-vo-label">Voiceover</span>
             </button>
           </div>
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
+            <span class="text-[11px] font-semibold text-zinc-500 shrink-0">Effect:</span>
+            ${[
+              { id: 'none', label: 'Normal' },
+              { id: 'contrast(1.18) saturate(1.3)', label: 'Clarendon' },
+              { id: 'sepia(0.15) saturate(1.4) brightness(1.05)', label: 'Juno' },
+              { id: 'grayscale(1) contrast(1.15)', label: 'B&W' },
+              { id: 'sepia(0.35) brightness(0.95)', label: 'Vintage' }
+            ].map((f, idx) => `<button type="button" class="reel-filter-btn px-2.5 py-1 rounded-full text-[11px] font-semibold border border-zinc-200 dark:border-zinc-700 ${idx === 0 ? 'bg-pink-500 text-white border-pink-500' : ''}" data-rfilter="${f.id}">${f.label}</button>`).join('')}
+          </div>
           <button type="button" id="reel-capture-cover-btn" class="w-full py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold">
             Set Current Video Frame as Cover
           </button>
@@ -434,6 +447,10 @@
           <div id="create-preview-grid" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
         </div>
 
+        <div id="story-privacy-row" class="hidden px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center gap-2 text-xs">
+          <i data-lucide="eye-off" class="w-3.5 h-3.5 text-zinc-500 shrink-0"></i>
+          <input id="story-hide-from" type="text" placeholder="Hide story from (@user1, @user2)" class="flex-1 bg-transparent focus:outline-none text-xs" />
+        </div>
         <!-- Story Bottom Share Bar (Save Draft + Close Friends + Your Story) -->
         <div id="story-bottom-bar" class="hidden mt-auto p-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 bg-white dark:bg-zinc-950">
           <button type="button" id="story-save-draft-btn" class="px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-xs font-bold">Draft</button>
@@ -453,9 +470,23 @@
 
       <!-- Step 2: Instagram "New post / New reel" Caption, Tags, Location, Music & Cover -->
       <form id="create-form" class="hidden flex-1 flex flex-col overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-zinc-950">
-        <div class="p-4 flex gap-3 items-start">
-          <img id="create-step2-thumb" src="" alt="Thumb" class="w-16 h-16 rounded-lg object-cover bg-zinc-200 dark:bg-zinc-800 shrink-0" />
-          <textarea id="create-caption" rows="3" placeholder="Write a caption... #hashtags" class="flex-1 text-sm bg-transparent focus:outline-none resize-none"></textarea>
+        <div class="p-4 space-y-2.5">
+          <div class="flex gap-3 items-start">
+            <img id="create-step2-thumb" src="" alt="Thumb" class="w-16 h-16 rounded-lg object-cover bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+            <div class="flex-1 space-y-1">
+              <textarea id="create-caption" rows="4" maxlength="2200" placeholder="Write a caption... #hashtags @mentions" class="w-full text-sm bg-transparent focus:outline-none resize-none"></textarea>
+              <div class="flex items-center justify-between text-[11px] text-zinc-400">
+                <div class="flex gap-1.5 text-sm">
+                  ${['❤️','🔥','😂','✨','😍','🙌','📸','🎵'].map(e => `<button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="${e}">${e}</button>`).join('')}
+                </div>
+                <span id="create-caption-count">0/2200</span>
+              </div>
+            </div>
+          </div>
+          <div id="caption-mention-suggestions" class="hidden flex gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+          <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
+            ${['#snapgram','#photography','#reels','#trending','#viral','#travel','#ootd'].map(tag => `<button type="button" class="cap-tag-btn px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500 text-[11px] font-semibold shrink-0" data-tag="${tag}">${tag}</button>`).join('')}
+          </div>
         </div>
 
         <div id="create-post-extras" class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -1066,6 +1097,9 @@
                         ${p.following ? 'Following' : 'Follow'}
                       </button>
                     ` : `
+                      <button class="edit-post-caption-btn p-1.5 rounded-lg text-zinc-400 hover:text-pink-500 hover:bg-pink-500/10 transition" data-post-id="${p.id}" title="Edit Caption" aria-label="Edit Caption">
+                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                      </button>
                       <button class="delete-post-btn p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition" data-post-id="${p.id}" title="Delete Post" aria-label="Delete Post">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                       </button>
@@ -1112,10 +1146,13 @@
                   <div class="space-y-1 pt-1">
                     ${p.comments.map(c => `<p class="text-xs"><button type="button" class="open-user-profile font-semibold mr-1.5 hover:underline" data-username="${c.user}">${c.user}</button>${c.text}</p>`).join('')}
                   </div>
-                  <form class="comment-form flex gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800" data-post-id="${p.id}">
-                    <input id="comment-input-${p.id}" type="text" placeholder="Add a comment..." class="flex-1 text-xs bg-transparent focus:outline-none" />
-                    <button type="submit" class="text-xs font-semibold text-pink-500">Post</button>
-                  </form>
+                  ${p.allowComments === false
+                    ? '<p class="text-[11px] text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-800">Comments are turned off.</p>'
+                    : `<form class="comment-form flex gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800" data-post-id="${p.id}">
+                        <input id="comment-input-${p.id}" type="text" placeholder="Add a comment..." class="flex-1 text-xs bg-transparent focus:outline-none" />
+                        <button type="submit" class="text-xs font-semibold text-pink-500">Post</button>
+                      </form>`
+                  }
                 </div>
               </article>
             `;}).join('') : `
@@ -2273,6 +2310,27 @@
         });
       });
 
+      document.querySelectorAll('.edit-post-caption-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = state.posts.find(x => x.id === btn.dataset.postId);
+          if (!p) return;
+          const card = btn.closest('article');
+          const existing = card.querySelector('.inline-caption-editor');
+          if (existing) { existing.remove(); return; }
+          const form = document.createElement('form');
+          form.className = 'inline-caption-editor flex gap-2 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800';
+          form.innerHTML = `<input type="text" value="${(p.caption || '').replace(/"/g, '&quot;')}" class="flex-1 text-xs bg-transparent focus:outline-none" /><button type="submit" class="text-xs font-bold text-[#0095F6]">Save</button>`;
+          form.addEventListener('submit', async e => {
+            e.preventDefault();
+            p.caption = form.querySelector('input').value.trim();
+            await syncMediaEngagement(p.id, { caption: p.caption });
+            showToast('Caption updated ✓');
+            render();
+          });
+          card.appendChild(form);
+        });
+      });
+
       document.querySelectorAll('.delete-post-btn').forEach(btn => {
         btn.addEventListener('click', () => deleteMediaItem('post', btn.dataset.postId));
       });
@@ -3122,14 +3180,25 @@
       }
     });
     document.querySelectorAll('.story-react').forEach(btn => {
-      btn.addEventListener('click', () => showToast(`Reacted ${btn.dataset.emoji} to story`));
+      btn.addEventListener('click', () => {
+        const s = storyQueue[storyQueueIdx];
+        if (s && s.username && s.username !== state.currentUser.username) {
+          saveMessageToSupabase(s.username, `Reacted ${btn.dataset.emoji} to your story`);
+        }
+        showToast(`Reacted ${btn.dataset.emoji} to story`);
+      });
     });
     document.getElementById('story-reply-form').addEventListener('submit', e => {
       e.preventDefault();
       const input = document.getElementById('story-reply-input');
-      if (!input.value.trim()) return;
+      const txt = input.value.trim();
+      if (!txt) return;
+      const s = storyQueue[storyQueueIdx];
+      if (s && s.username && s.username !== state.currentUser.username) {
+        saveMessageToSupabase(s.username, `Story reply: ${txt}`);
+      }
       input.value = '';
-      showToast('Reply sent');
+      showToast('Reply sent to DM');
     });
 
     // =========================================================================
@@ -3482,6 +3551,7 @@
       postTools.classList.toggle('hidden', !(state.createKind === 'post' && activeItem.type === 'image'));
       reelTools.classList.toggle('hidden', !(state.createKind === 'reel' && activeItem.type === 'video'));
       storyBottom.classList.toggle('hidden', state.createKind !== 'story');
+      document.getElementById('story-privacy-row')?.classList.toggle('hidden', state.createKind !== 'story');
 
       if (state.createKind === 'story' && activeItem.type === 'image') {
         heroImg.classList.add('hidden');
@@ -5050,8 +5120,17 @@
       } else {
         smMusic.classList.add('hidden');
       }
+      s.viewers = Array.isArray(s.viewers) ? s.viewers : [];
+      if (state.currentUser.username && !s.viewers.includes(state.currentUser.username)) {
+        s.viewers.push(state.currentUser.username);
+      }
       const isOwner = s.username === state.currentUser.username || (state.currentUser.supaUserId && s.userId === state.currentUser.supaUserId);
       document.getElementById('delete-story-btn').classList.toggle('hidden', !isOwner);
+      const svBtn = document.getElementById('story-views-btn');
+      if (svBtn) {
+        svBtn.classList.toggle('hidden', !isOwner);
+        document.getElementById('story-views-count').textContent = `${s.viewers.length} view${s.viewers.length === 1 ? '' : 's'}`;
+      }
     }
 
     function advanceStorySlide(delta) {
@@ -6164,6 +6243,70 @@
       state.authError = '';
       state.authMessage = '';
       render();
+    });
+
+
+    // Caption Character Counter, Emojis, Hashtags, @Mention Suggestions & Reel Filters
+    document.getElementById('create-caption')?.addEventListener('input', e => {
+      const val = e.target.value;
+      document.getElementById('create-caption-count').textContent = `${val.length}/2200`;
+      const mMatch = val.match(/@([a-zA-Z0-9._]*)$/);
+      const sugWrap = document.getElementById('caption-mention-suggestions');
+      if (mMatch && state.exploreUsers.length) {
+        const q = mMatch[1].toLowerCase();
+        const hits = state.exploreUsers.filter(u => (u.username || '').toLowerCase().includes(q)).slice(0, 6);
+        if (hits.length) {
+          sugWrap.classList.remove('hidden');
+          sugWrap.innerHTML = hits.map(u => `<button type="button" class="cap-mention-pick px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold shrink-0" data-uname="${u.username}">@${u.username}</button>`).join('');
+          sugWrap.querySelectorAll('.cap-mention-pick').forEach(b => {
+            b.addEventListener('click', () => {
+              const inp = document.getElementById('create-caption');
+              inp.value = inp.value.replace(/@([a-zA-Z0-9._]*)$/, '@' + b.dataset.uname + ' ');
+              sugWrap.classList.add('hidden');
+              inp.focus();
+            });
+          });
+          return;
+        }
+      }
+      sugWrap.classList.add('hidden');
+    });
+
+    document.querySelectorAll('.cap-emoji-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = document.getElementById('create-caption');
+        inp.value += btn.dataset.emoji;
+        document.getElementById('create-caption-count').textContent = `${inp.value.length}/2200`;
+        inp.focus();
+      });
+    });
+
+    document.querySelectorAll('.cap-tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = document.getElementById('create-caption');
+        inp.value = (inp.value ? inp.value.trimEnd() + ' ' : '') + btn.dataset.tag + ' ';
+        document.getElementById('create-caption-count').textContent = `${inp.value.length}/2200`;
+        inp.focus();
+      });
+    });
+
+    document.querySelectorAll('.reel-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.rfilter;
+        document.querySelectorAll('.reel-filter-btn').forEach(b => {
+          const active = b.dataset.rfilter === f;
+          b.className = `reel-filter-btn px-2.5 py-1 rounded-full text-[11px] font-semibold border border-zinc-200 dark:border-zinc-700 ${active ? 'bg-pink-500 text-white border-pink-500' : ''}`;
+        });
+        const v = document.getElementById('create-hero-video');
+        if (v) v.style.filter = f;
+      });
+    });
+
+    document.getElementById('story-views-btn')?.addEventListener('click', () => {
+      const s = storyQueue[storyQueueIdx];
+      if (!s) return;
+      const list = (s.viewers || []).join(', ') || 'No views yet';
+      showToast(`Viewed by: ${list}`);
     });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
