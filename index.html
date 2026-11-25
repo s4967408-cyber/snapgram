@@ -116,8 +116,9 @@
         <button id="theme-toggle-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Toggle Theme">
           <i data-lucide="moon" class="w-5 h-5"></i>
         </button>
-        <button id="activity-btn-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Activity">
+        <button id="activity-btn-mobile" class="relative p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Activity">
           <i data-lucide="heart" class="w-5 h-5"></i>
+          <span id="mob-activity-dot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500"></span>
         </button>
         <button id="messages-btn-mobile" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Messages">
           <i data-lucide="message-circle" class="w-5 h-5"></i>
@@ -1126,6 +1127,7 @@
       activeConvId: null,
       followRequests: [],
       notifications: [],
+      unreadNotifCount: 0,
       verifiedUsers: {},
       isBlocked: false,
       admin: {
@@ -1164,10 +1166,13 @@
           state.activeTab === item.id ? 'bg-zinc-100 dark:bg-zinc-900 font-bold' : 'font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
         }">
           <i data-lucide="${item.icon}" class="w-5 h-5"></i>
-          <span>${item.label}</span>
+          <span class="flex-1 text-left">${item.label}</span>
+          ${item.id === 'activity' && (state.unreadNotifCount + state.followRequests.length) > 0 ? '<span class="w-2 h-2 rounded-full bg-red-500"></span>' : ''}
         </button>
       `).join('');
 
+      const mobDot = document.getElementById('mob-activity-dot');
+      if (mobDot) mobDot.classList.toggle('hidden', (state.unreadNotifCount + state.followRequests.length) === 0);
       const mNav = document.getElementById('mobile-nav');
       const mobileTabs = [
         { id: 'home', label: 'Home', icon: 'home' },
@@ -1712,18 +1717,33 @@
 
     function renderActivity() {
       const hasAny = state.followRequests.length > 0 || state.notifications.length > 0;
+      const perm = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
       return `
         <div class="max-w-xl mx-auto p-4 md:p-8 space-y-6">
-          <h1 class="text-xl font-bold">Activity & Follow Requests</h1>
+          <div class="flex items-center justify-between gap-2">
+            <h1 class="text-xl font-bold">Activity & Notifications</h1>
+            <button type="button" id="act-refresh-btn" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-xs font-semibold">Refresh</button>
+          </div>
+
+          ${typeof Notification !== 'undefined' && perm !== 'granted' ? `
+            <div class="p-3.5 rounded-2xl border border-pink-500/30 bg-pink-500/5 flex items-center justify-between gap-3">
+              <div class="text-xs">
+                <p class="font-bold">Turn on Phone Notifications</p>
+                <p class="text-zinc-500">Get alerts for likes, follows, comments, and account restrictions</p>
+              </div>
+              <button type="button" id="enable-phone-notif-btn" class="px-3.5 py-2 rounded-xl bg-pink-500 text-white text-xs font-semibold shrink-0">Enable</button>
+            </div>
+          ` : ''}
+
           ${state.followRequests.length ? `
             <div class="space-y-2">
               <h2 class="text-xs font-semibold uppercase text-zinc-500">Follow Requests</h2>
               ${state.followRequests.map(r => `
                 <div class="flex items-center justify-between p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                  <div>
-                    <p class="text-sm font-semibold">@${r.username}</p>
+                  <button type="button" class="open-user-profile text-left" data-user-id="${r.followerId || ''}" data-username="${r.username}">
+                    <p class="text-sm font-semibold hover:underline">@${r.username}</p>
                     <p class="text-xs text-zinc-500">${r.fullName}</p>
-                  </div>
+                  </button>
                   <div class="flex gap-2">
                     <button class="req-action px-3 py-1.5 rounded-lg bg-pink-500 text-white text-xs font-semibold" data-req-id="${r.id}" data-action="accept">Accept</button>
                     <button class="req-action px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs" data-req-id="${r.id}" data-action="decline">Decline</button>
@@ -1732,24 +1752,29 @@
               `).join('')}
             </div>
           ` : ''}
+
           ${state.notifications.length ? `
             <div class="space-y-2">
               <h2 class="text-xs font-semibold uppercase text-zinc-500">Recent Notifications</h2>
               ${state.notifications.map(n => `
-                <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 flex justify-between items-center text-sm">
-                  <p><span class="font-semibold mr-1">@${n.actor}</span>${n.text}</p>
-                  <span class="text-xs text-zinc-400">${n.time}</span>
+                <div class="p-3 rounded-xl ${n.type === 'restriction' || n.type === 'block' ? 'bg-red-500/10 border border-red-500/30' : 'bg-zinc-50 dark:bg-zinc-900'} flex justify-between items-center gap-3 text-sm">
+                  <p class="min-w-0">
+                    <button type="button" class="open-user-profile font-semibold mr-1 hover:underline" data-username="${n.actor}">@${n.actor}</button>
+                    <span>${n.text}</span>
+                  </p>
+                  <span class="text-xs text-zinc-400 shrink-0">${n.time}</span>
                 </div>
               `).join('')}
             </div>
           ` : ''}
+
           ${!hasAny ? `
             <div class="border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-2">
               <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-zinc-500">
                 <i data-lucide="heart" class="w-6 h-6"></i>
               </div>
               <p class="text-sm font-semibold">No activity yet</p>
-              <p class="text-xs text-zinc-500">Follow requests and notifications will appear here.</p>
+              <p class="text-xs text-zinc-500">Likes, comments, follows, and account alerts will appear here.</p>
             </div>
           ` : ''}
         </div>
@@ -2469,6 +2494,22 @@
         });
       });
 
+      const enNotifBtn = document.getElementById('enable-phone-notif-btn');
+      if (enNotifBtn && typeof Notification !== 'undefined') {
+        enNotifBtn.addEventListener('click', async () => {
+          const res = await Notification.requestPermission();
+          if (res === 'granted') {
+            showToast('Phone notifications enabled ✓');
+            sendPhoneNotification('SNAPGRAM', 'Notifications are now enabled!');
+          } else {
+            showToast('Notification permission denied in browser');
+          }
+          render();
+        });
+      }
+      const actRefBtn = document.getElementById('act-refresh-btn');
+      if (actRefBtn) actRefBtn.addEventListener('click', async () => { await loadNotifications(); await loadOwnFollowData(); showToast('Notifications updated'); });
+
       const vpBackBtn = document.getElementById('user-profile-back-btn');
       if (vpBackBtn) {
         vpBackBtn.addEventListener('click', () => {
@@ -2628,6 +2669,9 @@
           p.likes = Math.max(0, p.likes + (p.liked ? 1 : -1));
           saveUserEngagements();
           syncMediaEngagement(p.id, { likes_count: p.likes });
+          if (p.liked && p.username !== state.currentUser.username) {
+            createNotification(p.username, 'like', 'liked your post', p.id);
+          }
           render();
         });
       });
@@ -2670,6 +2714,9 @@
           if (!p) return;
           p.comments.push({ user: state.currentUser.username, text: input.value.trim() });
           syncMediaEngagement(p.id, { comments: p.comments });
+          if (p.username !== state.currentUser.username) {
+            createNotification(p.username, 'comment', `commented: "${input.value.trim().slice(0, 40)}"`, p.id);
+          }
           render();
         });
       });
@@ -3064,7 +3111,7 @@
       saveSession(state.currentUser);
       showToast(isAdmin ? 'Signed in with Admin access' : `Welcome, @${state.currentUser.username}`);
       syncUserActivity('login');
-      loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers();
+      loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); loadNotifications();
       if (isAdmin) loadAdminData();
       render();
     }
@@ -3443,7 +3490,7 @@
 
     document.getElementById('theme-toggle-desktop').addEventListener('click', toggleTheme);
     document.getElementById('theme-toggle-mobile').addEventListener('click', toggleTheme);
-    document.getElementById('activity-btn-mobile').addEventListener('click', () => { state.activeTab = 'activity'; render(); });
+    document.getElementById('activity-btn-mobile').addEventListener('click', () => { state.activeTab = 'activity'; state.unreadNotifCount = 0; loadNotifications(); render(); });
     const msgBtnMob = document.getElementById('messages-btn-mobile');
     if (msgBtnMob) msgBtnMob.addEventListener('click', () => { state.activeTab = 'messages'; render(); });
 
@@ -4998,6 +5045,11 @@
           body: JSON.stringify({ ...patch, updated_at: new Date().toISOString() })
         });
         if (!res.ok) throw new Error('Update failed');
+        const targetU = state.admin.users.find(u => u.id === userId);
+        if (targetU?.username) {
+          if ('is_verified' in patch && patch.is_verified) createNotification(targetU.username, 'verified', 'verified your account with a Blue Tick ✓');
+          if ('is_blocked' in patch) createNotification(targetU.username, patch.is_blocked ? 'block' : 'restriction', patch.is_blocked ? 'restricted/blocked your account for safety violations' : 'lifted your account restriction');
+        }
         if ('is_verified' in patch) showToast(patch.is_verified ? 'Blue tick granted ✓' : 'Blue tick removed');
         if ('is_blocked' in patch) showToast(patch.is_blocked ? 'User blocked' : 'User unblocked');
         await loadAdminData();
@@ -5639,6 +5691,7 @@
           if (!res.ok) throw new Error('Could not follow');
           vp.followStatus = nextStatus;
           if (nextStatus === 'accepted') vp.followersCount += 1;
+          createNotification(targetUser.username, 'follow', nextStatus === 'pending' ? 'requested to follow you' : 'started following you');
           showToast(nextStatus === 'pending' ? 'Follow request sent' : `Following @${targetUser.username}`);
         }
         loadOwnFollowData();
@@ -7110,7 +7163,86 @@
       updateCreateStepUI();
     });
 
-    window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
+
+    // =========================================================================
+    // REAL-TIME IN-APP + PHONE SYSTEM NOTIFICATIONS ENGINE
+    // =========================================================================
+    let seenNotifIds = new Set();
+    let initialNotifLoaded = false;
+
+    function sendPhoneNotification(title, body) {
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+      try {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, { body, icon: 'icon-192.png', badge: 'icon-192.png' });
+          }).catch(() => { new Notification(title, { body, icon: 'icon-192.png' }); });
+        } else {
+          new Notification(title, { body, icon: 'icon-192.png' });
+        }
+      } catch {}
+    }
+
+    async function createNotification(recipientUsername, type, text, mediaId = null) {
+      const cfg = loadSupaConfig();
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey || !state.currentUser.supaToken || !recipientUsername) return;
+      try {
+        await fetch(`${cfg.url}/rest/v1/snapgram_notifications`, {
+          method: 'POST',
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient_username: recipientUsername,
+            actor_username: state.currentUser.username || 'snapgram',
+            type,
+            text,
+            ...(mediaId ? { media_id: mediaId } : {})
+          })
+        });
+      } catch {}
+    }
+
+    async function loadNotifications() {
+      const cfg = loadSupaConfig();
+      const me = state.currentUser.username;
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey || !state.currentUser.supaToken || !me) return;
+      try {
+        const fresh = await ensureFreshSupaToken().catch(() => state.currentUser.supaToken);
+        const res = await fetch(`${cfg.url}/rest/v1/snapgram_notifications?recipient_username=ilike.${encodeURIComponent(me)}&order=created_at.desc&limit=40`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}` }
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        let newCount = 0;
+        rows.forEach(r => {
+          if (!seenNotifIds.has(r.id)) {
+            seenNotifIds.add(r.id);
+            if (initialNotifLoaded) {
+              newCount += 1;
+              sendPhoneNotification('SNAPGRAM', `@${r.actor_username} ${r.text}`);
+            }
+          }
+        });
+        if (!initialNotifLoaded) initialNotifLoaded = true;
+        else if (newCount > 0 && state.activeTab !== 'activity') {
+          state.unreadNotifCount += newCount;
+        }
+        state.notifications = rows.map(r => ({
+          id: r.id,
+          actor: r.actor_username,
+          type: r.type,
+          text: r.text,
+          time: new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }));
+        renderNav();
+        if (state.activeTab === 'activity') render();
+      } catch {}
+    }
+
+    setInterval(() => {
+      if (state.isAuthenticated) loadNotifications();
+    }, 15000);
+
+    window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); loadNotifications(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
     // Pull-to-refresh (drag down from top) for touch & mouse
     (function initPullToRefresh() {
