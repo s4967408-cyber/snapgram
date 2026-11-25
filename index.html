@@ -324,223 +324,162 @@
     </div>
   </div>
 
-  <!-- Clean Instagram-Style Editor & Share Modal (Post / Story / Reel) -->
-  <div id="create-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center md:p-6">
-    <div class="w-full h-full md:h-[88vh] md:max-w-xl bg-white dark:bg-zinc-950 md:border md:border-zinc-200 md:dark:border-zinc-800 md:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
-      <!-- Top Bar -->
-      <header class="h-14 px-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-zinc-950">
-        <button id="close-create-modal" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Close">
-          <i id="create-back-icon" data-lucide="x" class="w-6 h-6"></i>
+  <!-- Instagram-Style Dark Post/Reel Editor (Matches 14984.png) + Step 2 Details -->
+  <div id="create-modal" class="hidden fixed inset-0 z-50 bg-black text-white flex flex-col select-none">
+
+    <!-- STEP 1: Full-Screen Dark Editor (Matches 14984.png) -->
+    <div id="create-step-1" class="flex-1 flex flex-col justify-between overflow-hidden bg-black">
+      <!-- Top Bar: < Back | Floating Audio Pill -->
+      <header class="h-14 px-4 flex items-center justify-between shrink-0 z-20">
+        <button id="close-create-modal" type="button" class="p-2 -ml-2 rounded-full hover:bg-white/10" aria-label="Back">
+          <i id="create-back-icon" data-lucide="chevron-left" class="w-6 h-6 text-white"></i>
         </button>
-        <h3 id="create-header-title" class="text-base font-bold">New post</h3>
-        <button id="create-header-action" type="button" class="text-sm font-bold text-[#0095F6] hover:opacity-80 disabled:opacity-40" disabled>
-          Next
+        <button id="create-top-audio-pill" type="button" class="px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 flex items-center gap-2 text-xs font-semibold hover:bg-zinc-800 transition max-w-[65%]">
+          <i data-lucide="music" class="w-3.5 h-3.5 text-pink-500 shrink-0"></i>
+          <span id="create-top-audio-label" class="truncate">Add audio</span>
+          <i data-lucide="plus" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
         </button>
+        <div class="w-8"></div>
       </header>
 
-      <!-- Step 1: Source Picker (only shown for Story/Reel before choosing media) + Preview / Crop / Filter / Story Studio / Reel Trim -->
-      <div id="create-step-1" class="flex-1 flex flex-col overflow-y-auto bg-white dark:bg-zinc-950">
-        <!-- Clean Light Source Stage (for Story & Reel) -->
-        <div id="create-empty-stage" class="p-6 my-auto text-center space-y-5 max-w-sm mx-auto w-full">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white flex items-center justify-center mx-auto shadow-lg">
-            <i id="create-empty-icon" data-lucide="sparkles" class="w-8 h-8"></i>
-          </div>
-          <div class="space-y-1">
-            <p id="create-empty-title" class="text-base font-bold">Create a Story</p>
-            <p id="create-empty-sub" class="text-xs text-zinc-500">Pick from your phone gallery or capture live with camera</p>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <button type="button" id="stage-gallery-btn" class="py-3 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold flex flex-col items-center gap-2 transition">
-              <i data-lucide="image" class="w-5 h-5 text-pink-500"></i>
-              <span>Gallery</span>
-            </button>
-            <button type="button" id="open-camera-btn" class="py-3 px-4 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 text-white text-xs font-semibold flex flex-col items-center gap-2 hover:opacity-95 transition">
-              <i data-lucide="camera" class="w-5 h-5"></i>
-              <span>Camera</span>
-            </button>
-          </div>
-          <div id="story-extra-modes" class="hidden pt-2 space-y-2">
-            <div class="grid grid-cols-2 gap-2">
-              <button type="button" id="story-collage-btn" class="py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-900">
-                <i data-lucide="layout-grid" class="w-4 h-4 text-pink-500"></i> Collage (2-4)
-              </button>
-              <button type="button" id="story-template-btn" class="py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-900">
-                <i data-lucide="palette" class="w-4 h-4 text-purple-500"></i> Template
-              </button>
-            </div>
-            <input id="story-collage-input" type="file" multiple accept="image/jpeg,image/png,image/webp" class="hidden" />
-          </div>
-        </div>
-
-        <!-- Media Preview Stage -->
-        <div id="create-hero-stage" class="hidden relative w-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden shrink-0" style="max-height: 48vh;">
-          <img id="create-hero-img" src="" alt="Preview" class="hidden w-full h-full object-contain max-h-[48vh] transition-all" />
-          <video id="create-hero-video" controls playsinline class="hidden w-full h-full object-contain max-h-[48vh]"></video>
-
-          <!-- Story Canvas Editor (replaces hero when editing a Story photo) -->
-          <div id="story-editor-wrap" class="hidden w-full flex items-center justify-center bg-zinc-950 py-2">
-            <canvas id="story-editor-canvas" class="max-h-[46vh] aspect-[9/16] touch-none cursor-crosshair rounded-xl"></canvas>
-          </div>
-        </div>
-
-        <!-- Post Crop & Filter Controls (shown for Post photos) -->
-        <div id="post-edit-tools" class="hidden px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 space-y-3">
-          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span class="text-[11px] font-semibold text-zinc-500 shrink-0">Crop:</span>
-            ${[
-              { id: 'original', label: 'Original' },
-              { id: '1:1', label: '1:1' },
-              { id: '4:5', label: '4:5' },
-              { id: '16:9', label: '16:9' }
-            ].map(c => `<button type="button" class="post-crop-btn px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-200 dark:border-zinc-700 ${c.id === 'original' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : ''}" data-crop="${c.id}">${c.label}</button>`).join('')}
-          </div>
-          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span class="text-[11px] font-semibold text-zinc-500 shrink-0">Filter:</span>
-            ${[
-              { id: 'none', label: 'Original' },
-              { id: 'contrast(1.18) saturate(1.3)', label: 'Clarendon' },
-              { id: 'sepia(0.15) saturate(1.4) brightness(1.05)', label: 'Juno' },
-              { id: 'brightness(1.08) contrast(0.95) saturate(1.15)', label: 'Lark' },
-              { id: 'grayscale(1) contrast(1.15)', label: 'Moon' },
-              { id: 'sepia(0.35) brightness(1.05)', label: 'Valencia' }
-            ].map((f, idx) => `<button type="button" class="post-filter-btn px-2.5 py-1 rounded-full text-xs font-semibold border border-zinc-200 dark:border-zinc-700 ${idx === 0 ? 'bg-pink-500 text-white border-pink-500' : ''}" data-filter="${f.id}">${f.label}</button>`).join('')}
-          </div>
-          <div class="grid grid-cols-3 gap-2 pt-1 text-[11px]">
-            <div>
-              <label class="text-zinc-500 block">Brightness</label>
-              <input id="post-adj-bright" type="range" min="60" max="150" value="100" class="w-full accent-pink-500" />
-            </div>
-            <div>
-              <label class="text-zinc-500 block">Contrast</label>
-              <input id="post-adj-contrast" type="range" min="60" max="150" value="100" class="w-full accent-pink-500" />
-            </div>
-            <div>
-              <label class="text-zinc-500 block">Saturation</label>
-              <input id="post-adj-sat" type="range" min="0" max="180" value="100" class="w-full accent-pink-500" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Reel Trimming & Cover Frame Controls (shown for Reel video) -->
-        <div id="reel-trim-tools" class="hidden px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 space-y-2.5">
-          <div class="flex items-center justify-between text-xs font-semibold">
-            <span>Trim Video</span>
-            <span id="reel-trim-label" class="text-pink-500">0.0s – Full</span>
-          </div>
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <label class="text-[11px] text-zinc-500">Start (sec)</label>
-              <input id="reel-trim-start" type="range" min="0" max="60" step="0.5" value="0" class="w-full accent-pink-500" />
-            </div>
-            <div>
-              <label class="text-[11px] text-zinc-500">End (sec)</label>
-              <input id="reel-trim-end" type="range" min="1" max="60" step="0.5" value="60" class="w-full accent-pink-500" />
-            </div>
-          </div>
-          <div class="flex items-center justify-between gap-2 pt-1">
-            <div class="flex items-center gap-1">
-              <span class="text-[11px] font-semibold text-zinc-500 mr-1">Speed:</span>
-              ${['0.5','1','1.5','2'].map(sp => `<button type="button" class="reel-speed-btn px-2 py-1 rounded-lg text-xs font-semibold ${sp === '1' ? 'bg-pink-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}" data-speed="${sp}">${sp}x</button>`).join('')}
-            </div>
-            <button type="button" id="reel-voiceover-btn" class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold flex items-center gap-1">
-              <i data-lucide="mic" class="w-3.5 h-3.5 text-pink-500"></i> <span id="reel-vo-label">Voiceover</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
-            <span class="text-[11px] font-semibold text-zinc-500 shrink-0">Effect:</span>
-            ${[
-              { id: 'none', label: 'Normal' },
-              { id: 'contrast(1.18) saturate(1.3)', label: 'Clarendon' },
-              { id: 'sepia(0.15) saturate(1.4) brightness(1.05)', label: 'Juno' },
-              { id: 'grayscale(1) contrast(1.15)', label: 'B&W' },
-              { id: 'sepia(0.35) brightness(0.95)', label: 'Vintage' }
-            ].map((f, idx) => `<button type="button" class="reel-filter-btn px-2.5 py-1 rounded-full text-[11px] font-semibold border border-zinc-200 dark:border-zinc-700 ${idx === 0 ? 'bg-pink-500 text-white border-pink-500' : ''}" data-rfilter="${f.id}">${f.label}</button>`).join('')}
-          </div>
-          <button type="button" id="reel-capture-cover-btn" class="w-full py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold">
-            Set Current Video Frame as Cover
-          </button>
-        </div>
-
-        <!-- Story Tools Bar (shown for Story photo) -->
-        <div id="story-tools-bar" class="hidden px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <button type="button" id="story-draw-toggle" class="px-2.5 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs font-semibold flex items-center gap-1">
-                <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i> Draw
-              </button>
-              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-white border border-zinc-400" data-color="#ffffff"></button>
-              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-pink-500" data-color="#ec4899"></button>
-              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-amber-400" data-color="#facc15"></button>
-              <button type="button" class="story-color-btn w-5 h-5 rounded-full bg-sky-400" data-color="#38bdf8"></button>
-            </div>
-            <button type="button" id="story-clear-edits" class="text-xs font-semibold text-red-500">Reset</button>
-          </div>
-          <div class="flex gap-1.5 items-center">
-            <select id="story-font-select" class="px-2 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-[11px] font-semibold">
-              <option value="Inter, sans-serif">Modern</option>
-              <option value="Georgia, serif">Classic</option>
-              <option value="monospace">Typewriter</option>
-              <option value="cursive">Neon</option>
-            </select>
-            <input id="story-font-size" type="range" min="20" max="54" value="32" class="w-16 accent-pink-500" title="Text Size" />
-            <input id="story-text-input" type="text" placeholder="Add text or @mention..." class="flex-1 px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-xs focus:outline-none" />
-            <button type="button" id="story-add-text-btn" class="px-3 py-1.5 rounded-lg bg-pink-500 text-white text-xs font-semibold">Add</button>
-          </div>
-          <div class="flex flex-wrap gap-1.5">
-            <button type="button" id="story-add-poll-btn" class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold">📊 Poll</button>
-            <button type="button" id="story-add-quiz-btn" class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold">❓ Quiz</button>
-            <button type="button" id="story-add-mention-btn" class="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold">@ Mention</button>
-          </div>
-          <div class="flex flex-wrap items-center justify-between gap-1.5 text-lg">
-            <div class="flex flex-wrap gap-1.5">
-              ${['❤️','🔥','😂','✨','📍','🎵','🙌','💯'].map(e => `<button type="button" class="story-sticker-btn px-2 py-0.5 rounded-lg bg-zinc-200/70 dark:bg-zinc-800 hover:scale-110 transition" data-sticker="${e}">${e}</button>`).join('')}
-            </div>
-            <button type="button" id="story-open-music-btn" class="px-2.5 py-1 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold flex items-center gap-1">
-              <i data-lucide="music" class="w-3.5 h-3.5"></i> <span id="story-music-label">Add Music</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Selected Media Tray + Quick Add -->
-        <div id="create-preview-area" class="hidden p-3 space-y-2">
-          <div class="flex items-center justify-between text-xs text-zinc-500 font-semibold">
-            <span>Selected Media</span>
-            <div class="flex items-center gap-3">
-              <label class="text-[#0095F6] cursor-pointer hover:underline flex items-center gap-1">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Gallery
-                <input id="media-add-more-input" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
-              </label>
-              <button type="button" id="open-camera-btn-2" class="text-[#0095F6] hover:underline flex items-center gap-1">
-                <i data-lucide="camera" class="w-3.5 h-3.5"></i> Camera
-              </button>
-            </div>
-          </div>
-          <div id="create-preview-grid" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
-        </div>
-
-        <div id="story-privacy-row" class="hidden px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center gap-2 text-xs">
-          <i data-lucide="eye-off" class="w-3.5 h-3.5 text-zinc-500 shrink-0"></i>
-          <input id="story-hide-from" type="text" placeholder="Hide story from (@user1, @user2)" class="flex-1 bg-transparent focus:outline-none text-xs" />
-        </div>
-        <!-- Story Bottom Share Bar (Save Draft + Close Friends + Your Story) -->
-        <div id="story-bottom-bar" class="hidden mt-auto p-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 bg-white dark:bg-zinc-950">
-          <button type="button" id="story-save-draft-btn" class="px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-xs font-bold">Draft</button>
-          <button type="button" id="story-close-friends-btn" class="flex-1 py-2.5 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Close Friends</span>
-          </button>
-          <button type="button" id="story-share-now-btn" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold">
-            Your Story
-          </button>
-        </div>
-
-        <div id="upload-error-box" class="hidden mx-4 my-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-600 dark:text-red-400">
-          <p id="upload-error-text"></p>
+      <!-- Hidden Empty Stage (kept for JS compatibility when opened without media) -->
+      <div id="create-empty-stage" class="hidden p-6 my-auto text-center space-y-4">
+        <i id="create-empty-icon" data-lucide="film" class="w-8 h-8 text-pink-500 mx-auto"></i>
+        <p id="create-empty-title" class="text-base font-bold">Select Media</p>
+        <p id="create-empty-sub" class="text-xs text-zinc-400"></p>
+        <div class="flex justify-center gap-3">
+          <button type="button" id="stage-gallery-btn" class="px-4 py-2 rounded-xl bg-zinc-800 text-xs font-semibold">Gallery</button>
+          <button type="button" id="open-camera-btn" class="px-4 py-2 rounded-xl bg-pink-500 text-xs font-semibold">Camera</button>
         </div>
       </div>
 
-      <!-- Step 2: Instagram "New post / New reel" Caption, Tags, Location, Music & Cover -->
-      <form id="create-form" class="hidden flex-1 flex flex-col overflow-y-auto divide-y divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-zinc-950">
+      <!-- Center Media Preview Stage -->
+      <div id="create-hero-stage" class="relative flex-1 flex items-center justify-center overflow-hidden bg-black px-2">
+        <img id="create-hero-img" src="" alt="Preview" class="hidden max-w-full max-h-full object-contain transition-all" />
+        <video id="create-hero-video" controls playsinline class="hidden max-w-full max-h-full object-contain"></video>
+        <div id="post-text-overlay-badge" class="hidden absolute inset-x-6 top-1/2 -translate-y-1/2 text-center pointer-events-none">
+          <span id="post-text-overlay-val" class="inline-block px-3 py-1.5 rounded-xl bg-black/60 text-white text-lg font-bold"></span>
+        </div>
+        <!-- Hidden Story placeholders kept for JS compatibility -->
+        <div id="story-editor-wrap" class="hidden"><canvas id="story-editor-canvas"></canvas></div>
+        <div id="story-tools-bar" class="hidden">
+          <button id="story-draw-toggle" type="button"></button><button id="story-clear-edits" type="button"></button>
+          <input id="story-text-input" type="text" /><button id="story-add-text-btn" type="button"></button>
+          <button id="story-open-music-btn" type="button"><span id="story-music-label"></span></button>
+        </div>
+        <div id="story-privacy-row" class="hidden"><input id="story-hide-from" type="text" /></div>
+        <div id="story-bottom-bar" class="hidden"><button id="story-save-draft-btn" type="button"></button><button id="story-close-friends-btn" type="button"></button><button id="story-share-now-btn" type="button"></button></div>
+      </div>
+
+      <!-- Contextual Tool Drawers (open above the 6-button bar) -->
+      <div class="px-3 space-y-2 shrink-0">
+        <!-- Text / Overlay Drawer -->
+        <div id="post-text-drawer" class="hidden p-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex gap-2 items-center">
+          <input id="post-overlay-text-input" type="text" placeholder="Add text overlay..." class="flex-1 bg-zinc-800 px-3 py-1.5 rounded-xl text-xs text-white focus:outline-none" />
+          <button id="post-overlay-text-apply" type="button" class="px-3 py-1.5 rounded-xl bg-[#4F5BD5] text-xs font-bold">Apply</button>
+        </div>
+
+        <!-- Filter Drawer -->
+        <div id="post-edit-tools" class="hidden p-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2">
+          <div id="post-filter-strip" class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button type="button" class="post-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-pink-500 text-white shrink-0" data-filter="none">Original</button>
+            <button type="button" class="post-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-filter="contrast(1.18) saturate(1.3)">Clarendon</button>
+            <button type="button" class="post-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-filter="sepia(0.15) saturate(1.4) brightness(1.05)">Juno</button>
+            <button type="button" class="post-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-filter="brightness(1.08) contrast(0.95) saturate(1.15)">Lark</button>
+            <button type="button" class="post-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-filter="grayscale(1) contrast(1.15)">Moon</button>
+            <button type="button" class="post-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-filter="sepia(0.35) brightness(1.05)">Valencia</button>
+          </div>
+          <div id="post-adj-strip" class="hidden grid grid-cols-3 gap-2 text-[11px]">
+            <div><label class="text-zinc-400 block">Brightness</label><input id="post-adj-bright" type="range" min="60" max="150" value="100" class="w-full accent-pink-500" /></div>
+            <div><label class="text-zinc-400 block">Contrast</label><input id="post-adj-contrast" type="range" min="60" max="150" value="100" class="w-full accent-pink-500" /></div>
+            <div><label class="text-zinc-400 block">Saturation</label><input id="post-adj-sat" type="range" min="0" max="180" value="100" class="w-full accent-pink-500" /></div>
+          </div>
+          <div id="post-ratio-strip" class="hidden flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button type="button" class="post-crop-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-black shrink-0" data-crop="original">Original</button>
+            <button type="button" class="post-crop-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-crop="1:1">1:1</button>
+            <button type="button" class="post-crop-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-crop="4:5">4:5</button>
+            <button type="button" class="post-crop-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-200 shrink-0" data-crop="16:9">16:9</button>
+          </div>
+        </div>
+
+        <!-- Reel Trim & Speed Drawer (for Reels) -->
+        <div id="reel-trim-tools" class="hidden p-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2">
+          <div class="flex items-center justify-between text-xs font-semibold">
+            <span>Trim Video</span>
+            <span id="reel-trim-label" class="text-pink-400">0.0s – Full</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div><label class="text-[11px] text-zinc-400">Start</label><input id="reel-trim-start" type="range" min="0" max="60" step="0.5" value="0" class="w-full accent-pink-500" /></div>
+            <div><label class="text-[11px] text-zinc-400">End</label><input id="reel-trim-end" type="range" min="1" max="60" step="0.5" value="60" class="w-full accent-pink-500" /></div>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1">
+              <button type="button" class="reel-speed-btn px-2 py-1 rounded-lg text-xs font-semibold bg-zinc-800" data-speed="0.5">0.5x</button>
+              <button type="button" class="reel-speed-btn px-2 py-1 rounded-lg text-xs font-semibold bg-pink-500 text-white" data-speed="1">1x</button>
+              <button type="button" class="reel-speed-btn px-2 py-1 rounded-lg text-xs font-semibold bg-zinc-800" data-speed="1.5">1.5x</button>
+              <button type="button" class="reel-speed-btn px-2 py-1 rounded-lg text-xs font-semibold bg-zinc-800" data-speed="2">2x</button>
+            </div>
+            <button type="button" id="reel-voiceover-btn" class="px-2.5 py-1 rounded-lg bg-zinc-800 text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="mic" class="w-3.5 h-3.5 text-pink-500"></i> <span id="reel-vo-label">Voiceover</span>
+            </button>
+          </div>
+          <button type="button" id="reel-capture-cover-btn" class="w-full py-1.5 rounded-xl bg-zinc-800 text-xs font-semibold">Set Current Frame as Cover</button>
+        </div>
+
+        <div id="upload-error-box" class="hidden p-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-xs text-red-400">
+          <p id="upload-error-text"></p>
+        </div>
+
+        <!-- 6-Button Dark Tool Row (Exact Match to 14984.png: Audio | Text | Overlay | Filter | Edit | Ratio) -->
+        <div class="grid grid-cols-6 gap-1.5 pt-1">
+          <button type="button" id="ed-btn-audio" class="py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1 text-[10px] font-medium">
+            <i data-lucide="music" class="w-4 h-4"></i><span>Audio</span>
+          </button>
+          <button type="button" id="ed-btn-text" class="py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1 text-[10px] font-medium">
+            <span class="text-xs font-extrabold leading-4">Aa</span><span>Text</span>
+          </button>
+          <button type="button" id="ed-btn-overlay" class="py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1 text-[10px] font-medium">
+            <i data-lucide="image-plus" class="w-4 h-4"></i><span>Overlay</span>
+          </button>
+          <button type="button" id="ed-btn-filter" class="py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1 text-[10px] font-medium">
+            <i data-lucide="sparkles" class="w-4 h-4"></i><span>Filter</span>
+          </button>
+          <button type="button" id="ed-btn-edit" class="py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1 text-[10px] font-medium">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i><span>Edit</span>
+          </button>
+          <button type="button" id="ed-btn-ratio" class="py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 flex flex-col items-center gap-1 text-[10px] font-medium">
+            <i data-lucide="maximize-2" class="w-4 h-4"></i><span>Ratio</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Very Bottom Row: Thumbnails + [+] Add More (Left) | Blue Pill [Next] (Right) -->
+      <div id="create-preview-area" class="px-3 py-3 flex items-center justify-between gap-3 bg-black shrink-0">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <div id="create-preview-grid" class="flex gap-2"></div>
+          <label class="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 cursor-pointer hover:bg-zinc-800">
+            <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+            <input id="media-add-more-input" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" class="hidden" />
+          </label>
+          <button type="button" id="open-camera-btn-2" class="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 hover:bg-zinc-800" aria-label="Camera">
+            <i data-lucide="camera" class="w-4 h-4 text-white"></i>
+          </button>
+        </div>
+        <button id="create-header-action" type="button" class="px-6 py-2.5 rounded-full bg-[#4F5BD5] text-white text-xs font-bold hover:opacity-95 disabled:opacity-40 shrink-0">
+          Next
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Caption, Tags, Location, Music & Share -->
+    <form id="create-form" class="hidden flex-1 flex flex-col bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 overflow-y-auto">
+      <header class="h-14 px-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+        <button id="create-step2-back" type="button" class="p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+        <h3 id="create-header-title" class="text-base font-bold">New post</h3>
+        <button id="create-step2-share" type="submit" class="text-sm font-bold text-[#0095F6] hover:opacity-80">Share</button>
+      </header>
+
+      <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
         <div class="p-4 space-y-2.5">
           <div class="flex gap-3 items-start">
             <img id="create-step2-thumb" src="" alt="Thumb" class="w-16 h-16 rounded-lg object-cover bg-zinc-200 dark:bg-zinc-800 shrink-0" />
@@ -548,7 +487,14 @@
               <textarea id="create-caption" rows="4" maxlength="2200" placeholder="Write a caption... #hashtags @mentions" class="w-full text-sm bg-transparent focus:outline-none resize-none"></textarea>
               <div class="flex items-center justify-between text-[11px] text-zinc-400">
                 <div class="flex gap-1.5 text-sm">
-                  ${['❤️','🔥','😂','✨','😍','🙌','📸','🎵'].map(e => `<button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="${e}">${e}</button>`).join('')}
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="❤️">❤️</button>
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="🔥">🔥</button>
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="😂">😂</button>
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="✨">✨</button>
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="😍">😍</button>
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="🙌">🙌</button>
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="📸">📸</button>
+                  <button type="button" class="cap-emoji-btn hover:scale-125 transition" data-emoji="🎵">🎵</button>
                 </div>
                 <span id="create-caption-count">0/2200</span>
               </div>
@@ -556,7 +502,11 @@
           </div>
           <div id="caption-mention-suggestions" class="hidden flex gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
           <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
-            ${['#snapgram','#photography','#reels','#trending','#viral','#travel','#ootd'].map(tag => `<button type="button" class="cap-tag-btn px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500 text-[11px] font-semibold shrink-0" data-tag="${tag}">${tag}</button>`).join('')}
+            <button type="button" class="cap-tag-btn px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500 text-[11px] font-semibold shrink-0" data-tag="#snapgram">#snapgram</button>
+            <button type="button" class="cap-tag-btn px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500 text-[11px] font-semibold shrink-0" data-tag="#photography">#photography</button>
+            <button type="button" class="cap-tag-btn px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500 text-[11px] font-semibold shrink-0" data-tag="#reels">#reels</button>
+            <button type="button" class="cap-tag-btn px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500 text-[11px] font-semibold shrink-0" data-tag="#trending">#trending</button>
+            <button type="button" class="cap-tag-btn px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500 text-[11px] font-semibold shrink-0" data-tag="#viral">#viral</button>
           </div>
         </div>
 
@@ -607,8 +557,8 @@
             Save as Draft
           </button>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
 
   <!-- 3-Screen Instagram-Style Story Creation System (Matches User Screenshots) -->
@@ -711,7 +661,7 @@
               <button id="sf-text-add-btn" type="button" class="px-3 py-1.5 rounded-lg bg-pink-500 text-xs font-bold">Done</button>
             </div>
             <div class="flex gap-2 items-center">
-              ${['#ffffff','#ec4899','#facc15','#38bdf8','#22c55e','#000000'].map(c => `<button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:${c}" data-color="${c}"></button>`).join('')}
+              <button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:#ffffff" data-color="#ffffff"></button><button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:#ec4899" data-color="#ec4899"></button><button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:#facc15" data-color="#facc15"></button><button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:#38bdf8" data-color="#38bdf8"></button><button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:#22c55e" data-color="#22c55e"></button><button type="button" class="sf-color-dot w-5 h-5 rounded-full border border-white/50" style="background:#000000" data-color="#000000"></button>
             </div>
           </div>
 
@@ -723,13 +673,13 @@
               <button type="button" id="sf-st-quiz" class="px-2.5 py-1 rounded-lg bg-zinc-800 text-xs font-semibold">❓ Quiz</button>
             </div>
             <div class="flex flex-wrap gap-2 text-xl">
-              ${['❤️','🔥','😂','✨','😍','🙌','🎵','💯','🦋','😎'].map(e => `<button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="${e}">${e}</button>`).join('')}
+              <button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="❤️">❤️</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="🔥">🔥</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="😂">😂</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="✨">✨</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="😍">😍</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="🙌">🙌</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="🎵">🎵</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="💯">💯</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="🦋">🦋</button><button type="button" class="sf-emoji-pick hover:scale-125 transition" data-emoji="😎">😎</button>
             </div>
           </div>
 
           <div id="sf-drawer-draw" class="hidden flex items-center justify-between gap-2">
             <div class="flex gap-2 items-center">
-              ${['#ffffff','#ec4899','#facc15','#38bdf8','#22c55e'].map(c => `<button type="button" class="sf-color-dot w-6 h-6 rounded-full border border-white/50" style="background:${c}" data-color="${c}"></button>`).join('')}
+              <button type="button" class="sf-color-dot w-6 h-6 rounded-full border border-white/50" style="background:#ffffff" data-color="#ffffff"></button><button type="button" class="sf-color-dot w-6 h-6 rounded-full border border-white/50" style="background:#ec4899" data-color="#ec4899"></button><button type="button" class="sf-color-dot w-6 h-6 rounded-full border border-white/50" style="background:#facc15" data-color="#facc15"></button><button type="button" class="sf-color-dot w-6 h-6 rounded-full border border-white/50" style="background:#38bdf8" data-color="#38bdf8"></button><button type="button" class="sf-color-dot w-6 h-6 rounded-full border border-white/50" style="background:#22c55e" data-color="#22c55e"></button>
             </div>
             <button id="sf-draw-reset" type="button" class="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold">Clear</button>
           </div>
@@ -1022,7 +972,7 @@
           <input id="music-search-input" type="text" placeholder="Search any song or artist..." class="w-full pl-9 pr-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm focus:outline-none" />
         </div>
         <div class="flex gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-          ${['Trending','Bollywood','Lo-Fi','Pop Hits','Punjabi','Chill'].map(chip => `<button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="${chip}">${chip}</button>`).join('')}
+          <button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="Trending">Trending</button><button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="Bollywood">Bollywood</button><button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="Lo-Fi">Lo-Fi</button><button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="Pop Hits">Pop Hits</button><button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="Punjabi">Punjabi</button><button type="button" class="music-trend-chip px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold shrink-0 hover:bg-pink-500 hover:text-white transition" data-q="Chill">Chill</button>
         </div>
         <div id="music-recent-wrap" class="hidden shrink-0 space-y-1">
           <p class="text-[10px] font-semibold uppercase text-zinc-400">Recently Used</p>
@@ -3876,7 +3826,7 @@
       const activeIdx = Math.min(uploadState.activeIdx, uploadState.files.length - 1);
       const activeItem = uploadState.files[activeIdx];
 
-      postTools.classList.toggle('hidden', !(state.createKind === 'post' && activeItem.type === 'image'));
+      // postTools opens when user taps Filter, Edit, or Ratio
       reelTools.classList.toggle('hidden', !(state.createKind === 'reel' && activeItem.type === 'video'));
       storyBottom.classList.toggle('hidden', state.createKind !== 'story');
       document.getElementById('story-privacy-row')?.classList.toggle('hidden', state.createKind !== 'story');
@@ -5259,6 +5209,8 @@
         ? `${uploadState.music.title}${uploadState.music.artist ? ' · ' + uploadState.music.artist : ''}`
         : 'Add music';
       if (sumEl) sumEl.textContent = label;
+      const topAud = document.getElementById('create-top-audio-label');
+      if (topAud) topAud.textContent = uploadState.music?.title ? label : 'Add audio';
       if (storyLbl) storyLbl.textContent = uploadState.music?.title ? uploadState.music.title.slice(0, 14) : 'Add Music';
     }
 
@@ -5954,13 +5906,6 @@
       origOpenPicker();
     };
 
-    const origUpdateKindUI = updateCreateKindUI;
-    updateCreateKindUI = function() {
-      origUpdateKindUI();
-      const extra = document.getElementById('story-extra-modes');
-      if (extra) extra.classList.toggle('hidden', state.createKind !== 'story');
-    };
-
     // Story Gradient Templates
     const STORY_TEMPLATES = [
       ['#f97316', '#ec4899', '#9333ea'],
@@ -5969,65 +5914,6 @@
       ['#10b981', '#14b8a6', '#0ea5e9']
     ];
     let storyTplIdx = 0;
-    document.getElementById('story-template-btn')?.addEventListener('click', () => {
-      const cols = STORY_TEMPLATES[storyTplIdx % STORY_TEMPLATES.length];
-      storyTplIdx += 1;
-      const c = document.createElement('canvas');
-      c.width = 540; c.height = 960;
-      const ctx = c.getContext('2d');
-      const g = ctx.createLinearGradient(0, 0, c.width, c.height);
-      g.addColorStop(0, cols[0]); g.addColorStop(0.5, cols[1]); g.addColorStop(1, cols[2]);
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, c.width, c.height);
-      c.toBlob(blob => {
-        if (!blob) return;
-        validateAndAddFiles([new File([blob], `template_${Date.now()}.jpg`, { type: 'image/jpeg' })]);
-      }, 'image/jpeg', 0.92);
-    });
-
-    // Story Collage (2-4 photos)
-    document.getElementById('story-collage-btn')?.addEventListener('click', () => {
-      document.getElementById('story-collage-input').click();
-    });
-    document.getElementById('story-collage-input')?.addEventListener('change', async e => {
-      const files = Array.from(e.target.files || []).slice(0, 4);
-      if (files.length < 2) { showToast('Select 2 to 4 photos for a collage'); return; }
-      const c = document.createElement('canvas');
-      c.width = 540; c.height = 960;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#09090b'; ctx.fillRect(0, 0, c.width, c.height);
-      const imgs = await Promise.all(files.map(f => new Promise(res => {
-        const im = new Image(); im.onload = () => res(im); im.src = URL.createObjectURL(f);
-      })));
-      const cols = imgs.length <= 2 ? 1 : 2;
-      const rows = Math.ceil(imgs.length / cols);
-      const cw = c.width / cols, ch = c.height / rows;
-      imgs.forEach((im, idx) => {
-        const x = (idx % cols) * cw, y = Math.floor(idx / cols) * ch;
-        ctx.drawImage(im, x + 4, y + 4, cw - 8, ch - 8);
-      });
-      c.toBlob(blob => {
-        if (blob) validateAndAddFiles([new File([blob], `collage_${Date.now()}.jpg`, { type: 'image/jpeg' })]);
-      }, 'image/jpeg', 0.9);
-      e.target.value = '';
-    });
-
-    // Story Fonts, Size, Poll, Quiz, @Mention
-    document.getElementById('story-font-select')?.addEventListener('change', e => { uploadState.storyFont = e.target.value; });
-    document.getElementById('story-font-size')?.addEventListener('input', e => { uploadState.storyFontSize = Number(e.target.value); });
-    document.getElementById('story-add-poll-btn')?.addEventListener('click', () => {
-      uploadState.storyOverlays.push({ type: 'text', value: '📊 Poll: Yes  |  No', x: 270, y: 520, color: '#ffffff' });
-      redrawStoryCanvas();
-    });
-    document.getElementById('story-add-quiz-btn')?.addEventListener('click', () => {
-      uploadState.storyOverlays.push({ type: 'text', value: '❓ Quiz: Tap to answer!', x: 270, y: 580, color: '#facc15' });
-      redrawStoryCanvas();
-    });
-    document.getElementById('story-add-mention-btn')?.addEventListener('click', () => {
-      const inp = document.getElementById('story-text-input');
-      inp.value = '@' + (state.exploreUsers[0]?.username || 'username') + ' ';
-      inp.focus();
-    });
 
     // Close Friends & Drafts
     document.getElementById('story-close-friends-btn')?.addEventListener('click', () => {
@@ -7182,6 +7068,47 @@
     openCreatePicker = function() {
       openIgPlusScreen('post');
     };
+
+
+    // 14984.png Dark Editor Tool Bar Bindings
+    document.getElementById('create-top-audio-pill')?.addEventListener('click', openMusicModal);
+    document.getElementById('ed-btn-audio')?.addEventListener('click', openMusicModal);
+    document.getElementById('ed-btn-overlay')?.addEventListener('click', () => document.getElementById('media-add-more-input')?.click());
+    document.getElementById('ed-btn-text')?.addEventListener('click', () => {
+      document.getElementById('post-text-drawer')?.classList.toggle('hidden');
+      document.getElementById('post-overlay-text-input')?.focus();
+    });
+    document.getElementById('post-overlay-text-apply')?.addEventListener('click', () => {
+      const val = (document.getElementById('post-overlay-text-input')?.value || '').trim();
+      const badge = document.getElementById('post-text-overlay-badge');
+      const txtEl = document.getElementById('post-text-overlay-val');
+      if (val) {
+        txtEl.textContent = val;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+      document.getElementById('post-text-drawer')?.classList.add('hidden');
+    });
+
+    function toggleDarkEditSection(section) {
+      const wrap = document.getElementById('post-edit-tools');
+      const fStrip = document.getElementById('post-filter-strip');
+      const aStrip = document.getElementById('post-adj-strip');
+      const rStrip = document.getElementById('post-ratio-strip');
+      const target = section === 'filter' ? fStrip : section === 'edit' ? aStrip : rStrip;
+      const alreadyOpen = !wrap.classList.contains('hidden') && !target.classList.contains('hidden');
+      if (alreadyOpen) { wrap.classList.add('hidden'); return; }
+      wrap.classList.remove('hidden');
+      [fStrip, aStrip, rStrip].forEach(el => el.classList.toggle('hidden', el !== target));
+    }
+    document.getElementById('ed-btn-filter')?.addEventListener('click', () => toggleDarkEditSection('filter'));
+    document.getElementById('ed-btn-edit')?.addEventListener('click', () => toggleDarkEditSection('edit'));
+    document.getElementById('ed-btn-ratio')?.addEventListener('click', () => toggleDarkEditSection('ratio'));
+    document.getElementById('create-step2-back')?.addEventListener('click', () => {
+      uploadState.step = 1;
+      updateCreateStepUI();
+    });
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
