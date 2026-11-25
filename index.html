@@ -158,18 +158,19 @@
     <nav id="mobile-nav" class="md:hidden fixed bottom-0 inset-x-0 z-30 h-14 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex items-center justify-around"></nav>
   </div>
 
-  <!-- Story Viewer Modal -->
-  <div id="story-modal" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+  <!-- Story Viewer Modal (Multi-Story Sequential + Auto-Advance) -->
+  <div id="story-modal" class="hidden fixed inset-0 z-[80] bg-black/95 flex items-center justify-center p-4">
     <div class="relative w-full max-w-sm aspect-[9/16] rounded-2xl overflow-hidden bg-zinc-900 flex flex-col justify-between shadow-2xl">
       <img id="story-modal-img" src="" alt="Story" class="hidden absolute inset-0 w-full h-full object-cover" />
-      <video id="story-modal-video" playsinline autoplay loop class="hidden absolute inset-0 w-full h-full object-cover"></video>
-      <div class="relative z-10 p-4 bg-gradient-to-b from-black/70 to-transparent">
-        <div class="w-full h-1 bg-white/30 rounded-full overflow-hidden mb-3">
-          <div class="h-full bg-white w-2/3 rounded-full"></div>
-        </div>
+      <video id="story-modal-video" playsinline autoplay class="hidden absolute inset-0 w-full h-full object-cover"></video>
+      <!-- Left/Right Tap Zones for Prev/Next Story -->
+      <button id="story-prev-tap" type="button" class="absolute inset-y-16 left-0 w-1/3 z-10" aria-label="Previous Story"></button>
+      <button id="story-next-tap" type="button" class="absolute inset-y-16 right-0 w-2/3 z-10" aria-label="Next Story"></button>
+      <div class="relative z-20 p-4 bg-gradient-to-b from-black/70 to-transparent">
+        <div id="story-progress-bars" class="flex gap-1 mb-3"></div>
         <div class="flex items-center justify-between text-white">
           <div class="flex items-center gap-2">
-            <span id="story-modal-user" class="text-sm font-semibold"></span>
+            <button type="button" id="story-modal-user" class="text-sm font-semibold hover:underline text-left"></button>
             <span id="story-modal-privacy" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/80 font-medium"></span>
           </div>
           <div class="flex items-center gap-1">
@@ -556,6 +557,28 @@
     </div>
   </div>
 
+  <!-- Full-Screen Post Detail Modal -->
+  <div id="post-detail-modal" class="hidden fixed inset-0 z-[75] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 md:p-6">
+    <div class="w-full max-w-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
+      <header class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+        <span class="text-sm font-bold">Post</span>
+        <button id="close-post-detail" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </header>
+      <div id="post-detail-body" class="flex-1 overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- Followers / Following List Modal -->
+  <div id="follow-list-modal" class="hidden fixed inset-0 z-[75] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl h-[70vh] flex flex-col">
+      <div class="flex items-center justify-between shrink-0">
+        <h3 id="follow-list-title" class="text-base font-bold">Followers</h3>
+        <button id="close-follow-list" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="follow-list-body" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800"></div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast" class="hidden fixed bottom-20 md:bottom-6 right-6 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold shadow-lg"></div>
 
@@ -594,6 +617,20 @@
       },
       activeStoryId: null,
       postSlideIndex: {},
+      profileStack: [],
+      viewedProfile: {
+        loading: false,
+        error: '',
+        user: null,
+        posts: [],
+        reels: [],
+        stories: [],
+        followersCount: 0,
+        followingCount: 0,
+        followStatus: 'none', // 'none' | 'pending' | 'accepted'
+        tab: 'posts'
+      },
+      exploreUsers: [],
       stories: [],
       posts: [],
       reels: [],
@@ -755,10 +792,12 @@
               <article class="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
                 <header class="flex items-center justify-between px-4 py-3">
                   <div class="flex items-center gap-3">
-                    ${renderAvatar(p.userAvatar || (isOwner ? state.currentUser.avatar : ''), p.username, 'w-9 h-9')}
+                    <button type="button" class="open-user-profile shrink-0" data-user-id="${p.userId || ''}" data-username="${p.username}">
+                      ${renderAvatar(p.userAvatar || (isOwner ? state.currentUser.avatar : ''), p.username, 'w-9 h-9')}
+                    </button>
                     <div>
                       <div class="flex items-center gap-2">
-                        <span class="text-sm font-semibold inline-flex items-center gap-1">${p.username}${renderVerifiedBadge(p.username)}</span>
+                        <button type="button" class="open-user-profile text-sm font-semibold inline-flex items-center gap-1 hover:underline" data-user-id="${p.userId || ''}" data-username="${p.username}">${p.username}${renderVerifiedBadge(p.username)}</button>
                         ${p.isFeatured ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-500">${p.featuredLabel}</span>` : ''}
                       </div>
                       ${p.location ? `<p class="text-[11px] text-zinc-500">${p.location}</p>` : ''}${renderMusicPill(p)}
@@ -811,10 +850,10 @@
                     </button>
                   </div>
                   <p class="text-sm font-semibold">${p.likes.toLocaleString()} likes</p>
-                  <p class="text-sm"><span class="font-semibold mr-1.5">${p.username}</span>${p.caption}</p>
+                  <p class="text-sm"><button type="button" class="open-user-profile font-semibold mr-1.5 hover:underline" data-user-id="${p.userId || ''}" data-username="${p.username}">${p.username}</button>${p.caption}</p>
                   ${p.taggedUsers && p.taggedUsers.length ? `<p class="text-xs text-indigo-500 font-medium">Tagged: ${p.taggedUsers.join(' ')}</p>` : ''}
                   <div class="space-y-1 pt-1">
-                    ${p.comments.map(c => `<p class="text-xs"><span class="font-semibold mr-1.5">${c.user}</span>${c.text}</p>`).join('')}
+                    ${p.comments.map(c => `<p class="text-xs"><button type="button" class="open-user-profile font-semibold mr-1.5 hover:underline" data-username="${c.user}">${c.user}</button>${c.text}</p>`).join('')}
                   </div>
                   <form class="comment-form flex gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800" data-post-id="${p.id}">
                     <input id="comment-input-${p.id}" type="text" placeholder="Add a comment..." class="flex-1 text-xs bg-transparent focus:outline-none" />
@@ -840,6 +879,7 @@
     function renderExplore() {
       const q = state.searchQuery.toLowerCase();
       const filteredPosts = state.posts.filter(p => !q || p.caption.toLowerCase().includes(q) || p.username.toLowerCase().includes(q));
+      const matchedUsers = state.exploreUsers.filter(u => !q || (u.username || '').toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q));
       const tagSet = new Set();
       state.posts.forEach(p => {
         const matches = (p.caption || '').match(/#([a-zA-Z0-9_]+)/g) || [];
@@ -852,6 +892,22 @@
             <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3 text-zinc-400"></i>
             <input id="explore-search" type="text" value="${state.searchQuery}" placeholder="Search users, #hashtags, or posts..." class="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-sm focus:outline-none" />
           </div>
+          ${matchedUsers.length ? `
+            <div class="space-y-2">
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Accounts</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${matchedUsers.slice(0, 8).map(u => `
+                  <button type="button" class="open-user-profile flex items-center gap-3 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-left transition" data-user-id="${u.id}" data-username="${u.username}">
+                    ${renderAvatar(u.avatar_url, u.username, 'w-11 h-11 shrink-0')}
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold inline-flex items-center gap-1">@${u.username}${u.is_verified ? renderVerifiedBadge(u.username) : ''}</p>
+                      <p class="text-xs text-zinc-500 truncate">${u.full_name || ''}</p>
+                    </div>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
           ${tags.length ? `
             <div>
               <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Hashtags</h2>
@@ -863,13 +919,16 @@
           ${filteredPosts.length ? `
             <div class="grid grid-cols-3 gap-1.5">
               ${filteredPosts.map(p => `
-                <div class="aspect-square bg-zinc-200 dark:bg-zinc-900 overflow-hidden rounded-md relative group">
-                  <img src="${p.img}" alt="Explore" class="w-full h-full object-cover" />
+                <button type="button" class="open-post-detail aspect-square bg-zinc-200 dark:bg-zinc-900 overflow-hidden rounded-md relative group" data-post-id="${p.id}">
+                  ${p.mediaType === 'video'
+                    ? `<video src="${p.img}" muted playsinline class="w-full h-full object-cover"></video>`
+                    : `<img src="${p.img}" alt="Explore" class="w-full h-full object-cover" />`
+                  }
                   <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-3">
                     <span>♥ ${p.likes}</span>
                     <span>💬 ${p.comments.length}</span>
                   </div>
-                </div>
+                </button>
               `).join('')}
             </div>
           ` : `
@@ -917,7 +976,7 @@
               ` : ''}
               <div class="relative z-20 w-full p-4 bg-gradient-to-t from-black/85 via-black/30 to-transparent text-white flex justify-between items-end">
                 <div class="space-y-1.5 max-w-[75%]">
-                  <p class="font-bold text-sm flex items-center gap-1">@${r.username}${renderVerifiedBadge(r.username)}</p>
+                  <button type="button" class="open-user-profile font-bold text-sm flex items-center gap-1 hover:underline" data-user-id="${r.userId || ''}" data-username="${r.username}">@${r.username}${renderVerifiedBadge(r.username)}</button>
                   <p class="text-xs">${r.caption}</p>
                   ${r.musicTitle ? renderMusicPill(r) : `<p class="text-[11px] text-white/80 flex items-center gap-1"><i data-lucide="music" class="w-3.5 h-3.5"></i> ${r.audio}</p>`}
                 </div>
@@ -1007,7 +1066,7 @@
                     ${conv.online ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
                   </div>
                   <div>
-                    <p class="text-sm font-bold leading-tight">${conv.title}</p>
+                    <button type="button" class="open-user-profile text-sm font-bold leading-tight hover:underline text-left" data-username="${conv.title}">${conv.title}</button>
                     <p class="text-[11px] text-zinc-500">${conv.subtitle || ''}</p>
                   </div>
                 </div>
@@ -1155,18 +1214,18 @@
               }
             </div>
             <div class="flex-1 grid grid-cols-3 text-center">
-              <div>
+              <button type="button" id="own-posts-count-btn" class="hover:opacity-75 transition">
                 <p class="text-lg font-bold">${userPosts.length}</p>
                 <p class="text-xs text-zinc-500">posts</p>
-              </div>
-              <div>
+              </button>
+              <button type="button" class="open-follow-list hover:opacity-75 transition" data-ftype="followers" data-user-id="${u.supaUserId || ''}" data-username="${u.username}">
                 <p class="text-lg font-bold">${u.followers.toLocaleString()}</p>
                 <p class="text-xs text-zinc-500">followers</p>
-              </div>
-              <div>
+              </button>
+              <button type="button" class="open-follow-list hover:opacity-75 transition" data-ftype="following" data-user-id="${u.supaUserId || ''}" data-username="${u.username}">
                 <p class="text-lg font-bold">${u.following.toLocaleString()}</p>
                 <p class="text-xs text-zinc-500">following</p>
-              </div>
+              </button>
             </div>
           </header>
 
@@ -1223,15 +1282,172 @@
           <!-- 3-Column Photo/Reel Grid -->
           <div class="grid grid-cols-3 gap-0.5">
             ${items.map(i => `
-              <div class="aspect-square bg-zinc-200 dark:bg-zinc-900 overflow-hidden relative group">
-                <img src="${i.img}" alt="Media" class="w-full h-full object-cover" />
-                ${state.profileTab === 'reels' ? '<i data-lucide="play" class="w-4 h-4 text-white absolute top-2 right-2 drop-shadow"></i>' : ''}
+              <button type="button" class="open-post-detail aspect-square bg-zinc-200 dark:bg-zinc-900 overflow-hidden relative group" data-post-id="${i.id}" data-kind="${state.profileTab === 'reels' ? 'reel' : 'post'}">
+                ${(i.mediaType === 'video' || state.profileTab === 'reels')
+                  ? `<video src="${i.videoUrl || i.img}" muted playsinline class="w-full h-full object-cover"></video>`
+                  : `<img src="${i.img}" alt="Media" class="w-full h-full object-cover" />`
+                }
+                ${(i.mediaType === 'video' || state.profileTab === 'reels') ? '<i data-lucide="play" class="w-4 h-4 text-white absolute top-2 right-2 drop-shadow"></i>' : ''}
+                ${(i.media && i.media.length > 1) ? '<i data-lucide="copy" class="w-4 h-4 text-white absolute top-2 right-2 drop-shadow"></i>' : ''}
                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-3">
                   <span>♥ ${i.likes}</span>
                 </div>
-              </div>
+              </button>
             `).join('') || '<p class="col-span-3 text-center text-sm text-zinc-500 py-10">No items in this tab yet.</p>'}
           </div>
+        </div>
+      `;
+    }
+
+    function renderUserProfileView() {
+      const vp = state.viewedProfile;
+      if (vp.loading) {
+        return `
+          <div class="max-w-3xl mx-auto px-4 py-16 text-center space-y-3">
+            <div class="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p class="text-xs text-zinc-500">Loading profile...</p>
+          </div>
+        `;
+      }
+      if (vp.error || !vp.user) {
+        return `
+          <div class="max-w-xl mx-auto px-4 py-12 text-center space-y-3">
+            <button type="button" id="user-profile-back-btn" class="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back</button>
+            <p class="text-sm font-semibold text-red-500">${vp.error || 'Profile not found'}</p>
+          </div>
+        `;
+      }
+
+      const u = vp.user;
+      const isMe = (u.id && u.id === state.currentUser.supaUserId) || (u.username && u.username === state.currentUser.username);
+      const canSeeContent = !u.is_private || isMe || vp.followStatus === 'accepted';
+      const hasStories = canSeeContent && vp.stories.length > 0;
+      const items = vp.tab === 'reels' ? vp.reels : vp.posts;
+
+      return `
+        <div class="max-w-3xl mx-auto px-4 py-4 md:py-8 space-y-5">
+          <!-- Top Navigation Bar -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <button type="button" id="user-profile-back-btn" class="p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Back">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+              </button>
+              <div class="flex items-center gap-1.5">
+                ${u.is_private ? '<i data-lucide="lock" class="w-4 h-4"></i>' : ''}
+                <h1 class="text-lg font-bold tracking-tight inline-flex items-center gap-1">${u.username}${u.is_verified ? renderVerifiedBadge(u.username) : ''}</h1>
+              </div>
+            </div>
+            <button type="button" id="user-profile-more-btn" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="More options">
+              <i data-lucide="more-vertical" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Avatar + 3-Column Stats -->
+          <header class="flex items-center gap-6 md:gap-10">
+            <button type="button" id="user-profile-avatar-btn" class="w-20 h-20 md:w-28 md:h-28 rounded-full p-[3px] ${hasStories ? 'story-ring cursor-pointer' : 'bg-zinc-200 dark:bg-zinc-800'} shrink-0">
+              ${u.avatar_url
+                ? `<img src="${u.avatar_url}" alt="${u.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
+                : `<div class="w-full h-full rounded-full bg-zinc-100 dark:bg-zinc-900 border-2 border-white dark:border-zinc-950 flex items-center justify-center text-2xl font-bold text-zinc-600 dark:text-zinc-300">${(u.full_name || u.username || 'U').charAt(0).toUpperCase()}</div>`
+              }
+            </button>
+            <div class="flex-1 grid grid-cols-3 text-center">
+              <button type="button" id="vp-posts-count-btn" class="hover:opacity-75 transition">
+                <p class="text-lg font-bold">${vp.posts.length}</p>
+                <p class="text-xs text-zinc-500">posts</p>
+              </button>
+              <button type="button" class="open-follow-list hover:opacity-75 transition" data-ftype="followers" data-user-id="${u.id}" data-username="${u.username}">
+                <p class="text-lg font-bold">${vp.followersCount.toLocaleString()}</p>
+                <p class="text-xs text-zinc-500">followers</p>
+              </button>
+              <button type="button" class="open-follow-list hover:opacity-75 transition" data-ftype="following" data-user-id="${u.id}" data-username="${u.username}">
+                <p class="text-lg font-bold">${vp.followingCount.toLocaleString()}</p>
+                <p class="text-xs text-zinc-500">following</p>
+              </button>
+            </div>
+          </header>
+
+          <!-- Bio & Website -->
+          <div class="space-y-1 text-sm">
+            <p class="font-bold">${u.full_name || u.username}</p>
+            ${u.category ? `<p class="text-xs text-zinc-500 font-medium">${u.category}</p>` : ''}
+            ${u.bio ? `<p class="text-sm text-zinc-700 dark:text-zinc-300 leading-snug whitespace-pre-line">${u.bio}</p>` : ''}
+            ${u.website ? `<a href="${u.website.startsWith('http') ? u.website : 'https://' + u.website}" target="_blank" rel="noopener noreferrer" class="inline-block text-xs font-semibold text-indigo-500 hover:underline">${u.website}</a>` : ''}
+          </div>
+
+          <!-- Action Buttons -->
+          ${isMe ? `
+            <div class="flex gap-2">
+              <button type="button" id="vp-edit-profile-btn" class="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition">Edit profile</button>
+              <button type="button" id="vp-share-profile-btn" class="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition">Share profile</button>
+            </div>
+          ` : `
+            <div class="flex gap-2">
+              <button type="button" id="vp-follow-btn" class="flex-1 py-2 rounded-xl text-xs font-semibold transition ${
+                vp.followStatus === 'accepted'
+                  ? 'bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                  : vp.followStatus === 'pending'
+                    ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                    : 'bg-[#0095F6] text-white hover:opacity-95'
+              }">
+                ${vp.followStatus === 'accepted' ? 'Following' : vp.followStatus === 'pending' ? 'Requested' : 'Follow'}
+              </button>
+              <button type="button" id="vp-message-btn" class="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition">Message</button>
+            </div>
+          `}
+
+          ${!canSeeContent ? `
+            <div class="border-t border-zinc-200 dark:border-zinc-800 pt-10 pb-8 text-center space-y-2">
+              <div class="w-14 h-14 rounded-full border-2 border-zinc-900 dark:border-white flex items-center justify-center mx-auto">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+              </div>
+              <h2 class="text-sm font-bold">This Account is Private</h2>
+              <p class="text-xs text-zinc-500">Follow this account to see their photos, videos, and active stories.</p>
+            </div>
+          ` : `
+            <!-- Active Stories Strip (if any) -->
+            ${vp.stories.length ? `
+              <div class="flex gap-4 overflow-x-auto no-scrollbar pt-1">
+                ${vp.stories.map((s, idx) => `
+                  <button type="button" class="vp-open-story flex flex-col items-center gap-1.5 shrink-0" data-sidx="${idx}">
+                    <div class="w-16 h-16 rounded-full p-[2.5px] story-ring">
+                      ${s.mediaType === 'video'
+                        ? `<video src="${s.img}" muted playsinline class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950"></video>`
+                        : `<img src="${s.img}" alt="Story" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
+                      }
+                    </div>
+                    <span class="text-[11px] font-medium text-zinc-500">Active Story</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Posts / Reels Tabs -->
+            <div id="vp-grid-anchor" class="flex border-t border-zinc-200 dark:border-zinc-800">
+              <button type="button" class="vp-tab-btn flex-1 py-3 flex justify-center ${vp.tab === 'posts' ? 'border-t-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white' : 'text-zinc-400'}" data-vptab="posts" aria-label="Posts">
+                <i data-lucide="grid-3x3" class="w-5 h-5"></i>
+              </button>
+              <button type="button" class="vp-tab-btn flex-1 py-3 flex justify-center ${vp.tab === 'reels' ? 'border-t-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white' : 'text-zinc-400'}" data-vptab="reels" aria-label="Reels">
+                <i data-lucide="film" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- 3-Column Grid -->
+            <div class="grid grid-cols-3 gap-0.5">
+              ${items.map(i => `
+                <button type="button" class="open-post-detail aspect-square bg-zinc-200 dark:bg-zinc-900 overflow-hidden relative group" data-post-id="${i.id}" data-kind="${vp.tab === 'reels' ? 'reel' : 'post'}">
+                  ${(i.mediaType === 'video' || vp.tab === 'reels')
+                    ? `<video src="${i.videoUrl || i.img}" muted playsinline class="w-full h-full object-cover"></video>`
+                    : `<img src="${i.img}" alt="Media" class="w-full h-full object-cover" />`
+                  }
+                  ${(i.mediaType === 'video' || vp.tab === 'reels') ? '<i data-lucide="play" class="w-4 h-4 text-white absolute top-2 right-2 drop-shadow"></i>' : ''}
+                  ${(i.media && i.media.length > 1) ? '<i data-lucide="copy" class="w-4 h-4 text-white absolute top-2 right-2 drop-shadow"></i>' : ''}
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-3">
+                    <span>♥ ${i.likes}</span>
+                  </div>
+                </button>
+              `).join('') || '<p class="col-span-3 text-center text-sm text-zinc-500 py-10">No posts yet.</p>'}
+            </div>
+          `}
         </div>
       `;
     }
@@ -1391,39 +1607,130 @@
         });
       });
 
+      document.querySelectorAll('.open-user-profile').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          openUserProfile({ userId: btn.dataset.userId || '', username: btn.dataset.username || '' });
+        });
+      });
+
+      document.querySelectorAll('.open-post-detail').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openPostDetailModal(btn.dataset.postId, btn.dataset.kind || 'post');
+        });
+      });
+
+      document.querySelectorAll('.open-follow-list').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openFollowListModal(btn.dataset.ftype, btn.dataset.userId, btn.dataset.username);
+        });
+      });
+
+      const ownPostsCountBtn = document.getElementById('own-posts-count-btn');
+      if (ownPostsCountBtn) {
+        ownPostsCountBtn.addEventListener('click', () => {
+          state.profileTab = 'posts';
+          render();
+        });
+      }
+
+      const vpBackBtn = document.getElementById('user-profile-back-btn');
+      if (vpBackBtn) {
+        vpBackBtn.addEventListener('click', () => {
+          const prev = state.profileStack.pop();
+          if (prev) {
+            state.activeTab = prev.tab;
+            if (prev.viewedProfile) state.viewedProfile = prev.viewedProfile;
+          } else {
+            state.activeTab = 'home';
+          }
+          render();
+        });
+      }
+
+      const vpPostsCountBtn = document.getElementById('vp-posts-count-btn');
+      if (vpPostsCountBtn) {
+        vpPostsCountBtn.addEventListener('click', () => {
+          state.viewedProfile.tab = 'posts';
+          render();
+          document.getElementById('vp-grid-anchor')?.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+
+      const vpAvatarBtn = document.getElementById('user-profile-avatar-btn');
+      if (vpAvatarBtn) {
+        vpAvatarBtn.addEventListener('click', () => {
+          const vp = state.viewedProfile;
+          const isMe = vp.user && (vp.user.id === state.currentUser.supaUserId || vp.user.username === state.currentUser.username);
+          const canSee = vp.user && (!vp.user.is_private || isMe || vp.followStatus === 'accepted');
+          if (canSee && vp.stories.length) {
+            openStoryViewer(vp.stories, 0);
+          }
+        });
+      }
+
+      document.querySelectorAll('.vp-open-story').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openStoryViewer(state.viewedProfile.stories, Number(btn.dataset.sidx || 0));
+        });
+      });
+
+      document.querySelectorAll('.vp-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.viewedProfile.tab = btn.dataset.vptab;
+          render();
+        });
+      });
+
+      const vpFollowBtn = document.getElementById('vp-follow-btn');
+      if (vpFollowBtn) {
+        vpFollowBtn.addEventListener('click', () => toggleFollowUser(state.viewedProfile.user));
+      }
+
+      const vpMessageBtn = document.getElementById('vp-message-btn');
+      if (vpMessageBtn && state.viewedProfile.user) {
+        vpMessageBtn.addEventListener('click', () => {
+          const peer = state.viewedProfile.user.username;
+          const convId = 'dm_' + peer;
+          if (!state.conversations.some(c => c.id === convId)) {
+            state.conversations.unshift({
+              id: convId,
+              box: 'primary',
+              title: peer,
+              subtitle: 'Snapgram Direct',
+              avatar: state.viewedProfile.user.avatar_url || '',
+              online: false,
+              seen: '',
+              messages: []
+            });
+          }
+          state.activeConvId = convId;
+          state.mobileChatOpen = true;
+          state.activeTab = 'messages';
+          render();
+        });
+      }
+
+      const vpEditBtn = document.getElementById('vp-edit-profile-btn');
+      if (vpEditBtn) vpEditBtn.addEventListener('click', openEditProfileModal);
+
+      const vpShareBtn = document.getElementById('vp-share-profile-btn');
+      if (vpShareBtn && state.viewedProfile.user) {
+        vpShareBtn.addEventListener('click', () => showToast(`Copied snapgram.app/${state.viewedProfile.user.username}`));
+      }
+
+      const vpMoreBtn = document.getElementById('user-profile-more-btn');
+      if (vpMoreBtn && state.viewedProfile.user) {
+        vpMoreBtn.addEventListener('click', () => showToast(`Profile: @${state.viewedProfile.user.username}`));
+      }
+
       document.querySelectorAll('.open-story').forEach(btn => {
         btn.addEventListener('click', () => {
           const s = state.stories.find(st => st.id === btn.dataset.storyId);
           if (!s) return;
-          s.viewed = true;
-          state.activeStoryId = s.id;
-          const imgEl = document.getElementById('story-modal-img');
-          const vidEl = document.getElementById('story-modal-video');
-          if (s.mediaType === 'video') {
-            imgEl.classList.add('hidden');
-            vidEl.src = s.img;
-            vidEl.classList.remove('hidden');
-            vidEl.play().catch(() => {});
-          } else {
-            vidEl.pause();
-            vidEl.classList.add('hidden');
-            imgEl.src = s.img;
-            imgEl.classList.remove('hidden');
-          }
-          document.getElementById('story-modal-user').textContent = '@' + s.username;
-          document.getElementById('story-modal-privacy').textContent = s.privacy;
-          document.getElementById('story-modal-caption').textContent = s.caption;
-          const smMusic = document.getElementById('story-modal-music');
-          if (s.musicTitle) {
-            smMusic.innerHTML = renderMusicPill(s);
-            smMusic.classList.remove('hidden');
-          } else {
-            smMusic.classList.add('hidden');
-          }
-          const isOwner = s.username === state.currentUser.username || (state.currentUser.supaUserId && s.userId === state.currentUser.supaUserId);
-          document.getElementById('delete-story-btn').classList.toggle('hidden', !isOwner);
-          document.getElementById('story-modal').classList.remove('hidden');
-          render();
+          const userStories = state.stories.filter(st => st.username === s.username);
+          const idx = Math.max(0, userStories.findIndex(st => st.id === s.id));
+          openStoryViewer(userStories, idx);
         });
       });
 
@@ -1652,10 +1959,30 @@
       }
 
       document.querySelectorAll('.req-action').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.followRequests = state.followRequests.filter(r => r.id !== btn.dataset.reqId);
-          if (btn.dataset.action === 'accept') state.currentUser.followers += 1;
-          showToast(btn.dataset.action === 'accept' ? 'Follow request accepted' : 'Follow request removed');
+        btn.addEventListener('click', async () => {
+          const reqId = btn.dataset.reqId;
+          const act = btn.dataset.action;
+          const cfg = loadSupaConfig();
+          if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken) {
+            try {
+              const fresh = await ensureFreshSupaToken();
+              if (act === 'accept') {
+                await fetch(`${cfg.url}/rest/v1/snapgram_follows?id=eq.${encodeURIComponent(reqId)}`, {
+                  method: 'PATCH',
+                  headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ status: 'accepted' })
+                });
+              } else {
+                await fetch(`${cfg.url}/rest/v1/snapgram_follows?id=eq.${encodeURIComponent(reqId)}`, {
+                  method: 'DELETE',
+                  headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}` }
+                });
+              }
+            } catch {}
+          }
+          state.followRequests = state.followRequests.filter(r => r.id !== reqId);
+          if (act === 'accept') state.currentUser.followers += 1;
+          showToast(act === 'accept' ? 'Follow request accepted' : 'Follow request removed');
           render();
         });
       });
@@ -1664,6 +1991,9 @@
       if (privBtn) {
         privBtn.addEventListener('click', () => {
           state.currentUser.isPrivate = !state.currentUser.isPrivate;
+          saveSession(state.currentUser);
+      syncUserActivity('login');
+          syncUserActivity('login');
           showToast(state.currentUser.isPrivate ? 'Account set to Private' : 'Account set to Public');
           render();
         });
@@ -1873,7 +2203,7 @@
       saveSession(state.currentUser);
       showToast(isAdmin ? 'Signed in with Admin access' : `Welcome, @${state.currentUser.username}`);
       syncUserActivity('login');
-      loadRemoteMedia(); loadMyMessages();
+      loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers();
       if (isAdmin) loadAdminData();
       render();
     }
@@ -2223,6 +2553,7 @@
       else if (state.activeTab === 'activity') main.innerHTML = renderActivity();
       else if (state.activeTab === 'profile') main.innerHTML = renderProfile();
       else if (state.activeTab === 'admin') main.innerHTML = renderAdmin();
+      else if (state.activeTab === 'user-profile') main.innerHTML = renderUserProfileView();
 
       bindViewEvents();
       if (window.lucide) window.lucide.createIcons();
@@ -3011,13 +3342,14 @@
       if (!token) return true;
       try {
         const part = token.split('.')[1];
-        if (!part) return false;
-        const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+        if (!part) return true;
+        let b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4 !== 0) b64 += '=';
         const payload = JSON.parse(atob(b64));
         if (!payload.exp) return false;
         return (Date.now() / 1000) >= (payload.exp - 60);
       } catch {
-        return false;
+        return true;
       }
     }
 
@@ -3207,7 +3539,8 @@
               following: true,
               isFeatured: Boolean(r.is_featured),
               featuredLabel: r.is_featured ? 'Featured by Snapgram' : '',
-              comments: Array.isArray(r.comments) ? r.comments : []
+              comments: Array.isArray(r.comments) ? r.comments : [],
+              createdAt: r.created_at
             });
           }
         });
@@ -3522,6 +3855,10 @@
             username: state.currentUser.username,
             full_name: state.currentUser.fullName || state.currentUser.username,
             avatar_url: state.currentUser.avatar || '',
+            category: state.currentUser.category || '',
+            bio: state.currentUser.bio || '',
+            website: state.currentUser.website || '',
+            is_private: Boolean(state.currentUser.isPrivate),
             is_online: true,
             last_login_at: nowIso,
             updated_at: nowIso
@@ -3948,7 +4285,484 @@
       document.getElementById('music-modal').classList.add('hidden');
     });
 
-    window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); if (state.currentUser.isAdmin) loadAdminData(); } });
+
+    // =========================================================================
+    // INSTAGRAM-STYLE USER PROFILE, FOLLOW SYSTEM, POST DETAIL & STORY VIEWER
+    // =========================================================================
+    let storyQueue = [];
+    let storyQueueIdx = 0;
+    let storyAutoTimer = null;
+
+    function openStoryViewer(storiesList, startIndex = 0) {
+      if (!storiesList || !storiesList.length) return;
+      storyQueue = storiesList;
+      storyQueueIdx = Math.max(0, Math.min(startIndex, storiesList.length - 1));
+      renderCurrentStorySlide();
+      document.getElementById('story-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function renderCurrentStorySlide() {
+      clearTimeout(storyAutoTimer);
+      const s = storyQueue[storyQueueIdx];
+      if (!s) {
+        document.getElementById('story-modal').classList.add('hidden');
+        return;
+      }
+      s.viewed = true;
+      state.activeStoryId = s.id;
+
+      // Render segmented progress bars
+      const barsEl = document.getElementById('story-progress-bars');
+      barsEl.innerHTML = storyQueue.map((_, i) => `
+        <div class="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+          <div class="h-full bg-white rounded-full transition-all ${i < storyQueueIdx ? 'w-full' : i === storyQueueIdx ? 'w-full' : 'w-0'}"></div>
+        </div>
+      `).join('');
+
+      const imgEl = document.getElementById('story-modal-img');
+      const vidEl = document.getElementById('story-modal-video');
+      vidEl.onended = null;
+      if (s.mediaType === 'video') {
+        imgEl.classList.add('hidden');
+        vidEl.src = s.img;
+        vidEl.classList.remove('hidden');
+        vidEl.play().catch(() => {});
+        vidEl.onended = () => advanceStorySlide(1);
+      } else {
+        vidEl.pause();
+        vidEl.classList.add('hidden');
+        imgEl.src = s.img;
+        imgEl.classList.remove('hidden');
+        storyAutoTimer = setTimeout(() => advanceStorySlide(1), 5000);
+      }
+
+      document.getElementById('story-modal-user').textContent = '@' + s.username;
+      document.getElementById('story-modal-privacy').textContent = s.privacy || 'Public';
+      document.getElementById('story-modal-caption').textContent = s.caption || '';
+      const smMusic = document.getElementById('story-modal-music');
+      if (s.musicTitle) {
+        smMusic.innerHTML = renderMusicPill(s);
+        smMusic.classList.remove('hidden');
+      } else {
+        smMusic.classList.add('hidden');
+      }
+      const isOwner = s.username === state.currentUser.username || (state.currentUser.supaUserId && s.userId === state.currentUser.supaUserId);
+      document.getElementById('delete-story-btn').classList.toggle('hidden', !isOwner);
+    }
+
+    function advanceStorySlide(delta) {
+      const next = storyQueueIdx + delta;
+      if (next < 0) {
+        storyQueueIdx = 0;
+        renderCurrentStorySlide();
+      } else if (next >= storyQueue.length) {
+        clearTimeout(storyAutoTimer);
+        const vidEl = document.getElementById('story-modal-video');
+        if (vidEl) vidEl.pause();
+        document.getElementById('story-modal').classList.add('hidden');
+        render();
+      } else {
+        storyQueueIdx = next;
+        renderCurrentStorySlide();
+      }
+    }
+
+    document.getElementById('story-prev-tap').addEventListener('click', () => advanceStorySlide(-1));
+    document.getElementById('story-next-tap').addEventListener('click', () => advanceStorySlide(1));
+
+    async function openUserProfile({ userId = '', username = '' }) {
+      const cleanUname = (username || '').replace(/^@/, '').trim().toLowerCase();
+      if (!userId && !cleanUname) return;
+
+      // Push current view to back-navigation stack
+      state.profileStack.push({
+        tab: state.activeTab,
+        viewedProfile: state.activeTab === 'user-profile' ? JSON.parse(JSON.stringify(state.viewedProfile)) : null
+      });
+      state.activeTab = 'user-profile';
+      state.viewedProfile = {
+        loading: true,
+        error: '',
+        user: null,
+        posts: [],
+        reels: [],
+        stories: [],
+        followersCount: 0,
+        followingCount: 0,
+        followStatus: 'none',
+        tab: 'posts'
+      };
+      render();
+
+      const cfg = loadSupaConfig();
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey) {
+        state.viewedProfile.loading = false;
+        state.viewedProfile.error = 'Supabase is not configured.';
+        render();
+        return;
+      }
+
+      try {
+        const fresh = await ensureFreshSupaToken().catch(() => state.currentUser.supaToken);
+        const token = fresh || cfg.anonKey;
+        const filter = userId
+          ? `id=eq.${encodeURIComponent(userId)}`
+          : `username=ilike.${encodeURIComponent(cleanUname)}`;
+        let userRow = null;
+        try {
+          const uRes = await fetch(`${cfg.url}/rest/v1/snapgram_users?${filter}&select=*&limit=1`, {
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+          });
+          if (uRes.ok) {
+            const users = await uRes.json();
+            userRow = users[0] || null;
+          }
+        } catch {}
+
+        // Fallback if user row isn't in snapgram_users yet
+        if (!userRow) {
+          const isMeFallback = (userId && userId === state.currentUser.supaUserId) || (cleanUname && cleanUname === (state.currentUser.username || '').toLowerCase());
+          if (isMeFallback) {
+            userRow = {
+              id: state.currentUser.supaUserId || '',
+              username: state.currentUser.username,
+              full_name: state.currentUser.fullName,
+              avatar_url: state.currentUser.avatar,
+              category: state.currentUser.category,
+              bio: state.currentUser.bio,
+              website: state.currentUser.website,
+              is_private: state.currentUser.isPrivate,
+              is_verified: Boolean(state.verifiedUsers[(state.currentUser.username || '').toLowerCase()])
+            };
+          } else {
+            userRow = {
+              id: userId || '',
+              username: cleanUname,
+              full_name: cleanUname,
+              avatar_url: '',
+              category: '',
+              bio: '',
+              website: '',
+              is_private: false,
+              is_verified: Boolean(state.verifiedUsers[cleanUname])
+            };
+          }
+        }
+
+        const targetId = userRow.id;
+        const mediaQuery = targetId
+          ? `user_id=eq.${encodeURIComponent(targetId)}`
+          : `username=ilike.${encodeURIComponent(userRow.username)}`;
+        const [mRes, fRes] = await Promise.all([
+          fetch(`${cfg.url}/rest/v1/snapgram_media?${mediaQuery}&order=created_at.desc`, {
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+          }),
+          targetId
+            ? fetch(`${cfg.url}/rest/v1/snapgram_follows?or=(follower_id.eq.${encodeURIComponent(targetId)},following_id.eq.${encodeURIComponent(targetId)})`, {
+                headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+              })
+            : Promise.resolve({ ok: false })
+        ]);
+
+        const mediaRows = mRes.ok ? await mRes.json() : [];
+        const followRows = fRes.ok ? await fRes.json() : [];
+        const now = Date.now();
+
+        const posts = [];
+        const reels = [];
+        const stories = [];
+        mediaRows.forEach(r => {
+          const urls = Array.isArray(r.media_urls) ? r.media_urls : [];
+          const types = Array.isArray(r.media_types) ? r.media_types : [];
+          const base = {
+            id: r.id,
+            userId: r.user_id,
+            username: r.username,
+            userAvatar: userRow.avatar_url || '',
+            location: r.location || '',
+            img: urls[0] || '',
+            mediaType: types[0] || 'image',
+            media: urls.map((u, i) => ({ url: u, type: types[i] || 'image' })),
+            caption: r.caption || '',
+            taggedUsers: Array.isArray(r.tagged_users) ? r.tagged_users : [],
+            musicTitle: r.music_title || '',
+            musicArtist: r.music_artist || '',
+            musicUrl: r.music_url || '',
+            musicSource: r.music_source || '',
+            likes: r.likes_count || 0,
+            liked: false,
+            saved: false,
+            comments: Array.isArray(r.comments) ? r.comments : [],
+            createdAt: r.created_at
+          };
+          if (r.kind === 'story') {
+            const exp = r.expires_at ? new Date(r.expires_at).getTime() : (new Date(r.created_at).getTime() + 86400000);
+            if (exp > now) stories.push({ ...base, expiresAt: exp, privacy: userRow.is_private ? 'Followers' : 'Public' });
+          } else if (r.kind === 'reel') {
+            reels.push({ ...base, videoUrl: urls[0] || '', thumbnailUrl: r.thumbnail_url || '', audio: 'Original Audio · ' + r.username, views: r.views_count || 0 });
+          } else {
+            posts.push(base);
+          }
+        });
+
+        const followersCount = followRows.filter(f => f.following_id === targetId && f.status === 'accepted').length;
+        const followingCount = followRows.filter(f => f.follower_id === targetId && f.status === 'accepted').length;
+        const myFollow = followRows.find(f => f.follower_id === state.currentUser.supaUserId && f.following_id === targetId);
+
+        state.viewedProfile = {
+          loading: false,
+          error: '',
+          user: userRow,
+          posts,
+          reels,
+          stories,
+          followersCount,
+          followingCount,
+          followStatus: myFollow ? myFollow.status : 'none',
+          tab: 'posts'
+        };
+        render();
+      } catch (err) {
+        state.viewedProfile.loading = false;
+        state.viewedProfile.error = err.message || 'Could not load profile.';
+        render();
+      }
+    }
+
+    async function toggleFollowUser(targetUser) {
+      if (!targetUser || !state.currentUser.supaUserId) {
+        showToast('Sign in to follow users');
+        return;
+      }
+      const cfg = loadSupaConfig();
+      const fresh = await ensureFreshSupaToken();
+      const token = fresh || cfg.anonKey;
+      const vp = state.viewedProfile;
+
+      try {
+        if (vp.followStatus === 'accepted' || vp.followStatus === 'pending') {
+          await fetch(`${cfg.url}/rest/v1/snapgram_follows?follower_id=eq.${encodeURIComponent(state.currentUser.supaUserId)}&following_id=eq.${encodeURIComponent(targetUser.id)}`, {
+            method: 'DELETE',
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+          });
+          if (vp.followStatus === 'accepted') vp.followersCount = Math.max(0, vp.followersCount - 1);
+          vp.followStatus = 'none';
+          showToast('Unfollowed');
+        } else {
+          const nextStatus = targetUser.is_private ? 'pending' : 'accepted';
+          const res = await fetch(`${cfg.url}/rest/v1/snapgram_follows`, {
+            method: 'POST',
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              follower_id: state.currentUser.supaUserId,
+              follower_username: state.currentUser.username,
+              following_id: targetUser.id,
+              following_username: targetUser.username,
+              status: nextStatus
+            })
+          });
+          if (!res.ok) throw new Error('Could not follow');
+          vp.followStatus = nextStatus;
+          if (nextStatus === 'accepted') vp.followersCount += 1;
+          showToast(nextStatus === 'pending' ? 'Follow request sent' : `Following @${targetUser.username}`);
+        }
+        loadOwnFollowData();
+        render();
+      } catch {
+        showToast('Run supabase_setup_profiles.sql to enable follows');
+      }
+    }
+
+    async function loadOwnFollowData() {
+      const cfg = loadSupaConfig();
+      const meId = state.currentUser.supaUserId;
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey || !meId || !state.currentUser.supaToken) return;
+      try {
+        const res = await fetch(`${cfg.url}/rest/v1/snapgram_follows?or=(follower_id.eq.${encodeURIComponent(meId)},following_id.eq.${encodeURIComponent(meId)})`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}` }
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        state.currentUser.followers = rows.filter(r => r.following_id === meId && r.status === 'accepted').length;
+        state.currentUser.following = rows.filter(r => r.follower_id === meId && r.status === 'accepted').length;
+        state.followRequests = rows
+          .filter(r => r.following_id === meId && r.status === 'pending')
+          .map(r => ({ id: r.id, username: r.follower_username, fullName: '@' + r.follower_username, followerId: r.follower_id }));
+      } catch {}
+    }
+
+    async function openFollowListModal(type, userId, username) {
+      const modal = document.getElementById('follow-list-modal');
+      const title = document.getElementById('follow-list-title');
+      const body = document.getElementById('follow-list-body');
+      title.textContent = type === 'followers' ? 'Followers' : 'Following';
+      body.innerHTML = '<p class="text-xs text-zinc-500 py-8 text-center">Loading...</p>';
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+
+      const cfg = loadSupaConfig();
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey || !userId) {
+        body.innerHTML = '<p class="text-xs text-zinc-500 py-8 text-center">No accounts yet.</p>';
+        return;
+      }
+      try {
+        const token = state.currentUser.supaToken || cfg.anonKey;
+        const col = type === 'followers' ? 'following_id' : 'follower_id';
+        const res = await fetch(`${cfg.url}/rest/v1/snapgram_follows?${col}=eq.${encodeURIComponent(userId)}&status=eq.accepted`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${token}` }
+        });
+        const rows = res.ok ? await res.json() : [];
+        if (!rows.length) {
+          body.innerHTML = `<p class="text-xs text-zinc-500 py-8 text-center">No ${type} yet.</p>`;
+          return;
+        }
+        body.innerHTML = rows.map(r => {
+          const uname = type === 'followers' ? r.follower_username : r.following_username;
+          const uid = type === 'followers' ? r.follower_id : r.following_id;
+          return `
+            <button type="button" class="follow-list-user w-full text-left py-3 px-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl flex items-center gap-3 transition" data-user-id="${uid}" data-username="${uname}">
+              ${renderAvatar('', uname, 'w-10 h-10')}
+              <span class="text-sm font-semibold inline-flex items-center gap-1">@${uname}${renderVerifiedBadge(uname)}</span>
+            </button>
+          `;
+        }).join('');
+
+        document.querySelectorAll('.follow-list-user').forEach(btn => {
+          btn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            openUserProfile({ userId: btn.dataset.userId, username: btn.dataset.username });
+          });
+        });
+      } catch {
+        body.innerHTML = '<p class="text-xs text-red-500 py-8 text-center">Could not load list.</p>';
+      }
+    }
+
+    function openPostDetailModal(postId, kind = 'post') {
+      const pool = kind === 'reel'
+        ? [...state.reels, ...(state.viewedProfile.reels || [])]
+        : [...state.posts, ...(state.viewedProfile.posts || [])];
+      const p = pool.find(x => x.id === postId);
+      if (!p) return;
+
+      const body = document.getElementById('post-detail-body');
+      const mediaList = Array.isArray(p.media) && p.media.length ? p.media : [{ url: p.videoUrl || p.img, type: p.mediaType || (kind === 'reel' ? 'video' : 'image') }];
+      const activeMedia = mediaList[0];
+      const dateLabel = p.createdAt ? new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+      body.innerHTML = `
+        <div class="space-y-3">
+          <div class="px-4 pt-3 flex items-center justify-between">
+            <button type="button" class="detail-open-profile flex items-center gap-2.5" data-user-id="${p.userId || ''}" data-username="${p.username}">
+              ${renderAvatar(p.userAvatar || '', p.username, 'w-8 h-8')}
+              <span class="text-sm font-semibold inline-flex items-center gap-1">${p.username}${renderVerifiedBadge(p.username)}</span>
+            </button>
+            ${dateLabel ? `<span class="text-[11px] text-zinc-400">${dateLabel}</span>` : ''}
+          </div>
+          <div class="bg-black max-h-[55vh] flex items-center justify-center overflow-hidden">
+            ${activeMedia.type === 'video'
+              ? `<video src="${activeMedia.url}" controls playsinline class="w-full max-h-[55vh] object-contain"></video>`
+              : `<img src="${activeMedia.url}" alt="Post" class="w-full max-h-[55vh] object-contain" />`
+            }
+          </div>
+          <div class="px-4 pb-4 space-y-2.5">
+            <div class="flex items-center gap-4">
+              <button type="button" id="detail-like-btn" class="flex items-center gap-1.5 text-sm font-semibold">
+                <i data-lucide="heart" class="w-5 h-5 ${p.liked ? 'fill-red-500 text-red-500' : ''}"></i>
+                <span>${p.likes.toLocaleString()}</span>
+              </button>
+              <span class="text-xs text-zinc-500">${(p.comments || []).length} comments</span>
+            </div>
+            ${renderMusicPill(p)}
+            ${p.caption ? `<p class="text-sm"><span class="font-semibold mr-1.5">${p.username}</span>${p.caption}</p>` : ''}
+            <div id="detail-comments-list" class="space-y-1.5 max-h-40 overflow-y-auto pt-1 border-t border-zinc-100 dark:border-zinc-800">
+              ${(p.comments || []).map(c => `<p class="text-xs"><button type="button" class="detail-open-profile font-semibold mr-1.5 hover:underline" data-username="${c.user}">${c.user}</button>${c.text}</p>`).join('') || '<p class="text-xs text-zinc-400">No comments yet.</p>'}
+            </div>
+            <form id="detail-comment-form" class="flex gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <input id="detail-comment-input" type="text" placeholder="Add a comment..." class="flex-1 text-xs bg-transparent focus:outline-none" />
+              <button type="submit" class="text-xs font-semibold text-pink-500">Post</button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('post-detail-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+
+      body.querySelectorAll('.detail-open-profile').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.getElementById('post-detail-modal').classList.add('hidden');
+          openUserProfile({ userId: btn.dataset.userId || '', username: btn.dataset.username || '' });
+        });
+      });
+
+      document.getElementById('detail-like-btn').addEventListener('click', () => {
+        p.liked = !p.liked;
+        p.likes = Math.max(0, p.likes + (p.liked ? 1 : -1));
+        saveUserEngagements();
+        syncMediaEngagement(p.id, { likes_count: p.likes });
+        openPostDetailModal(postId, kind);
+        render();
+      });
+
+      document.getElementById('detail-comment-form').addEventListener('submit', e => {
+        e.preventDefault();
+        const inp = document.getElementById('detail-comment-input');
+        const txt = inp.value.trim();
+        if (!txt) return;
+        p.comments = p.comments || [];
+        p.comments.push({ user: state.currentUser.username, text: txt });
+        syncMediaEngagement(p.id, { comments: p.comments });
+        openPostDetailModal(postId, kind);
+        render();
+      });
+    }
+
+    document.getElementById('close-post-detail').addEventListener('click', () => {
+      document.getElementById('post-detail-modal').classList.add('hidden');
+    });
+    document.getElementById('close-follow-list').addEventListener('click', () => {
+      document.getElementById('follow-list-modal').classList.add('hidden');
+    });
+
+    async function loadExploreUsers() {
+      const cfg = loadSupaConfig();
+      if (!cfg.url.startsWith('https://') || !cfg.anonKey || !state.currentUser.supaToken) return;
+      try {
+        const res = await fetch(`${cfg.url}/rest/v1/snapgram_users?select=id,username,full_name,avatar_url,is_verified,is_blocked&limit=50`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}` }
+        });
+        if (res.ok) {
+          state.exploreUsers = (await res.json()).filter(u => !u.is_blocked);
+        }
+      } catch {}
+    }
+
+
+    // Global click delegation so profile, post detail, and follow-list taps always work
+    document.addEventListener('click', e => {
+      const profBtn = e.target.closest('.open-user-profile');
+      if (profBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openUserProfile({ userId: profBtn.dataset.userId || '', username: profBtn.dataset.username || '' });
+        return;
+      }
+      const smUser = e.target.closest('#story-modal-user');
+      if (smUser) {
+        const uname = (smUser.textContent || '').replace(/^@/, '').trim();
+        if (uname) {
+          clearTimeout(storyAutoTimer);
+          document.getElementById('story-modal-video')?.pause();
+          document.getElementById('story-modal').classList.add('hidden');
+          openUserProfile({ username: uname });
+        }
+        return;
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
     // Pull-to-refresh (drag down from top) for touch & mouse
     (function initPullToRefresh() {
