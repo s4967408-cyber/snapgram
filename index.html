@@ -1546,46 +1546,96 @@
           </div>
         `;
       }
+      const list = state.reelsFilter === 'friends'
+        ? state.reels.filter(r => r.username === state.currentUser.username || r.following)
+        : state.reels;
+
       return `
-        <div class="py-4 px-4 flex flex-col items-center gap-6">
-          ${state.reels.map(r => {
-            const isOwner = r.username === state.currentUser.username || (state.currentUser.supaUserId && r.userId === state.currentUser.supaUserId);
-            return `
-            <div class="relative w-full max-w-sm aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-xl flex items-end">
-              ${r.mediaType === 'video' || (r.videoUrl || r.img || '').match(/\.(mp4|mov|webm)|video/i) || r.isVideo
-                ? `<video id="reel-vid-${r.id}" src="${r.videoUrl || r.img}" ${r.thumbnailUrl ? `poster="${r.thumbnailUrl}"` : ''} preload="metadata" playsinline loop class="absolute inset-0 w-full h-full object-cover bg-black"></video>`
-                : `<img src="${r.img}" alt="Reel" class="absolute inset-0 w-full h-full object-cover" />`
-              }
-              <button class="reel-play-toggle absolute inset-0 flex items-center justify-center z-10" data-reel-id="${r.id}" aria-label="Toggle Play">
-                <div id="reel-play-icon-${r.id}" class="p-4 rounded-full bg-black/60 text-white ${r.playing ? 'hidden' : ''}"><i data-lucide="play" class="w-8 h-8"></i></div>
-              </button>
-              ${isOwner ? `
-                <button class="delete-reel-btn absolute top-3 right-3 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-red-500 transition" data-reel-id="${r.id}" title="Delete Reel" aria-label="Delete Reel">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              ` : ''}
-              <div class="relative z-20 w-full p-4 bg-gradient-to-t from-black/85 via-black/30 to-transparent text-white flex justify-between items-end">
-                <div class="space-y-1.5 max-w-[75%]">
-                  <button type="button" class="open-user-profile font-bold text-sm flex items-center gap-1 hover:underline" data-user-id="${r.userId || ''}" data-username="${r.username}">@${r.username}${renderVerifiedBadge(r.username)}</button>
-                  <p class="text-xs">${r.caption}</p>
-                  ${r.musicTitle ? renderMusicPill(r) : `<p class="text-[11px] text-white/80 flex items-center gap-1"><i data-lucide="music" class="w-3.5 h-3.5"></i> ${r.audio}</p>`}
+        <div class="relative bg-black min-h-[calc(100vh-3.5rem)] md:py-4 flex flex-col items-center">
+          <!-- Top Overlay Header (Matches 15030.png: + | Reels | Friends) -->
+          <div class="sticky top-0 z-30 w-full max-w-sm px-4 py-3 flex items-center justify-between text-white bg-gradient-to-b from-black/70 to-transparent md:rounded-t-2xl">
+            <button id="reels-top-create-btn" type="button" class="p-1.5 rounded-full hover:bg-white/15" aria-label="Create Reel">
+              <i data-lucide="plus" class="w-6 h-6"></i>
+            </button>
+            <div class="flex items-center gap-5 text-base">
+              <button type="button" class="reels-tab-switch font-bold ${state.reelsFilter === 'all' ? 'text-white' : 'text-white/60'}" data-rfilter="all">Reels</button>
+              <button type="button" class="reels-tab-switch font-bold ${state.reelsFilter === 'friends' ? 'text-white' : 'text-white/60'}" data-rfilter="friends">Friends</button>
+            </div>
+            <div class="w-8"></div>
+          </div>
+
+          <!-- Vertical Snap-Scroll Reels Container -->
+          <div class="w-full max-w-sm snap-y snap-mandatory overflow-y-auto no-scrollbar h-[calc(100vh-7rem)] md:h-[82vh] space-y-4">
+            ${list.length ? list.map(r => {
+              const isOwner = r.username === state.currentUser.username || (state.currentUser.supaUserId && r.userId === state.currentUser.supaUserId);
+              const uObj = state.exploreUsers.find(u => (u.username || '').toLowerCase() === (r.username || '').toLowerCase());
+              const avUrl = r.userAvatar || uObj?.avatar_url || (isOwner ? state.currentUser.avatar : '');
+              return `
+              <div class="reel-card snap-start relative w-full h-full bg-black md:rounded-2xl overflow-hidden shadow-2xl flex items-end select-none" data-reel-id="${r.id}">
+                ${r.mediaType === 'video' || (r.videoUrl || r.img || '').match(/\.(mp4|mov|webm)|video/i) || r.isVideo
+                  ? `<video id="reel-vid-${r.id}" src="${r.videoUrl || r.img}" ${r.thumbnailUrl ? `poster="${r.thumbnailUrl}"` : ''} preload="metadata" playsinline loop class="absolute inset-0 w-full h-full object-cover bg-black"></video>`
+                  : `<img src="${r.img}" alt="Reel" class="absolute inset-0 w-full h-full object-cover" />`
+                }
+
+                <!-- Gesture Surface (Single-tap: Play/Pause | Double-tap: Like ❤️ | Long-press: Mute/Unmute) -->
+                <div class="reel-gesture-surface absolute inset-0 z-10 flex items-center justify-center cursor-pointer" data-reel-id="${r.id}">
+                  <div id="reel-play-icon-${r.id}" class="p-4 rounded-full bg-black/55 text-white ${r.playing ? 'hidden' : ''}">
+                    <i data-lucide="play" class="w-8 h-8"></i>
+                  </div>
+                  <div id="reel-heart-pop-${r.id}" class="hidden text-6xl drop-shadow-2xl animate-ping pointer-events-none">❤️</div>
+                  <div id="reel-mute-toast-${r.id}" class="hidden px-4 py-2 rounded-full bg-black/75 text-white text-xs font-bold pointer-events-none"></div>
                 </div>
-                <div class="flex flex-col items-center gap-4">
-                  <button class="reel-like-btn flex flex-col items-center text-xs" data-reel-id="${r.id}">
-                    <i data-lucide="heart" class="w-6 h-6 ${r.liked ? 'fill-red-500 text-red-500' : ''}"></i>
-                    <span>${r.likes}</span>
-                  </button>
-                  <button class="reel-save-btn" data-reel-id="${r.id}">
-                    <i data-lucide="bookmark" class="w-6 h-6 ${r.saved ? 'fill-white' : ''}"></i>
-                  </button>
-                  <div class="flex flex-col items-center text-[11px] text-white/80">
-                    <i data-lucide="eye" class="w-4 h-4"></i>
-                    <span>${r.views.toLocaleString()}</span>
+
+                <!-- Bottom-Left Creator Row + Caption (Matches 15030.png) -->
+                <div class="relative z-20 w-full p-4 pb-5 bg-gradient-to-t from-black/85 via-black/35 to-transparent text-white flex justify-between items-end gap-3 pointer-events-none">
+                  <div class="space-y-2 max-w-[78%] pointer-events-auto">
+                    <div class="flex items-center gap-2.5">
+                      <button type="button" class="open-user-profile shrink-0" data-user-id="${r.userId || ''}" data-username="${r.username}">
+                        ${renderAvatar(avUrl, r.username, 'w-9 h-9')}
+                      </button>
+                      <button type="button" class="open-user-profile font-bold text-sm inline-flex items-center gap-1 hover:underline truncate" data-user-id="${r.userId || ''}" data-username="${r.username}">
+                        ${r.username}${renderVerifiedBadge(r.username)}
+                      </button>
+                      ${!isOwner ? `
+                        <button type="button" class="reel-follow-btn px-3 py-1 rounded-lg border border-white/60 text-xs font-semibold hover:bg-white/15 transition" data-reel-id="${r.id}">
+                          ${r.following ? 'Following' : 'Follow'}
+                        </button>
+                      ` : ''}
+                    </div>
+                    ${r.caption ? `<p class="text-xs text-white/95 line-clamp-2">${r.caption}</p>` : ''}
+                    ${r.musicTitle ? renderMusicPill(r) : `<p class="text-[11px] text-white/80 flex items-center gap-1"><i data-lucide="music" class="w-3.5 h-3.5"></i> ${r.audio || ('Original Audio · ' + r.username)}</p>`}
+                  </div>
+
+                  <!-- Right Vertical Action Stack (Matches 15030.png: Heart, Comment, Share, Save, Menu) -->
+                  <div class="flex flex-col items-center gap-4 pointer-events-auto shrink-0">
+                    <button type="button" class="reel-like-btn flex flex-col items-center gap-0.5 text-xs" data-reel-id="${r.id}" aria-label="Like">
+                      <i id="reel-heart-icon-${r.id}" data-lucide="heart" class="w-7 h-7 ${r.liked ? 'fill-red-500 text-red-500' : ''}"></i>
+                      <span id="reel-likes-count-${r.id}" class="text-[11px] font-semibold">${r.likes}</span>
+                    </button>
+                    <button type="button" class="reel-comment-btn flex flex-col items-center gap-0.5 text-xs" data-reel-id="${r.id}" aria-label="Comments">
+                      <i data-lucide="message-circle" class="w-7 h-7"></i>
+                      <span class="text-[11px] font-semibold">${(r.comments || []).length}</span>
+                    </button>
+                    <button type="button" class="reel-share-btn" data-reel-id="${r.id}" aria-label="Share">
+                      <i data-lucide="send" class="w-6 h-6"></i>
+                    </button>
+                    <button type="button" class="reel-save-btn" data-reel-id="${r.id}" aria-label="Save">
+                      <i data-lucide="bookmark" class="w-6 h-6 ${r.saved ? 'fill-white' : ''}"></i>
+                    </button>
+                    ${isOwner ? `
+                      <button type="button" class="delete-reel-btn p-1 rounded-full hover:bg-red-500/30 text-white/80 hover:text-red-400" data-reel-id="${r.id}" title="Delete Reel">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                      </button>
+                    ` : `
+                      <button type="button" class="reel-more-btn p-1" data-reel-id="${r.id}" aria-label="More">
+                        <i data-lucide="align-justify" class="w-5 h-5"></i>
+                      </button>
+                    `}
                   </div>
                 </div>
               </div>
-            </div>
-          `;}).join('')}
+            `;}).join('') : '<p class="text-center text-xs text-zinc-400 py-16">No reels from friends yet.</p>'}
+          </div>
         </div>
       `;
     }
@@ -2755,31 +2805,119 @@
         });
       });
 
-      document.querySelectorAll('.reel-play-toggle').forEach(btn => {
+      document.getElementById('reels-top-create-btn')?.addEventListener('click', () => openIgPlusScreen('reel'));
+      document.querySelectorAll('.reels-tab-switch').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.reelsFilter = btn.dataset.rfilter;
+          render();
+        });
+      });
+      document.querySelectorAll('.reel-comment-btn').forEach(btn => {
+        btn.addEventListener('click', () => openPostDetailModal(btn.dataset.reelId, 'reel'));
+      });
+      document.querySelectorAll('.reel-share-btn').forEach(btn => {
+        btn.addEventListener('click', () => showToast('Reel link copied to share'));
+      });
+      document.querySelectorAll('.reel-follow-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const r = state.reels.find(x => x.id === btn.dataset.reelId);
           if (!r) return;
-          const vid = document.getElementById(`reel-vid-${r.id}`);
-          const iconEl = document.getElementById(`reel-play-icon-${r.id}`);
+          r.following = !r.following;
+          btn.textContent = r.following ? 'Following' : 'Follow';
+          showToast(r.following ? `Following @${r.username}` : `Unfollowed @${r.username}`);
+        });
+      });
+
+      function likeReelInPlace(r) {
+        if (!r || r.liked) return;
+        r.liked = true;
+        r.likes += 1;
+        saveUserEngagements();
+        syncMediaEngagement(r.id, { likes_count: r.likes });
+        const icon = document.getElementById(`reel-heart-icon-${r.id}`);
+        const countEl = document.getElementById(`reel-likes-count-${r.id}`);
+        if (icon) icon.classList.add('fill-red-500', 'text-red-500');
+        if (countEl) countEl.textContent = r.likes;
+        if (r.username !== state.currentUser.username) {
+          createNotification(r.username, 'like', 'liked your reel', r.id);
+        }
+      }
+
+      document.querySelectorAll('.reel-gesture-surface').forEach(surface => {
+        const rid = surface.dataset.reelId;
+        let holdTimer = null;
+        let held = false;
+        let lastTap = 0;
+        let tapTimer = null;
+
+        const toggleMute = () => {
+          const vid = document.getElementById(`reel-vid-${rid}`);
+          const toastEl = document.getElementById(`reel-mute-toast-${rid}`);
           if (!vid) return;
-          if (vid.paused) {
-            // Pause any other playing reels
-            document.querySelectorAll('video[id^="reel-vid-"]').forEach(v => {
-              if (v !== vid) { v.pause(); }
-            });
-            document.querySelectorAll('[id^="reel-play-icon-"]').forEach(ic => ic.classList.remove('hidden'));
-            state.reels.forEach(x => { x.playing = (x.id === r.id); });
-            vid.muted = false;
-            vid.play().catch(() => {
-              vid.muted = true;
-              vid.play().catch(() => {});
-            });
-            if (iconEl) iconEl.classList.add('hidden');
-            r.views += 1;
+          vid.muted = !vid.muted;
+          if (toastEl) {
+            toastEl.textContent = vid.muted ? '🔇 Sound Off' : '🔊 Sound On';
+            toastEl.classList.remove('hidden');
+            clearTimeout(toastEl.__t);
+            toastEl.__t = setTimeout(() => toastEl.classList.add('hidden'), 1100);
+          }
+        };
+
+        const startHold = () => {
+          held = false;
+          clearTimeout(holdTimer);
+          holdTimer = setTimeout(() => {
+            held = true;
+            clearTimeout(tapTimer);
+            toggleMute();
+          }, 420);
+        };
+        const cancelHold = () => clearTimeout(holdTimer);
+
+        surface.addEventListener('touchstart', startHold, { passive: true });
+        surface.addEventListener('touchend', cancelHold);
+        surface.addEventListener('touchmove', cancelHold, { passive: true });
+        surface.addEventListener('touchcancel', cancelHold);
+        surface.addEventListener('mousedown', startHold);
+        surface.addEventListener('mouseup', cancelHold);
+        surface.addEventListener('mouseleave', cancelHold);
+        surface.addEventListener('contextmenu', e => e.preventDefault());
+
+        surface.addEventListener('click', () => {
+          if (held) { held = false; return; }
+          const r = state.reels.find(x => x.id === rid);
+          if (!r) return;
+          const now = Date.now();
+          if (now - lastTap < 300) {
+            // Double-tap -> Like with heart animation
+            clearTimeout(tapTimer);
+            lastTap = 0;
+            likeReelInPlace(r);
+            const pop = document.getElementById(`reel-heart-pop-${rid}`);
+            if (pop) {
+              pop.classList.remove('hidden');
+              clearTimeout(pop.__t);
+              pop.__t = setTimeout(() => pop.classList.add('hidden'), 700);
+            }
           } else {
-            vid.pause();
-            r.playing = false;
-            if (iconEl) iconEl.classList.remove('hidden');
+            lastTap = now;
+            tapTimer = setTimeout(() => {
+              const vid = document.getElementById(`reel-vid-${rid}`);
+              const iconEl = document.getElementById(`reel-play-icon-${rid}`);
+              if (!vid) return;
+              if (vid.paused) {
+                document.querySelectorAll('video[id^="reel-vid-"]').forEach(v => { if (v !== vid) v.pause(); });
+                document.querySelectorAll('[id^="reel-play-icon-"]').forEach(ic => ic.classList.remove('hidden'));
+                state.reels.forEach(x => { x.playing = (x.id === rid); });
+                vid.play().catch(() => { vid.muted = true; vid.play().catch(() => {}); });
+                if (iconEl) iconEl.classList.add('hidden');
+                r.views += 1;
+              } else {
+                vid.pause();
+                r.playing = false;
+                if (iconEl) iconEl.classList.remove('hidden');
+              }
+            }, 220);
           }
         });
       });
