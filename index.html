@@ -960,6 +960,64 @@
     </div>
   </div>
 
+  <!-- Chat Long-Press Actions Sheet (Move Primary/General/Requests, Hide Chat, Delete Chat) -->
+  <div id="chat-actions-modal" class="hidden fixed inset-0 z-[75] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl max-w-sm w-full p-5 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+        <div>
+          <p id="chat-actions-username" class="text-sm font-bold">@user</p>
+          <p id="chat-actions-folder" class="text-[11px] text-zinc-500">Primary</p>
+        </div>
+        <button id="close-chat-actions" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-1.5">
+        <button type="button" class="chat-move-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" data-box="primary">
+          <span>Move to Primary</span>
+          <span class="chat-box-check text-xs text-pink-500 font-bold hidden">✓</span>
+        </button>
+        <button type="button" class="chat-move-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" data-box="general">
+          <span>Move to General</span>
+          <span class="chat-box-check text-xs text-pink-500 font-bold hidden">✓</span>
+        </button>
+        <button type="button" class="chat-move-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" data-box="requests">
+          <span>Move to Requests</span>
+          <span class="chat-box-check text-xs text-pink-500 font-bold hidden">✓</span>
+        </button>
+        <button id="chat-action-hide-btn" type="button" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition">
+          <i data-lucide="lock" class="w-4 h-4"></i>
+          <span id="chat-action-hide-label">Hide Chat (PIN Lock)</span>
+        </button>
+        <button id="chat-action-delete-btn" type="button" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          <span>Delete Chat</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Chats 4-Digit PIN Modal -->
+  <div id="hidden-pin-modal" class="hidden fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-xs w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="lock" class="w-4 h-4 text-pink-500"></i>
+          <h3 id="hidden-pin-title" class="text-sm font-bold">Hidden Chats PIN</h3>
+        </div>
+        <button id="close-hidden-pin" type="button" class="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Close">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <p id="hidden-pin-desc" class="text-xs text-zinc-500">Enter your 4-digit PIN to view hidden chats.</p>
+      <form id="hidden-pin-form" class="space-y-3">
+        <input id="hidden-pin-input" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="••••" autocomplete="off" class="w-full text-center tracking-[0.5em] text-lg font-bold px-3 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-pink-500" required />
+        <p id="hidden-pin-error" class="hidden text-xs text-red-500 text-center font-medium"></p>
+        <button id="hidden-pin-submit" type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-semibold hover:opacity-95 transition">Unlock</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Instagram-Style One-Tap Music Picker Modal -->
   <div id="music-modal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
     <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl h-[80vh] sm:h-[75vh] flex flex-col">
@@ -1139,6 +1197,7 @@
       notifications: [],
       unreadNotifCount: 0,
       unreadMsgCount: 0,
+      showHiddenChats: false,
       verifiedUsers: {},
       isBlocked: false,
       admin: {
@@ -1650,23 +1709,30 @@
     }
 
     function renderMessages() {
-      const conv = state.conversations.find(c => c.id === state.activeConvId) || state.conversations[0] || null;
-      const filteredConvs = state.conversations.filter(c =>
-        (state.chatBoxTab === 'all' || c.box === state.chatBoxTab) &&
-        (!state.chatSearch || c.title.toLowerCase().includes(state.chatSearch.toLowerCase()))
-      );
+      const visiblePool = state.conversations.filter(c => state.showHiddenChats ? !!c.hidden : !c.hidden);
+      const conv = visiblePool.find(c => c.id === state.activeConvId) || visiblePool[0] || null;
+      const filteredConvs = visiblePool.filter(c => {
+        const matchesBox = state.showHiddenChats || (c.box || 'primary') === (state.chatBoxTab === 'all' ? 'primary' : state.chatBoxTab);
+        const matchesSearch = !state.chatSearch || c.title.toLowerCase().includes(state.chatSearch.toLowerCase());
+        return matchesBox && matchesSearch;
+      });
       return `
         <div class="max-w-5xl mx-auto h-[calc(100vh-7rem)] md:h-screen flex border-x border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
           <!-- Instagram DM Inbox -->
           <aside class="${state.mobileChatOpen ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-zinc-200 dark:border-zinc-800">
             <div class="px-4 pt-4 pb-2 flex items-center justify-between">
               <div class="flex items-center gap-1.5 font-bold text-base">
-                <span>${state.currentUser.username}</span>
-                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                <span>${state.showHiddenChats ? 'Hidden Chats' : state.currentUser.username}</span>
+                ${state.showHiddenChats ? '<i data-lucide="lock" class="w-4 h-4 text-pink-500"></i>' : '<i data-lucide="chevron-down" class="w-4 h-4"></i>'}
               </div>
-              <button id="new-chat-btn" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="New Message">
-                <i data-lucide="square-pen" class="w-5 h-5"></i>
-              </button>
+              <div class="flex items-center gap-1">
+                <button id="hidden-chats-lock-btn" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 ${state.showHiddenChats ? 'text-pink-500' : 'text-zinc-500'}" title="${state.showHiddenChats ? 'Lock Hidden Chats' : 'Hidden Chats'}" aria-label="Hidden Chats">
+                  <i data-lucide="${state.showHiddenChats ? 'lock-open' : 'lock'}" class="w-4 h-4"></i>
+                </button>
+                <button id="new-chat-btn" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="New Message">
+                  <i data-lucide="square-pen" class="w-5 h-5"></i>
+                </button>
+              </div>
             </div>
 
             <div class="px-4 py-2">
@@ -1676,18 +1742,25 @@
               </div>
             </div>
 
-            <!-- Primary / General / Requests Tabs -->
-            <div class="flex border-b border-zinc-200 dark:border-zinc-800 px-2 text-xs font-semibold">
-              ${['primary', 'general', 'all'].map(tab => `
-                <button class="chat-box-tab flex-1 py-2.5 capitalize ${state.chatBoxTab === tab ? 'border-b-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white' : 'text-zinc-500'}" data-cbox="${tab}">${tab === 'all' ? 'Requests' : tab}</button>
-              `).join('')}
-            </div>
+            ${state.showHiddenChats ? `
+              <div class="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-900/60 text-xs">
+                <span class="text-zinc-500">Long-press a chat to unhide or delete</span>
+                <button id="change-hidden-pin-btn" type="button" class="text-pink-500 font-semibold hover:underline">Change PIN</button>
+              </div>
+            ` : `
+              <!-- Primary / General / Requests Tabs -->
+              <div class="flex border-b border-zinc-200 dark:border-zinc-800 px-2 text-xs font-semibold">
+                ${['primary', 'general', 'requests'].map(tab => `
+                  <button class="chat-box-tab flex-1 py-2.5 capitalize ${state.chatBoxTab === tab ? 'border-b-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white' : 'text-zinc-500'}" data-cbox="${tab}">${tab}</button>
+                `).join('')}
+              </div>
+            `}
 
             <div class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900">
               ${filteredConvs.map(c => {
                 const last = c.messages[c.messages.length - 1];
                 return `
-                  <button class="conv-select w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition ${conv && c.id === conv.id ? 'bg-zinc-100/80 dark:bg-zinc-900' : ''}" data-conv-id="${c.id}">
+                  <button class="conv-select w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition select-none ${conv && c.id === conv.id ? 'bg-zinc-100/80 dark:bg-zinc-900' : ''}" data-conv-id="${c.id}">
                     <div class="relative shrink-0">
                       ${renderAvatar(c.avatar, c.title, 'w-12 h-12')}
                       ${c.online ? '<span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
@@ -1698,7 +1771,7 @@
                     </div>
                   </button>
                 `;
-              }).join('') || '<p class="p-6 text-center text-xs text-zinc-500">No conversations yet.</p>'}
+              }).join('') || `<p class="p-6 text-center text-xs text-zinc-500">${state.showHiddenChats ? 'No hidden chats yet. Long-press any chat to hide it.' : 'No conversations in this folder.'}</p>`}
             </div>
           </aside>
 
@@ -2958,8 +3031,46 @@
         });
       });
 
+      document.getElementById('hidden-chats-lock-btn')?.addEventListener('click', () => {
+        if (state.showHiddenChats) {
+          state.showHiddenChats = false;
+          state.mobileChatOpen = false;
+          render();
+          showToast('Hidden chats locked 🔒');
+        } else {
+          openHiddenPinModal('unlock');
+        }
+      });
+
+      document.getElementById('change-hidden-pin-btn')?.addEventListener('click', () => {
+        openHiddenPinModal('set');
+      });
+
       document.querySelectorAll('.conv-select').forEach(btn => {
-        btn.addEventListener('click', () => {
+        let holdTimer = null;
+        let held = false;
+        const startHold = () => {
+          held = false;
+          clearTimeout(holdTimer);
+          holdTimer = setTimeout(() => {
+            held = true;
+            openChatActionsModal(btn.dataset.convId);
+          }, 450);
+        };
+        const cancelHold = () => clearTimeout(holdTimer);
+        btn.addEventListener('touchstart', startHold, { passive: true });
+        btn.addEventListener('touchend', cancelHold);
+        btn.addEventListener('touchmove', cancelHold, { passive: true });
+        btn.addEventListener('touchcancel', cancelHold);
+        btn.addEventListener('mousedown', startHold);
+        btn.addEventListener('mouseup', cancelHold);
+        btn.addEventListener('mouseleave', cancelHold);
+        btn.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          openChatActionsModal(btn.dataset.convId);
+        });
+        btn.addEventListener('click', e => {
+          if (held) { e.preventDefault(); held = false; return; }
           state.activeConvId = btn.dataset.convId;
           state.mobileChatOpen = true;
           render();
@@ -5337,6 +5448,215 @@
       } catch {}
     }
 
+    function getChatStorageUser() {
+      return (state.currentUser?.username || 'guest').toLowerCase();
+    }
+    function getChatBoxMap() {
+      try { return JSON.parse(localStorage.getItem('snapgram_chat_boxes_' + getChatStorageUser()) || '{}'); } catch { return {}; }
+    }
+    function setChatBoxForPeer(peer, box) {
+      const m = getChatBoxMap();
+      m[(peer || '').toLowerCase()] = box;
+      localStorage.setItem('snapgram_chat_boxes_' + getChatStorageUser(), JSON.stringify(m));
+    }
+    function getHiddenChatsMap() {
+      try { return JSON.parse(localStorage.getItem('snapgram_hidden_chats_' + getChatStorageUser()) || '{}'); } catch { return {}; }
+    }
+    function setChatHiddenForPeer(peer, isHidden) {
+      const m = getHiddenChatsMap();
+      const k = (peer || '').toLowerCase();
+      if (isHidden) m[k] = true; else delete m[k];
+      localStorage.setItem('snapgram_hidden_chats_' + getChatStorageUser(), JSON.stringify(m));
+    }
+    function getDeletedChatsMap() {
+      try { return JSON.parse(localStorage.getItem('snapgram_deleted_chats_' + getChatStorageUser()) || '{}'); } catch { return {}; }
+    }
+    function markChatDeletedForPeer(peer) {
+      const m = getDeletedChatsMap();
+      m[(peer || '').toLowerCase()] = Date.now();
+      localStorage.setItem('snapgram_deleted_chats_' + getChatStorageUser(), JSON.stringify(m));
+    }
+    function getHiddenPin() {
+      return localStorage.getItem('snapgram_hidden_pin_' + getChatStorageUser()) || '';
+    }
+    function setHiddenPin(pin) {
+      localStorage.setItem('snapgram_hidden_pin_' + getChatStorageUser(), pin);
+    }
+
+    let activeActionConvId = null;
+    let pendingHideConvId = null;
+    let hiddenPinMode = 'unlock';
+
+    function openChatActionsModal(convId) {
+      const conv = state.conversations.find(c => c.id === convId);
+      if (!conv) return;
+      activeActionConvId = convId;
+      document.getElementById('chat-actions-username').textContent = '@' + conv.title;
+      const boxLabel = conv.hidden ? 'Hidden Chats' : ((conv.box || 'primary').charAt(0).toUpperCase() + (conv.box || 'primary').slice(1));
+      document.getElementById('chat-actions-folder').textContent = 'Folder: ' + boxLabel;
+      document.querySelectorAll('.chat-move-btn').forEach(btn => {
+        const chk = btn.querySelector('.chat-box-check');
+        if (chk) chk.classList.toggle('hidden', !conv.hidden && (conv.box || 'primary') !== btn.dataset.box || !!conv.hidden);
+      });
+      document.getElementById('chat-action-hide-label').textContent = conv.hidden ? 'Unhide Chat' : 'Hide Chat (PIN Lock)';
+      document.getElementById('chat-actions-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function closeChatActionsModal() {
+      document.getElementById('chat-actions-modal').classList.add('hidden');
+      activeActionConvId = null;
+    }
+
+    function openHiddenPinModal(mode, hideConvId = null) {
+      const existingPin = getHiddenPin();
+      hiddenPinMode = (!existingPin || mode === 'set') ? 'set' : 'unlock';
+      pendingHideConvId = hideConvId;
+      const titleEl = document.getElementById('hidden-pin-title');
+      const descEl = document.getElementById('hidden-pin-desc');
+      const submitEl = document.getElementById('hidden-pin-submit');
+      const inputEl = document.getElementById('hidden-pin-input');
+      const errEl = document.getElementById('hidden-pin-error');
+      errEl.classList.add('hidden');
+      inputEl.value = '';
+      if (hiddenPinMode === 'set') {
+        titleEl.textContent = existingPin ? 'Change Hidden PIN' : 'Set 4-Digit PIN';
+        descEl.textContent = 'Choose a 4-digit PIN to lock your hidden chats.';
+        submitEl.textContent = 'Save PIN';
+      } else {
+        titleEl.textContent = 'Enter Hidden PIN';
+        descEl.textContent = 'Enter your 4-digit PIN to view hidden chats.';
+        submitEl.textContent = 'Unlock';
+      }
+      document.getElementById('hidden-pin-modal').classList.remove('hidden');
+      setTimeout(() => inputEl.focus(), 50);
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function closeHiddenPinModal() {
+      document.getElementById('hidden-pin-modal').classList.add('hidden');
+      pendingHideConvId = null;
+    }
+
+    document.getElementById('close-chat-actions')?.addEventListener('click', closeChatActionsModal);
+    document.getElementById('chat-actions-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'chat-actions-modal') closeChatActionsModal();
+    });
+    document.getElementById('close-hidden-pin')?.addEventListener('click', closeHiddenPinModal);
+    document.getElementById('hidden-pin-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'hidden-pin-modal') closeHiddenPinModal();
+    });
+
+    document.querySelectorAll('.chat-move-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const conv = state.conversations.find(c => c.id === activeActionConvId);
+        if (!conv) return;
+        const targetBox = btn.dataset.box;
+        conv.box = targetBox;
+        conv.hidden = false;
+        setChatBoxForPeer(conv.title, targetBox);
+        setChatHiddenForPeer(conv.title, false);
+        state.chatBoxTab = targetBox;
+        state.showHiddenChats = false;
+        closeChatActionsModal();
+        render();
+        showToast('Moved to ' + targetBox.charAt(0).toUpperCase() + targetBox.slice(1));
+      });
+    });
+
+    document.getElementById('chat-action-hide-btn')?.addEventListener('click', () => {
+      const conv = state.conversations.find(c => c.id === activeActionConvId);
+      if (!conv) return;
+      if (conv.hidden) {
+        conv.hidden = false;
+        setChatHiddenForPeer(conv.title, false);
+        closeChatActionsModal();
+        render();
+        showToast('Chat unhidden');
+      } else if (!getHiddenPin()) {
+        const cid = conv.id;
+        closeChatActionsModal();
+        openHiddenPinModal('set', cid);
+      } else {
+        conv.hidden = true;
+        setChatHiddenForPeer(conv.title, true);
+        if (state.activeConvId === conv.id) {
+          state.activeConvId = null;
+          state.mobileChatOpen = false;
+        }
+        closeChatActionsModal();
+        render();
+        showToast('Chat hidden 🔒');
+      }
+    });
+
+    document.getElementById('chat-action-delete-btn')?.addEventListener('click', async () => {
+      const conv = state.conversations.find(c => c.id === activeActionConvId);
+      if (!conv) return;
+      const peer = conv.title;
+      markChatDeletedForPeer(peer);
+      setChatHiddenForPeer(peer, false);
+      state.conversations = state.conversations.filter(c => c.id !== conv.id);
+      if (state.activeConvId === conv.id) {
+        state.activeConvId = null;
+        state.mobileChatOpen = false;
+      }
+      closeChatActionsModal();
+      render();
+      showToast('Chat deleted');
+      const cfg = loadSupaConfig();
+      const me = state.currentUser.username;
+      if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken && me) {
+        try {
+          await fetch(`${cfg.url}/rest/v1/snapgram_messages?or=(and(sender_username.eq.${encodeURIComponent(me)},recipient_username.eq.${encodeURIComponent(peer)}),and(sender_username.eq.${encodeURIComponent(peer)},recipient_username.eq.${encodeURIComponent(me)}))`, {
+            method: 'DELETE',
+            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}` }
+          });
+        } catch {}
+      }
+    });
+
+    document.getElementById('hidden-pin-form')?.addEventListener('submit', e => {
+      e.preventDefault();
+      const val = (document.getElementById('hidden-pin-input').value || '').trim();
+      const errEl = document.getElementById('hidden-pin-error');
+      if (!/^\d{4}$/.test(val)) {
+        errEl.textContent = 'Please enter a 4-digit number.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      if (hiddenPinMode === 'set') {
+        setHiddenPin(val);
+        if (pendingHideConvId) {
+          const conv = state.conversations.find(c => c.id === pendingHideConvId);
+          if (conv) {
+            conv.hidden = true;
+            setChatHiddenForPeer(conv.title, true);
+            if (state.activeConvId === conv.id) {
+              state.activeConvId = null;
+              state.mobileChatOpen = false;
+            }
+          }
+          closeHiddenPinModal();
+          render();
+          showToast('PIN saved & chat hidden 🔒');
+        } else {
+          closeHiddenPinModal();
+          showToast('Hidden chats PIN updated 🔒');
+        }
+      } else {
+        if (val !== getHiddenPin()) {
+          errEl.textContent = 'Incorrect PIN. Try again.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        state.showHiddenChats = true;
+        state.mobileChatOpen = false;
+        closeHiddenPinModal();
+        render();
+      }
+    });
+
     async function loadMyMessages() {
       const cfg = loadSupaConfig();
       const me = state.currentUser.username;
@@ -5347,13 +5667,20 @@
         });
         if (!res.ok) return;
         const rows = await res.json();
+        const boxMap = getChatBoxMap();
+        const hiddenMap = getHiddenChatsMap();
+        const deletedMap = getDeletedChatsMap();
         const convMap = {};
         rows.forEach(m => {
           const peer = m.sender_username === me ? m.recipient_username : m.sender_username;
+          const peerKey = (peer || '').toLowerCase();
+          const msgTs = new Date(m.created_at).getTime();
+          if (deletedMap[peerKey] && msgTs <= deletedMap[peerKey]) return;
           if (!convMap[peer]) {
             convMap[peer] = {
               id: 'dm_' + peer,
-              box: 'primary',
+              box: boxMap[peerKey] || 'primary',
+              hidden: !!hiddenMap[peerKey],
               title: peer,
               subtitle: 'Snapgram Direct',
               avatar: '',
@@ -5379,9 +5706,14 @@
           if (!lastSeenAt) {
             lastSeenAt = Date.now() - 1000 * 60 * 60 * 24;
           }
-          state.unreadMsgCount = rows.filter(m =>
-            m.sender_username !== me && new Date(m.created_at).getTime() > lastSeenAt
-          ).length;
+          state.unreadMsgCount = rows.filter(m => {
+            if (m.sender_username === me) return false;
+            const peerKey = (m.sender_username || '').toLowerCase();
+            const ts = new Date(m.created_at).getTime();
+            if (hiddenMap[peerKey]) return false;
+            if (deletedMap[peerKey] && ts <= deletedMap[peerKey]) return false;
+            return ts > lastSeenAt;
+          }).length;
         }
         const loaded = Object.values(convMap);
         if (loaded.length) {
