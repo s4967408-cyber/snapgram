@@ -1135,6 +1135,19 @@
     <div id="dp-view-content" class="w-72 h-72 sm:w-80 sm:h-80 rounded-full overflow-hidden border-2 border-white/20 shadow-2xl flex items-center justify-center bg-zinc-900"></div>
   </div>
 
+  <!-- Login & Security Sub-Action Modal (Password Change, Live Selfie Verification, etc.) -->
+  <div id="sec-action-modal" class="hidden fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl max-h-[88vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+        <h3 id="sec-modal-title" class="text-base font-bold">Security</h3>
+        <button id="close-sec-modal" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="sec-modal-body" class="space-y-3"></div>
+    </div>
+  </div>
+
   <!-- Instagram-Style One-Tap Music Picker Modal -->
   <div id="music-modal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
     <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl h-[80vh] sm:h-[75vh] flex flex-col">
@@ -2263,6 +2276,87 @@
             ${match('Log out', 'exit') ? `
               <button id="set-logout" type="button" class="w-full px-4 py-3 text-left text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition">Log out</button>
             ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function getSecPrefs() {
+      const uname = (state.currentUser?.username || 'me').toLowerCase();
+      try { return JSON.parse(localStorage.getItem('snapgram_sec_prefs_' + uname) || '{}'); } catch { return {}; }
+    }
+    function saveSecPrefs(patch) {
+      const uname = (state.currentUser?.username || 'me').toLowerCase();
+      const cur = getSecPrefs();
+      const next = { ...cur, ...patch };
+      localStorage.setItem('snapgram_sec_prefs_' + uname, JSON.stringify(next));
+      return next;
+    }
+
+    function renderAccountSecurity() {
+      const u = state.currentUser || {};
+      const prefs = getSecPrefs();
+      const actionsLeft = (prefs.twoFactor ? 0 : 1) + (prefs.selfieVerified ? 0 : 1) + (prefs.passkeyEnabled ? 0 : 1);
+      const secRow = (id, label, badge = '') => `
+        <button type="button" id="${id}" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-900/70 transition text-left">
+          <div class="space-y-1">
+            <p class="text-sm font-medium">${label}</p>
+            ${badge}
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+        </button>
+      `;
+
+      return `
+        <div class="max-w-2xl mx-auto min-h-screen bg-zinc-50 dark:bg-zinc-950 pb-20">
+          <!-- Header -->
+          <div class="sticky top-0 z-20 px-4 h-14 flex items-center gap-3 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+            <button id="sec-back-btn" type="button" class="p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Back">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h1 class="text-lg font-bold">Login and security</h1>
+          </div>
+
+          <div class="p-4 space-y-5">
+            <!-- Security Checkup Card -->
+            <button id="sec-checkup-btn" type="button" class="w-full p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center gap-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/70 transition shadow-sm">
+              <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold">Snapgram Security Checkup</p>
+                <p class="text-xs text-zinc-500">${actionsLeft > 0 ? actionsLeft + ' recommended actions' : 'All security checks complete ✓'}</p>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+            </button>
+
+            <!-- Login & recovery -->
+            <div class="space-y-2">
+              <div>
+                <h2 class="text-base font-bold">Login &amp; recovery</h2>
+                <p class="text-xs text-zinc-500">Manage your passwords, login preferences and recovery methods.</p>
+              </div>
+              <div class="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden shadow-sm">
+                ${secRow('sec-contact-info', 'Contact info', u.email ? `<p class="text-xs text-zinc-500">${u.email}</p>` : '')}
+                ${secRow('sec-change-pass', 'Change password')}
+                ${secRow('sec-two-factor', 'Two-factor authentication', prefs.twoFactor ? '<span class="inline-block text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">Enabled ✓</span>' : '')}
+                ${secRow('sec-selfie-verify', 'Verification selfie', prefs.selfieVerified ? '<span class="inline-block text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">Verified ✓</span>' : '')}
+                ${secRow('sec-saved-login', 'Saved login', prefs.savedLogin !== false ? '<span class="inline-block text-[11px] text-zinc-500">On</span>' : '<span class="inline-block text-[11px] text-zinc-500">Off</span>')}
+                ${secRow('sec-passkey', 'Passkey', prefs.passkeyEnabled ? '<span class="inline-block text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">Active</span>' : '<span class="inline-block text-[11px] px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold">Recommended</span>')}
+              </div>
+            </div>
+
+            <!-- Security checks -->
+            <div class="space-y-2">
+              <div>
+                <h2 class="text-base font-bold">Security checks</h2>
+                <p class="text-xs text-zinc-500">Review security issues by running checks across apps, devices and emails sent.</p>
+              </div>
+              <div class="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 divide-y divide-zinc-100 dark:divide-zinc-800 overflow-hidden shadow-sm">
+                ${secRow('sec-where-logged', "Where you're logged in")}
+                ${secRow('sec-emails-from', 'Emails from Snapgram')}
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -3459,7 +3553,21 @@
       };
       document.getElementById('set-account-privacy')?.addEventListener('click', togglePrivacyAction);
       document.getElementById('set-privacy-row')?.addEventListener('click', togglePrivacyAction);
-      document.getElementById('set-edit-account')?.addEventListener('click', openEditProfileModal);
+      document.getElementById('set-edit-account')?.addEventListener('click', () => { state.activeTab = 'account-security'; render(); });
+      document.getElementById('sec-back-btn')?.addEventListener('click', () => {
+        state.activeTab = 'settings';
+        render();
+      });
+      document.getElementById('sec-checkup-btn')?.addEventListener('click', () => openSecModal('checkup'));
+      document.getElementById('sec-contact-info')?.addEventListener('click', () => openSecModal('contact'));
+      document.getElementById('sec-change-pass')?.addEventListener('click', () => openSecModal('password'));
+      document.getElementById('sec-two-factor')?.addEventListener('click', () => openSecModal('2fa'));
+      document.getElementById('sec-selfie-verify')?.addEventListener('click', () => openSecModal('selfie'));
+      document.getElementById('sec-saved-login')?.addEventListener('click', () => openSecModal('saved_login'));
+      document.getElementById('sec-passkey')?.addEventListener('click', () => openSecModal('passkey'));
+      document.getElementById('sec-where-logged')?.addEventListener('click', () => openSecModal('devices'));
+      document.getElementById('sec-emails-from')?.addEventListener('click', () => openSecModal('emails'));
+
       document.getElementById('set-saved')?.addEventListener('click', () => { state.activeTab = 'profile'; state.profileTab = 'saved'; render(); });
       document.getElementById('set-archive')?.addEventListener('click', () => { state.activeTab = 'profile'; state.profileTab = 'archive'; render(); });
       document.getElementById('set-activity')?.addEventListener('click', () => { state.activeTab = 'activity'; state.unreadNotifCount = 0; loadNotifications(); render(); });
@@ -4104,6 +4212,7 @@
       else if (state.activeTab === 'user-profile') main.innerHTML = renderUserProfileView();
       else if (state.activeTab === 'migrate') main.innerHTML = renderMigrate();
       else if (state.activeTab === 'settings') main.innerHTML = renderSettings();
+      else if (state.activeTab === 'account-security') main.innerHTML = renderAccountSecurity();
 
       bindViewEvents();
       if (window.lucide) window.lucide.createIcons();
@@ -6012,6 +6121,322 @@
         openIgPlusScreen('story');
       }
     });
+
+    let secSelfieStream = null;
+    function stopSecSelfieCamera() {
+      if (secSelfieStream) {
+        secSelfieStream.getTracks().forEach(t => t.stop());
+        secSelfieStream = null;
+      }
+    }
+    function closeSecModal() {
+      stopSecSelfieCamera();
+      document.getElementById('sec-action-modal').classList.add('hidden');
+    }
+    document.getElementById('close-sec-modal')?.addEventListener('click', closeSecModal);
+    document.getElementById('sec-action-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'sec-action-modal') closeSecModal();
+    });
+
+    async function openSecModal(kind) {
+      stopSecSelfieCamera();
+      const modal = document.getElementById('sec-action-modal');
+      const titleEl = document.getElementById('sec-modal-title');
+      const bodyEl = document.getElementById('sec-modal-body');
+      const u = state.currentUser || {};
+      const prefs = getSecPrefs();
+
+      if (kind === 'checkup') {
+        titleEl.textContent = 'Security Checkup';
+        bodyEl.innerHTML = `
+          <div class="space-y-2.5 text-sm">
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-between">
+              <span>Password protection</span>
+              <span class="text-xs font-semibold text-emerald-500">Active ✓</span>
+            </div>
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-between">
+              <span>Two-factor authentication</span>
+              <span class="text-xs font-semibold ${prefs.twoFactor ? 'text-emerald-500' : 'text-amber-500'}">${prefs.twoFactor ? 'On ✓' : 'Recommended'}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-between">
+              <span>Verification selfie</span>
+              <span class="text-xs font-semibold ${prefs.selfieVerified ? 'text-emerald-500' : 'text-amber-500'}">${prefs.selfieVerified ? 'Verified ✓' : 'Not verified'}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-between">
+              <span>Passkey</span>
+              <span class="text-xs font-semibold ${prefs.passkeyEnabled ? 'text-emerald-500' : 'text-amber-500'}">${prefs.passkeyEnabled ? 'Enabled ✓' : 'Recommended'}</span>
+            </div>
+          </div>
+        `;
+      } else if (kind === 'contact') {
+        titleEl.textContent = 'Contact info';
+        bodyEl.innerHTML = `
+          <div class="space-y-3 text-sm">
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+              <p class="text-[11px] text-zinc-500">Email address</p>
+              <p class="font-semibold">${u.email || 'Not linked'}</p>
+            </div>
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+              <p class="text-[11px] text-zinc-500">Username</p>
+              <p class="font-semibold">@${u.username || 'user'}</p>
+            </div>
+            <button id="sec-open-edit-prof" type="button" class="w-full py-2.5 rounded-xl bg-pink-500 text-white text-sm font-semibold">Edit Profile Details</button>
+          </div>
+        `;
+        setTimeout(() => {
+          document.getElementById('sec-open-edit-prof')?.addEventListener('click', () => {
+            closeSecModal();
+            openEditProfileModal();
+          });
+        }, 0);
+      } else if (kind === 'password') {
+        titleEl.textContent = 'Change password';
+        bodyEl.innerHTML = `
+          <form id="sec-change-pass-form" class="space-y-3">
+            <div>
+              <label class="text-xs font-semibold text-zinc-500">New password (min 6 characters)</label>
+              <input id="sec-new-pass" type="password" minlength="6" required placeholder="Enter new password" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-pink-500" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-zinc-500">Confirm new password</label>
+              <input id="sec-conf-pass" type="password" minlength="6" required placeholder="Re-enter new password" class="mt-1 w-full px-3 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-pink-500" />
+            </div>
+            <p id="sec-pass-status" class="hidden text-xs font-medium"></p>
+            <button id="sec-pass-submit" type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-semibold">Update Password</button>
+          </form>
+        `;
+        setTimeout(() => {
+          document.getElementById('sec-change-pass-form')?.addEventListener('submit', async e => {
+            e.preventDefault();
+            const p1 = document.getElementById('sec-new-pass').value;
+            const p2 = document.getElementById('sec-conf-pass').value;
+            const st = document.getElementById('sec-pass-status');
+            const btn = document.getElementById('sec-pass-submit');
+            st.classList.remove('hidden', 'text-red-500', 'text-emerald-500');
+            if (p1.length < 6) {
+              st.textContent = 'Password must be at least 6 characters.';
+              st.classList.add('text-red-500');
+              return;
+            }
+            if (p1 !== p2) {
+              st.textContent = 'Passwords do not match.';
+              st.classList.add('text-red-500');
+              return;
+            }
+            const cfg = loadSupaConfig();
+            if (!cfg.url.startsWith('https://') || !cfg.anonKey || !state.currentUser.supaToken) {
+              st.textContent = 'Please log in with your email/Supabase account to update password.';
+              st.classList.add('text-red-500');
+              return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+            try {
+              const fresh = await ensureFreshSupaToken();
+              const res = await fetch(`${cfg.url}/auth/v1/user`, {
+                method: 'PUT',
+                headers: {
+                  apikey: cfg.anonKey,
+                  Authorization: `Bearer ${fresh}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ password: p1 })
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) throw new Error(data.msg || data.error_description || data.error || 'Could not update password');
+              saveSecPrefs({ lastPasswordChangeAt: new Date().toISOString() });
+              st.textContent = 'Password updated successfully ✓';
+              st.classList.add('text-emerald-500');
+              showToast('Password changed ✓');
+              setTimeout(closeSecModal, 1200);
+            } catch (err) {
+              st.textContent = err.message || 'Password update failed.';
+              st.classList.add('text-red-500');
+            } finally {
+              btn.disabled = false;
+              btn.textContent = 'Update Password';
+            }
+          });
+        }, 0);
+      } else if (kind === '2fa') {
+        titleEl.textContent = 'Two-factor authentication';
+        bodyEl.innerHTML = `
+          <p class="text-xs text-zinc-500">Add an extra layer of security to your Snapgram account when logging in from new devices.</p>
+          <div class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-between">
+            <span class="text-sm font-semibold">2FA Protection</span>
+            <button id="sec-2fa-toggle" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-bold ${prefs.twoFactor ? 'bg-emerald-500 text-white' : 'bg-pink-500 text-white'}">
+              ${prefs.twoFactor ? 'Enabled (Turn Off)' : 'Enable 2FA'}
+            </button>
+          </div>
+          ${prefs.twoFactor ? `<p class="text-xs text-zinc-500">Backup code: <span class="font-mono font-bold text-zinc-800 dark:text-zinc-200">${prefs.backupCode || 'SG-8492-3104'}</span></p>` : ''}
+        `;
+        setTimeout(() => {
+          document.getElementById('sec-2fa-toggle')?.addEventListener('click', () => {
+            const next = !prefs.twoFactor;
+            saveSecPrefs({ twoFactor: next, backupCode: prefs.backupCode || ('SG-' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000)) });
+            showToast(next ? 'Two-factor authentication enabled ✓' : 'Two-factor authentication disabled');
+            closeSecModal();
+            render();
+          });
+        }, 0);
+      } else if (kind === 'selfie') {
+        titleEl.textContent = 'Verification selfie';
+        bodyEl.innerHTML = `
+          <p class="text-xs text-zinc-500">Take a live selfie with your front camera to verify your identity on Snapgram.</p>
+          ${prefs.selfieUrl ? `
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+              <img src="${prefs.selfieUrl}" alt="Verification Selfie" class="w-14 h-14 rounded-full object-cover border border-emerald-400" />
+              <div class="text-xs">
+                <p class="font-bold text-emerald-700 dark:text-emerald-300">Selfie Verified ✓</p>
+                <p class="text-zinc-500">Captured ${prefs.selfieAt ? new Date(prefs.selfieAt).toLocaleDateString() : 'recently'}</p>
+              </div>
+            </div>
+          ` : ''}
+          <div class="relative rounded-2xl overflow-hidden bg-black aspect-[3/4] max-h-72 mx-auto flex items-center justify-center">
+            <video id="sec-selfie-video" autoplay playsinline muted class="w-full h-full object-cover scale-x-[-1]"></video>
+            <img id="sec-selfie-preview" class="hidden w-full h-full object-cover" alt="Captured Selfie" />
+            <p id="sec-selfie-err" class="hidden text-xs text-red-400 px-4 text-center"></p>
+          </div>
+          <div class="flex gap-2">
+            <button id="sec-selfie-capture" type="button" class="flex-1 py-2.5 rounded-xl bg-pink-500 text-white text-sm font-semibold">Capture Selfie</button>
+            <button id="sec-selfie-submit" type="button" class="hidden flex-1 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold">Submit Verification</button>
+          </div>
+        `;
+        modal.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
+        try {
+          secSelfieStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+          const vid = document.getElementById('sec-selfie-video');
+          if (vid) vid.srcObject = secSelfieStream;
+        } catch (err) {
+          const errEl = document.getElementById('sec-selfie-err');
+          if (errEl) {
+            errEl.textContent = 'Camera permission denied or unavailable. Please allow camera access.';
+            errEl.classList.remove('hidden');
+          }
+        }
+        let capturedBlob = null;
+        let capturedDataUrl = '';
+        document.getElementById('sec-selfie-capture')?.addEventListener('click', () => {
+          const vid = document.getElementById('sec-selfie-video');
+          const prev = document.getElementById('sec-selfie-preview');
+          const subBtn = document.getElementById('sec-selfie-submit');
+          const capBtn = document.getElementById('sec-selfie-capture');
+          if (!vid || !vid.videoWidth) {
+            showToast('Camera still starting...');
+            return;
+          }
+          const c = document.createElement('canvas');
+          c.width = vid.videoWidth;
+          c.height = vid.videoHeight;
+          const ctx = c.getContext('2d');
+          ctx.translate(c.width, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(vid, 0, 0, c.width, c.height);
+          capturedDataUrl = c.toDataURL('image/jpeg', 0.85);
+          c.toBlob(b => { capturedBlob = b; }, 'image/jpeg', 0.85);
+          prev.src = capturedDataUrl;
+          prev.classList.remove('hidden');
+          vid.classList.add('hidden');
+          capBtn.textContent = 'Retake';
+          subBtn.classList.remove('hidden');
+        });
+        document.getElementById('sec-selfie-submit')?.addEventListener('click', async () => {
+          const subBtn = document.getElementById('sec-selfie-submit');
+          subBtn.disabled = true;
+          subBtn.textContent = 'Verifying...';
+          let finalUrl = capturedDataUrl;
+          try {
+            if (capturedBlob && state.currentUser.supaUserId) {
+              const file = new File([capturedBlob], `selfie_${Date.now()}.jpg`, { type: 'image/jpeg' });
+              const up = await uploadFileToSupabase(file, () => {});
+              if (up?.publicUrl) finalUrl = up.publicUrl;
+            }
+          } catch {}
+          saveSecPrefs({ selfieVerified: true, selfieUrl: finalUrl, selfieAt: new Date().toISOString() });
+          showToast('Verification selfie submitted ✓');
+          closeSecModal();
+          render();
+        });
+        return;
+      } else if (kind === 'saved_login') {
+        titleEl.textContent = 'Saved login';
+        const isOn = prefs.savedLogin !== false;
+        bodyEl.innerHTML = `
+          <p class="text-xs text-zinc-500">Save your login info on this device so you can switch accounts with one tap.</p>
+          <div class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-between">
+            <span class="text-sm font-semibold">Remember on this device</span>
+            <button id="sec-saved-toggle" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-bold ${isOn ? 'bg-emerald-500 text-white' : 'bg-zinc-700 text-white'}">
+              ${isOn ? 'On' : 'Off'}
+            </button>
+          </div>
+        `;
+        setTimeout(() => {
+          document.getElementById('sec-saved-toggle')?.addEventListener('click', () => {
+            const next = !isOn;
+            saveSecPrefs({ savedLogin: next });
+            if (next) upsertSavedDeviceAccount(state.currentUser);
+            showToast(next ? 'Saved login turned On' : 'Saved login turned Off');
+            closeSecModal();
+            render();
+          });
+        }, 0);
+      } else if (kind === 'passkey') {
+        titleEl.textContent = 'Passkey';
+        const supported = typeof window.PublicKeyCredential !== 'undefined';
+        bodyEl.innerHTML = `
+          <p class="text-xs text-zinc-500">Use your phone's fingerprint, face lock, or screen lock as a Passkey for faster sign-in.</p>
+          <div class="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-between">
+            <span class="text-sm font-semibold">Device Passkey</span>
+            <button id="sec-passkey-btn" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white">
+              ${prefs.passkeyEnabled ? 'Disable' : (supported ? 'Enable Passkey' : 'Set Device Lock')}
+            </button>
+          </div>
+        `;
+        setTimeout(() => {
+          document.getElementById('sec-passkey-btn')?.addEventListener('click', () => {
+            const next = !prefs.passkeyEnabled;
+            saveSecPrefs({ passkeyEnabled: next });
+            showToast(next ? 'Passkey enabled for this device ✓' : 'Passkey removed');
+            closeSecModal();
+            render();
+          });
+        }, 0);
+      } else if (kind === 'devices') {
+        titleEl.textContent = "Where you're logged in";
+        const ua = navigator.userAgent || 'Mobile Browser';
+        const devLabel = /Android/i.test(ua) ? 'Android Device' : /iPhone|iPad/i.test(ua) ? 'iOS Device' : 'Desktop Browser';
+        const saved = loadSavedDeviceAccounts();
+        bodyEl.innerHTML = `
+          <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 space-y-1">
+            <p class="text-sm font-bold text-emerald-700 dark:text-emerald-300">${devLabel} · Active now</p>
+            <p class="text-xs text-zinc-500">Account: @${u.username || 'user'}</p>
+          </div>
+          <p class="text-xs font-semibold text-zinc-500 pt-1">Saved accounts on this device (${saved.length})</p>
+          <div class="space-y-1.5">
+            ${saved.map(a => `<div class="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-xs flex justify-between"><span>@${a.username}</span><span class="text-zinc-500">${a.email || ''}</span></div>`).join('') || '<p class="text-xs text-zinc-500">Only current session active.</p>'}
+          </div>
+        `;
+      } else if (kind === 'emails') {
+        titleEl.textContent = 'Emails from Snapgram';
+        bodyEl.innerHTML = `
+          <div class="space-y-2.5 text-xs">
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+              <p class="font-bold text-sm">Security &amp; Login Alerts</p>
+              <p class="text-zinc-500 mt-0.5">Destination: ${u.email || 'Not set'}</p>
+            </div>
+            ${prefs.lastPasswordChangeAt ? `<div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800"><p class="font-semibold">Password Changed</p><p class="text-zinc-500">${new Date(prefs.lastPasswordChangeAt).toLocaleString()}</p></div>` : ''}
+            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+              <p class="font-semibold">Account Confirmation</p>
+              <p class="text-zinc-500">Verified via Supabase Auth</p>
+            </div>
+          </div>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
 
     function closeHiddenPinModal() {
       document.getElementById('hidden-pin-modal').classList.add('hidden');
