@@ -2111,12 +2111,12 @@
           <!-- Story Highlights -->
           <div class="flex gap-4 overflow-x-auto no-scrollbar pt-1">
             ${state.highlights.map(h => `
-              <div class="flex flex-col items-center gap-1.5 shrink-0">
-                <div class="w-16 h-16 rounded-full p-0.5 border border-zinc-300 dark:border-zinc-700">
-                  <img src="${h.img}" alt="${h.title}" class="w-full h-full rounded-full object-cover" />
+              <button type="button" class="open-highlight-btn flex flex-col items-center gap-1.5 shrink-0 cursor-pointer active:scale-95 transition" data-hl-id="${h.id}">
+                <div class="w-16 h-16 rounded-full p-0.5 border-2 border-zinc-300 dark:border-zinc-700 overflow-hidden">
+                  <img src="${h.img}" alt="${h.title}" class="w-full h-full rounded-full object-cover pointer-events-none" />
                 </div>
-                <span class="text-[11px] font-medium">${h.title}</span>
-              </div>
+                <span class="text-[11px] font-medium max-w-[68px] truncate">${h.title}</span>
+              </button>
             `).join('')}
             <button id="add-highlight-btn" class="flex flex-col items-center gap-1.5 shrink-0">
               <div class="w-16 h-16 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-500">
@@ -3486,9 +3486,43 @@
       if (shareProfBtn) {
         shareProfBtn.addEventListener('click', () => showToast(`Copied snapgram.app/${state.currentUser.username}`));
       }
+      document.querySelectorAll('.open-highlight-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const h = state.highlights.find(x => x.id === btn.dataset.hlId);
+          if (!h) return;
+          const orig = state.stories.find(x => x.id === h.storyId) || state.archivedStories.find(x => x.id === h.storyId);
+          storyQueue = [{
+            id: h.storyId || h.id,
+            userId: state.currentUser.supaUserId || '',
+            username: state.currentUser.username,
+            privacy: h.title || 'Highlight',
+            img: h.img,
+            mediaType: orig?.mediaType || h.mediaType || 'image',
+            caption: orig?.caption || h.caption || '',
+            musicTitle: orig?.musicTitle || h.musicTitle || '',
+            musicArtist: orig?.musicArtist || h.musicArtist || '',
+            musicUrl: orig?.musicUrl || h.musicUrl || '',
+            viewers: orig?.viewers || []
+          }];
+          storyQueueIdx = 0;
+          renderCurrentStorySlide();
+          document.getElementById('story-modal').classList.remove('hidden');
+          if (window.lucide) window.lucide.createIcons();
+        });
+      });
+
       const addHlBtn = document.getElementById('add-highlight-btn');
       if (addHlBtn) {
-        addHlBtn.addEventListener('click', () => showToast('Select stories to add to a new Highlight'));
+        addHlBtn.addEventListener('click', () => {
+          const hasStory = state.stories.some(s => s.username === state.currentUser.username);
+          if (hasStory) {
+            openStoryModal(state.currentUser.username);
+            showToast('Tap ⋮ at the bottom of your story to Add to Highlight ✨');
+          } else {
+            openIgPlusScreen('story');
+            showToast('Create a story first, then tap ⋮ to add it to Highlights');
+          }
+        });
       }
       const openAdminBtn = document.getElementById('open-admin-btn');
       if (openAdminBtn) {
@@ -4134,7 +4168,7 @@
       const s = storyQueue[storyQueueIdx];
       if (!s) return;
       const title = (document.getElementById('story-highlight-title-input').value || '').trim() || 'Highlights';
-      state.highlights.unshift({ id: 'hl_' + Date.now(), title, img: s.img, storyId: s.id });
+      state.highlights.unshift({ id: 'hl_' + Date.now(), title, img: s.img, mediaType: s.mediaType || 'image', caption: s.caption || '', musicTitle: s.musicTitle || '', musicArtist: s.musicArtist || '', musicUrl: s.musicUrl || '', storyId: s.id });
       try {
         localStorage.setItem('snapgram_highlights_' + (state.currentUser.username || 'me').toLowerCase(), JSON.stringify(state.highlights));
       } catch {}
