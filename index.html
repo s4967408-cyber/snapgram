@@ -209,7 +209,7 @@
             </button>
             <div id="story-modal-music" class="hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 text-white text-[11px] font-medium truncate"></div>
           </div>
-          <button type="button" id="story-more-btn" class="hidden p-2 rounded-full bg-black/55 text-white hover:bg-white/20 transition shrink-0" aria-label="Story Options" title="More">
+          <button type="button" id="story-more-btn" class="hidden relative z-30 p-2 rounded-full bg-black/55 text-white hover:bg-white/20 transition shrink-0" aria-label="Story Options" title="More">
             <i data-lucide="more-vertical" class="w-5 h-5"></i>
           </button>
         </div>
@@ -2212,7 +2212,7 @@
             ${rowHtml('set-saved', 'bookmark', 'Saved', `${state.posts.filter(p => p.saved).length}`)}
             ${rowHtml('set-archive', 'history', 'Archive', `${state.archivedStories.filter(s => s.username === u.username).length}`)}
             ${rowHtml('set-activity', 'activity', 'Your activity')}
-            ${rowHtml('set-notifications', 'bell', 'Notifications', Notification?.permission === 'granted' ? 'On' : 'Enable')}
+            ${rowHtml('set-notifications', 'bell', 'Notifications', (typeof Notification !== 'undefined' && Notification.permission === 'granted') ? 'On' : 'Enable')}
             ${rowHtml('set-migrate', 'download', 'Migrate from Instagram', '', 'Import posts, reels, stories & chats')}
           </div>
 
@@ -3497,19 +3497,7 @@
           render();
         });
       }
-      const logoutBtn = document.getElementById('logout-btn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
-          await syncUserActivity('logout');
-          clearSession();
-          state.isAuthenticated = false;
-          state.activeTab = 'home';
-          state.authError = '';
-          state.authMessage = '';
-          showToast('Logged out');
-          render();
-        });
-      }
+
 
       document.querySelectorAll('.profile-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -4129,7 +4117,7 @@
       }
     }
 
-    document.getElementById('story-more-btn')?.addEventListener('click', openStoryMoreSheet);
+    document.getElementById('story-more-btn')?.addEventListener('click', e => { e.stopPropagation(); openStoryMoreSheet(); });
     document.getElementById('close-story-more-sheet')?.addEventListener('click', () => closeStoryMoreSheet(true));
 
     document.getElementById('story-opt-highlight')?.addEventListener('click', () => {
