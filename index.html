@@ -1103,6 +1103,38 @@
     </div>
   </div>
 
+  <!-- Profile Picture Long-Press Options Modal -->
+  <div id="dp-options-modal" class="hidden fixed inset-0 z-[75] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl max-w-sm w-full p-5 space-y-2.5 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+        <h3 class="text-sm font-bold">Profile Picture</h3>
+        <button id="close-dp-options" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Close">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <button id="dp-opt-edit" type="button" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+        <i data-lucide="camera" class="w-4 h-4 text-pink-500"></i>
+        <span>Edit Profile Picture</span>
+      </button>
+      <button id="dp-opt-view" type="button" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+        <i data-lucide="user" class="w-4 h-4 text-sky-500"></i>
+        <span>View Profile Picture</span>
+      </button>
+      <button id="dp-opt-story" type="button" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+        <i data-lucide="circle-play" class="w-4 h-4 text-amber-500"></i>
+        <span>View Story</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Full-Screen View Profile Picture Modal -->
+  <div id="dp-view-modal" class="hidden fixed inset-0 z-[85] bg-black/95 flex items-center justify-center p-6">
+    <button id="close-dp-view" type="button" class="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20" aria-label="Close">
+      <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+    <div id="dp-view-content" class="w-72 h-72 sm:w-80 sm:h-80 rounded-full overflow-hidden border-2 border-white/20 shadow-2xl flex items-center justify-center bg-zinc-900"></div>
+  </div>
+
   <!-- Instagram-Style One-Tap Music Picker Modal -->
   <div id="music-modal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
     <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl h-[80vh] sm:h-[75vh] flex flex-col">
@@ -2034,12 +2066,12 @@
 
           <!-- Instagram Avatar + 3-Column Stats -->
           <header class="flex items-center gap-6 md:gap-10">
-            <div class="w-20 h-20 md:w-28 md:h-28 rounded-full p-[3px] story-ring shrink-0">
+            <button type="button" id="profile-dp-btn" class="w-20 h-20 md:w-28 md:h-28 rounded-full p-[3px] story-ring shrink-0 select-none cursor-pointer active:scale-95 transition" aria-label="Profile Picture Options">
               ${u.avatar
-                ? `<img src="${u.avatar}" alt="${u.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950" />`
-                : `<div class="w-full h-full rounded-full bg-zinc-100 dark:bg-zinc-900 border-2 border-white dark:border-zinc-950 flex items-center justify-center text-2xl font-bold text-zinc-600 dark:text-zinc-300">${(u.fullName || u.username || 'U').charAt(0).toUpperCase()}</div>`
+                ? `<img src="${u.avatar}" alt="${u.username}" class="w-full h-full rounded-full object-cover border-2 border-white dark:border-zinc-950 pointer-events-none" />`
+                : `<div class="w-full h-full rounded-full bg-zinc-100 dark:bg-zinc-900 border-2 border-white dark:border-zinc-950 flex items-center justify-center text-2xl font-bold text-zinc-600 dark:text-zinc-300 pointer-events-none">${(u.fullName || u.username || 'U').charAt(0).toUpperCase()}</div>`
               }
-            </div>
+            </button>
             <div class="flex-1 grid grid-cols-3 text-center">
               <button type="button" id="own-posts-count-btn" class="hover:opacity-75 transition">
                 <p class="text-lg font-bold">${userPosts.length}</p>
@@ -3265,6 +3297,37 @@
 
       const swTop = document.getElementById('open-account-switcher-top');
       if (swTop) swTop.addEventListener('click', openAccountSwitcher);
+      const profileDpBtn = document.getElementById('profile-dp-btn');
+      if (profileDpBtn) {
+        let dpHoldTimer = null;
+        let dpHeld = false;
+        const startDpHold = () => {
+          dpHeld = false;
+          clearTimeout(dpHoldTimer);
+          dpHoldTimer = setTimeout(() => {
+            dpHeld = true;
+            openDpOptionsModal();
+          }, 420);
+        };
+        const cancelDpHold = () => clearTimeout(dpHoldTimer);
+        profileDpBtn.addEventListener('touchstart', startDpHold, { passive: true });
+        profileDpBtn.addEventListener('touchend', cancelDpHold);
+        profileDpBtn.addEventListener('touchmove', cancelDpHold, { passive: true });
+        profileDpBtn.addEventListener('touchcancel', cancelDpHold);
+        profileDpBtn.addEventListener('mousedown', startDpHold);
+        profileDpBtn.addEventListener('mouseup', cancelDpHold);
+        profileDpBtn.addEventListener('mouseleave', cancelDpHold);
+        profileDpBtn.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          openDpOptionsModal();
+        });
+        profileDpBtn.addEventListener('click', e => {
+          if (dpHeld) { e.preventDefault(); dpHeld = false; return; }
+          const hasStory = state.stories.some(s => s.username === state.currentUser.username);
+          if (hasStory) openStoryModal(state.currentUser.username);
+          else openDpOptionsModal();
+        });
+      }
 
       const privBtn = document.getElementById('toggle-privacy-btn');
       if (privBtn) {
@@ -5228,12 +5291,14 @@
 
       try {
         let filesToUpload = [...uploadState.files];
-        if (kind === 'story' && filesToUpload[0].type === 'image') {
-          bStatus.textContent = 'Preparing story...';
+        if (kind === 'story' && filesToUpload[0].type === 'image' && !filesToUpload[0].fromStoryFlow) {
           const canvas = document.getElementById('story-editor-canvas');
-          const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
-          if (blob) {
-            filesToUpload[0] = { file: new File([blob], `story_${Date.now()}.jpg`, { type: 'image/jpeg' }), url: filesToUpload[0].url, type: 'image' };
+          if (canvas && canvas.width > 0 && canvas.height > 0 && storyEditorImg) {
+            bStatus.textContent = 'Preparing story...';
+            const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+            if (blob && blob.size > 0) {
+              filesToUpload[0] = { file: new File([blob], `story_${Date.now()}.jpg`, { type: 'image/jpeg' }), url: filesToUpload[0].url, type: 'image' };
+            }
           }
         } else if (kind === 'post' && (uploadState.crop !== 'original' || uploadState.filter !== 'none')) {
           bStatus.textContent = 'Applying crop & filter...';
@@ -5724,6 +5789,48 @@
       setTimeout(() => inputEl.focus(), 50);
       if (window.lucide) window.lucide.createIcons();
     }
+
+    function openDpOptionsModal() {
+      document.getElementById('dp-options-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    function closeDpOptionsModal() {
+      document.getElementById('dp-options-modal').classList.add('hidden');
+    }
+    document.getElementById('close-dp-options')?.addEventListener('click', closeDpOptionsModal);
+    document.getElementById('dp-options-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'dp-options-modal') closeDpOptionsModal();
+    });
+    document.getElementById('dp-opt-edit')?.addEventListener('click', () => {
+      closeDpOptionsModal();
+      openEditProfileModal();
+    });
+    document.getElementById('dp-opt-view')?.addEventListener('click', () => {
+      closeDpOptionsModal();
+      const u = state.currentUser;
+      const box = document.getElementById('dp-view-content');
+      box.innerHTML = u.avatar
+        ? `<img src="${u.avatar}" alt="${u.username}" class="w-full h-full object-cover" />`
+        : `<span class="text-6xl font-bold text-white">${(u.fullName || u.username || 'U').charAt(0).toUpperCase()}</span>`;
+      document.getElementById('dp-view-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    });
+    document.getElementById('close-dp-view')?.addEventListener('click', () => {
+      document.getElementById('dp-view-modal').classList.add('hidden');
+    });
+    document.getElementById('dp-view-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'dp-view-modal') document.getElementById('dp-view-modal').classList.add('hidden');
+    });
+    document.getElementById('dp-opt-story')?.addEventListener('click', () => {
+      closeDpOptionsModal();
+      const hasStory = state.stories.some(s => s.username === state.currentUser.username);
+      if (hasStory) {
+        openStoryModal(state.currentUser.username);
+      } else {
+        showToast('No active story — opening Create Story');
+        openIgPlusScreen('story');
+      }
+    });
 
     function closeHiddenPinModal() {
       document.getElementById('hidden-pin-modal').classList.add('hidden');
@@ -7751,7 +7858,7 @@
       }
       state.createKind = 'story';
       uploadState.closeFriends = closeFriendsOnly;
-      uploadState.files = [{ file: finalFile, url: URL.createObjectURL(finalFile), type: sfState.type }];
+      uploadState.files = [{ file: finalFile, url: URL.createObjectURL(finalFile), type: sfState.type, fromStoryFlow: true }];
       document.getElementById('create-caption').value = document.getElementById('sf-caption-input').value.trim();
       document.getElementById('sf-editor-video')?.pause();
       document.getElementById('story-flow-modal').classList.add('hidden');
