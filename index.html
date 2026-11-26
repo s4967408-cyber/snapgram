@@ -4036,11 +4036,7 @@
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
               const rawErr = data.msg || data.error_description || data.error || 'Could not send SMS OTP';
-              if (/provider|twilio|sms|unsupported/i.test(rawErr)) {
-                state.authError = 'Real SMS OTP requires connecting Twilio / Vonage / MessageBird in Supabase → Authentication → Providers → Phone (or use Email / Google login).';
-              } else {
-                state.authError = rawErr;
-              }
+              state.authError = rawErr;
               render();
               return;
               state.authError = rawErr;
