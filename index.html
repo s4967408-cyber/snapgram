@@ -1519,7 +1519,7 @@
             ${(() => {
               const me = state.currentUser;
               const myUname = (me.username || '').toLowerCase();
-              const myStories = state.stories.filter(s => (s.username || '').toLowerCase() === myUname);
+              const myStories = state.stories.filter(s => (state.currentUser.supaUserId && s.userId === state.currentUser.supaUserId) || (s.username || '').toLowerCase() === myUname);
               const myHasUnseen = myStories.some(s => !s.viewed);
               const myRingClass = myStories.length
                 ? (myHasUnseen ? 'story-ring' : 'bg-zinc-300 dark:bg-zinc-700')
@@ -2059,7 +2059,15 @@
       if (!uname || state.highlightsLoadedForUser === uname) return;
       state.highlightsLoadedForUser = uname;
       try {
-        const raw = localStorage.getItem('snapgram_highlights_' + uname);
+        let raw = localStorage.getItem('snapgram_highlights_' + uname);
+        if (!raw && state.currentUser?.email) {
+          const emailPrefix = state.currentUser.email.split('@')[0].toLowerCase();
+          const legacyRaw = localStorage.getItem('snapgram_highlights_' + emailPrefix);
+          if (legacyRaw) {
+            raw = legacyRaw;
+            localStorage.setItem('snapgram_highlights_' + uname, legacyRaw);
+          }
+        }
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) state.highlights = parsed;
@@ -2070,9 +2078,10 @@
     function renderProfile() {
       loadSavedHighlightsForCurrentUser();
       const u = state.currentUser;
-      const userPosts = state.posts.filter(p => p.username === u.username);
-      const userReels = state.reels.filter(r => r.username === u.username);
-      const items = state.profileTab === 'posts' ? userPosts : state.profileTab === 'reels' ? userReels : state.profileTab === 'archive' ? state.archivedStories.filter(s => s.username === u.username) : state.posts.filter(p => p.saved);
+      const isOwnedByMe = x => (u.supaUserId && x.userId === u.supaUserId) || (x.username || '').toLowerCase() === (u.username || '').toLowerCase();
+      const userPosts = state.posts.filter(isOwnedByMe);
+      const userReels = state.reels.filter(isOwnedByMe);
+      const items = state.profileTab === 'posts' ? userPosts : state.profileTab === 'reels' ? userReels : state.profileTab === 'archive' ? state.archivedStories.filter(isOwnedByMe) : state.posts.filter(p => p.saved);
       return `
         <div class="max-w-3xl mx-auto px-4 py-5 md:py-8 space-y-6">
           <!-- Instagram Profile Top Bar -->
@@ -2806,7 +2815,7 @@
       if (myStoryAvatarBtn) {
         myStoryAvatarBtn.addEventListener('click', () => {
           const myUname = (state.currentUser.username || '').toLowerCase();
-          const myStories = state.stories.filter(s => (s.username || '').toLowerCase() === myUname);
+          const myStories = state.stories.filter(s => (state.currentUser.supaUserId && s.userId === state.currentUser.supaUserId) || (s.username || '').toLowerCase() === myUname);
           if (myStories.length) {
             openStoryViewer(myStories, 0);
           } else {
@@ -5428,7 +5437,7 @@
               state.stories.push({
                 id: r.id,
                 userId: r.user_id,
-                username: r.username,
+                username: (state.currentUser.supaUserId && r.user_id === state.currentUser.supaUserId) ? state.currentUser.username : r.username,
                 privacy: r.privacy === 'private' ? 'Followers' : 'Public',
                 img: urls[0] || '',
                 mediaType: types[0] || 'image',
@@ -5446,7 +5455,7 @@
             state.reels.push({
               id: r.id,
               userId: r.user_id,
-              username: r.username,
+              username: (state.currentUser.supaUserId && r.user_id === state.currentUser.supaUserId) ? state.currentUser.username : r.username,
               img: urls[0] || '',
               videoUrl: urls[0] || '',
               mediaType: types[0] || 'video',
@@ -5468,7 +5477,7 @@
             state.posts.push({
               id: r.id,
               userId: r.user_id,
-              username: r.username,
+              username: (state.currentUser.supaUserId && r.user_id === state.currentUser.supaUserId) ? state.currentUser.username : r.username,
               location: r.location || '',
               img: urls[0] || '',
               mediaType: types[0] || 'image',
@@ -9126,13 +9135,47 @@
       state.currentUser.avatar = pendingAvatarData || state.currentUser.avatar || '';
       state.currentUser.isPrivate = document.getElementById('edit-private-toggle').checked;
 
-      // Sync username across user's own posts & stories if changed
+      // Sync username across user's own posts, reels, stories, archived stories & highlights
+      const mySupaId = state.currentUser.supaUserId;
       if (prevUsername && prevUsername !== rawUsername) {
-        state.posts.forEach(p => { if (p.username === prevUsername) p.username = rawUsername; });
-        state.stories.forEach(s => { if (s.username === prevUsername) s.username = rawUsername; });
+        const isMine = item => (mySupaId && item.userId === mySupaId) || (item.username || '').toLowerCase() === prevUsername.toLowerCase();
+        state.posts.forEach(p => { if (isMine(p)) p.username = rawUsername; });
+        state.reels.forEach(r => { if (isMine(r)) r.username = rawUsername; });
+        state.stories.forEach(s => { if (isMine(s)) s.username = rawUsername; });
+        state.archivedStories.forEach(s => { if (isMine(s)) s.username = rawUsername; });
+
+        // Migrate saved Highlights to new username key
+        try {
+          const oldKey = 'snapgram_highlights_' + prevUsername.toLowerCase();
+          const newKey = 'snapgram_highlights_' + rawUsername.toLowerCase();
+          const oldHl = localStorage.getItem(oldKey);
+          if (oldHl && (!state.highlights || !state.highlights.length)) {
+            state.highlights = JSON.parse(oldHl);
+          }
+          if (state.highlights && state.highlights.length) {
+            localStorage.setItem(newKey, JSON.stringify(state.highlights));
+          }
+          state.highlightsLoadedForUser = rawUsername.toLowerCase();
+        } catch {}
+
+        // Update username in Supabase snapgram_media permanently
+        const cfg = loadSupaConfig();
+        if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken && mySupaId) {
+          ensureFreshSupaToken().then(fresh => {
+            fetch(`${cfg.url}/rest/v1/snapgram_media?user_id=eq.${encodeURIComponent(mySupaId)}`, {
+              method: 'PATCH',
+              headers: {
+                apikey: cfg.anonKey,
+                Authorization: `Bearer ${fresh}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username: rawUsername })
+            }).catch(() => {});
+          }).catch(() => {});
+        }
       }
 
-      // Persist to saved accounts & active session
+      // Persist to saved accounts, device switcher & active session + Supabase snapgram_users
       const accounts = loadAccounts();
       const acc = accounts.find(a => a.email === state.currentUser.email);
       if (acc) {
@@ -9141,6 +9184,8 @@
         saveAccounts(accounts);
       }
       saveSession(state.currentUser);
+      upsertSavedDeviceAccount(state.currentUser);
+      syncUserActivity('login');
 
       closeEditProfileModal();
       render();
