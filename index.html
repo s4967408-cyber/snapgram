@@ -1311,6 +1311,116 @@
     </div>
   </div>
 
+  <!-- Instagram-Style DM Camera Modal with Face Filters & Effects (Matches 15871.png) -->
+  <div id="dm-camera-modal" class="hidden fixed inset-0 z-[92] bg-black text-white flex flex-col justify-between overflow-hidden select-none">
+    <!-- Top Bar -->
+    <div class="relative z-20 px-4 pt-4 pb-2 flex items-center justify-between">
+      <button id="dm-cam-close" type="button" class="p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm"><i data-lucide="x" class="w-6 h-6"></i></button>
+      <div class="px-3.5 py-1 rounded-full bg-black/45 backdrop-blur-md text-xs font-semibold">Message <span id="dm-cam-peer">User</span></div>
+      <button id="dm-cam-flash" type="button" class="p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm" title="Flash / Bright"><i data-lucide="zap" class="w-5 h-5"></i></button>
+    </div>
+
+    <!-- Live Camera / Captured Preview -->
+    <div class="relative flex-1 flex items-center justify-center overflow-hidden">
+      <video id="dm-cam-video" autoplay muted playsinline class="w-full h-full object-cover -scale-x-100"></video>
+      <img id="dm-cam-preview-img" src="" alt="Preview" class="hidden w-full h-full object-cover" />
+      <div id="dm-cam-ar-overlay" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-start pt-14 text-5xl"></div>
+      <canvas id="dm-cam-canvas" class="hidden"></canvas>
+    </div>
+
+    <!-- Effects / Filters Bar -->
+    <div id="dm-cam-effects-strip" class="relative z-20 px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar bg-gradient-to-t from-black/80 to-transparent">
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-pink-500 text-white" data-fx="none">Normal</button>
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="glow">✨ Bright Glow</button>
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="crown">👑 Crown</button>
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="hearts">💕 Hearts</button>
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="sparkles">🦋 Sparkles</button>
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="warm">☀️ Warm</button>
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="cool">❄️ Cool</button>
+      <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="bw">🖤 B&amp;W</button>
+    </div>
+
+    <!-- Bottom Shutter / Send Controls -->
+    <div id="dm-cam-controls-live" class="relative z-20 px-6 pb-8 pt-3 bg-black flex items-center justify-between">
+      <button id="dm-cam-open-gallery" type="button" class="w-11 h-11 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center"><i data-lucide="image" class="w-5 h-5"></i></button>
+      <button id="dm-cam-shutter" type="button" class="w-20 h-20 rounded-full border-4 border-white p-1 flex items-center justify-center active:scale-95 transition">
+        <span class="w-full h-full rounded-full bg-white block"></span>
+      </button>
+      <button id="dm-cam-flip" type="button" class="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
+    </div>
+    <div id="dm-cam-controls-preview" class="hidden relative z-20 px-5 pb-8 pt-3 bg-black flex items-center justify-between gap-3">
+      <button id="dm-cam-retake" type="button" class="px-4 py-2.5 rounded-full bg-white/15 text-xs font-bold">Retake</button>
+      <button id="dm-cam-hd-toggle" type="button" class="px-3 py-2 rounded-full bg-emerald-500 text-white text-xs font-bold">HD: ON</button>
+      <button id="dm-cam-send" type="button" class="flex-1 py-2.5 px-5 rounded-full bg-[#0095F6] text-white text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="send" class="w-4 h-4"></i> Send</button>
+    </div>
+  </div>
+
+  <!-- DM Gallery Photo Picker + HD Toggle Modal -->
+  <div id="dm-gallery-modal" class="hidden fixed inset-0 z-[91] bg-black/55 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold">Send Photo</h3>
+        <div class="flex items-center gap-2">
+          <button id="dm-gal-hd-btn" type="button" class="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[11px] font-bold">HD ON</button>
+          <button id="dm-gal-close" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+      </div>
+      <div id="dm-gal-preview-box" class="w-full h-64 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex flex-col items-center justify-center overflow-hidden border border-dashed border-zinc-300 dark:border-zinc-700">
+        <img id="dm-gal-preview-img" src="" alt="" class="hidden w-full h-full object-contain bg-black" />
+        <label id="dm-gal-pick-label" for="dm-gal-file-input" class="flex flex-col items-center gap-2 cursor-pointer p-6 text-center">
+          <span class="w-12 h-12 rounded-full bg-[#0095F6]/15 text-[#0095F6] flex items-center justify-center"><i data-lucide="image-plus" class="w-6 h-6"></i></span>
+          <span class="text-sm font-semibold">Choose photo from Gallery</span>
+          <span class="text-[11px] text-zinc-500">Supports HD full-quality sending</span>
+        </label>
+        <input id="dm-gal-file-input" type="file" accept="image/*" class="hidden" />
+      </div>
+      <div class="flex items-center gap-2">
+        <label for="dm-gal-file-input" class="py-2.5 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold cursor-pointer">Change Photo</label>
+        <button id="dm-gal-send-btn" type="button" disabled class="flex-1 py-2.5 px-4 rounded-xl bg-[#0095F6] disabled:opacity-40 text-white text-sm font-bold">Send HD Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instagram-Style Animated Stickers Drawer Modal (Matches 15863.png) -->
+  <div id="dm-sticker-modal" class="hidden fixed inset-0 z-[90] bg-black/45 backdrop-blur-xs flex items-end justify-center">
+    <div class="w-full sm:max-w-lg bg-white dark:bg-zinc-900 rounded-t-3xl p-4 space-y-3 shadow-2xl h-[58vh] flex flex-col">
+      <div class="flex justify-center"><span class="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span></div>
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-zinc-400"></i>
+          <input id="dm-sticker-search" type="text" placeholder="Search animated stickers..." class="w-full pl-9 pr-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm focus:outline-none" />
+        </div>
+        <button id="dm-sticker-close" type="button" class="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="dm-sticker-grid" class="flex-1 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 gap-3 py-2"></div>
+    </div>
+  </div>
+
+  <!-- Draw on Chat / Doodle Modal -->
+  <div id="dm-draw-modal" class="hidden fixed inset-0 z-[91] bg-black/55 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-4 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold">Draw &amp; Send</h3>
+        <div class="flex items-center gap-2">
+          <button id="dm-draw-clear" type="button" class="px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold">Clear</button>
+          <button id="dm-draw-close" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+      </div>
+      <canvas id="dm-draw-canvas" width="400" height="320" class="w-full h-64 rounded-2xl bg-white border border-zinc-200 dark:border-zinc-700 touch-none cursor-crosshair"></canvas>
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5">
+          <button type="button" class="dm-draw-color w-6 h-6 rounded-full bg-black ring-2 ring-offset-1 ring-pink-500" data-color="#111827"></button>
+          <button type="button" class="dm-draw-color w-6 h-6 rounded-full bg-rose-500" data-color="#f43f5e"></button>
+          <button type="button" class="dm-draw-color w-6 h-6 rounded-full bg-blue-500" data-color="#3b82f6"></button>
+          <button type="button" class="dm-draw-color w-6 h-6 rounded-full bg-emerald-500" data-color="#10b981"></button>
+          <button type="button" class="dm-draw-color w-6 h-6 rounded-full bg-amber-400" data-color="#f59e0b"></button>
+          <button type="button" class="dm-draw-color w-6 h-6 rounded-full bg-purple-600" data-color="#9333ea"></button>
+        </div>
+        <button id="dm-draw-send" type="button" class="px-5 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-bold">Send Drawing</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Instagram-Style Full-Screen Audio & Video Call Modal (Matches 15850.png) -->
   <div id="call-screen-modal" class="hidden fixed inset-0 z-[95] bg-zinc-900 text-white flex flex-col justify-between overflow-hidden select-none">
     <!-- Blurred Peer Avatar Backdrop -->
@@ -2412,7 +2522,7 @@
                 ${conv.messages.map((m, idx) => {
                   const isMine = m.sender === state.currentUser.username;
                   const isLast = idx === conv.messages.length - 1;
-                  const isShareMsg = typeof m.text === 'string' && m.text.startsWith('__SHARE__|');
+                  const isShareMsg = typeof m.text === 'string' && (m.text.startsWith('__SHARE__|') || m.text.startsWith('__PHOTO__|') || m.text.startsWith('__STICKER__|') || m.text.startsWith('__DRAW__|'));
                   return `
                     <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'} relative z-10">
                       <div class="flex items-end gap-2 max-w-[82%] group">
@@ -2473,18 +2583,24 @@
                   </div>
                 </div>
                 <form id="chat-form" class="p-2.5 border-t border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
-                  <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-900">
-                    <button type="button" class="chat-quick-btn w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shrink-0" data-msg="📸 Photo">
+                  <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-900">
+                    <button id="chat-camera-btn" type="button" class="w-8 h-8 rounded-full bg-[#0095F6] text-white flex items-center justify-center shrink-0 hover:opacity-90" title="Camera" aria-label="Open Camera">
                       <i data-lucide="camera" class="w-4 h-4"></i>
                     </button>
-                    <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent text-sm focus:outline-none py-1 text-zinc-900 dark:text-white" />
-                    <button id="chat-mic-btn" type="button" class="p-1.5 rounded-full text-zinc-600 dark:text-zinc-300 hover:text-pink-500 transition select-none" title="Tap to Record Voice Note" aria-label="Record Voice Note">
+                    <input id="chat-input" type="text" placeholder="Message..." class="flex-1 min-w-0 bg-transparent text-sm focus:outline-none py-1 px-1 text-zinc-900 dark:text-white" />
+                    <button id="chat-mic-btn" type="button" class="p-1.5 rounded-full text-zinc-700 dark:text-zinc-300 hover:text-pink-500 transition select-none shrink-0" title="Record Voice Note" aria-label="Record Voice Note">
                       <i data-lucide="mic" class="w-5 h-5"></i>
                     </button>
-                    <button type="button" class="chat-quick-btn p-1.5 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white" data-msg="❤️" aria-label="Send Heart">
-                      <i data-lucide="heart" class="w-5 h-5"></i>
+                    <button id="chat-gallery-btn" type="button" class="p-1.5 rounded-full text-zinc-700 dark:text-zinc-300 hover:text-[#0095F6] transition shrink-0" title="Send Photo (HD)" aria-label="Send Photo from Gallery">
+                      <i data-lucide="image" class="w-5 h-5"></i>
                     </button>
-                    <button type="submit" class="text-xs font-bold text-[#0095F6] hover:opacity-80 px-2">Send</button>
+                    <button id="chat-sticker-btn" type="button" class="p-1.5 rounded-full text-zinc-700 dark:text-zinc-300 hover:text-pink-500 transition shrink-0" title="Stickers" aria-label="Stickers">
+                      <i data-lucide="smile" class="w-5 h-5"></i>
+                    </button>
+                    <button id="chat-plus-btn" type="button" class="p-1.5 rounded-full text-zinc-700 dark:text-zinc-300 hover:text-indigo-500 transition shrink-0" title="Draw & More" aria-label="Draw on Chat">
+                      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </button>
+                    <button type="submit" class="text-xs font-bold text-[#0095F6] hover:opacity-80 px-1.5 shrink-0">Send</button>
                   </div>
                 </form>
               `}
@@ -4143,6 +4259,17 @@
             openShareSheet(fwdBtn.dataset.skind || 'reel', fwdBtn.dataset.sid || '');
             return;
           }
+          const photoCard = e.target.closest('.dm-photo-card');
+          if (photoCard) {
+            e.stopPropagation();
+            const pUrl = photoCard.dataset.url || '';
+            if (pUrl) {
+              const body = document.getElementById('post-detail-body');
+              body.innerHTML = `<div class="bg-black w-full max-h-[80vh] flex items-center justify-center"><img src="${pUrl}" class="w-full max-h-[80vh] object-contain" /></div>`;
+              document.getElementById('post-detail-modal').classList.remove('hidden');
+            }
+            return;
+          }
           const shareCard = e.target.closest('.shared-media-card');
           if (shareCard) {
             e.stopPropagation();
@@ -4237,6 +4364,11 @@
           render();
         });
       });
+
+      document.getElementById('chat-camera-btn')?.addEventListener('click', openDmCameraModal);
+      document.getElementById('chat-gallery-btn')?.addEventListener('click', openDmGalleryModal);
+      document.getElementById('chat-sticker-btn')?.addEventListener('click', openDmStickerModal);
+      document.getElementById('chat-plus-btn')?.addEventListener('click', openDmDrawModal);
 
       const chatForm = document.getElementById('chat-form');
       if (chatForm) {
@@ -7032,6 +7164,27 @@
             </button>
           </div>
         `;
+      }
+      if (typeof txt === 'string' && (txt.startsWith('__PHOTO__|') || txt.startsWith('__DRAW__|'))) {
+        const parts = txt.split('|');
+        const isDraw = txt.startsWith('__DRAW__|');
+        const imgUrl = parts[1] || '';
+        const isHd = parts[2] === 'hd';
+        return `
+          <div class="dm-photo-card relative max-w-[225px] rounded-2xl overflow-hidden shadow-md border border-black/10 ${isDraw ? 'bg-white' : 'bg-zinc-900'} cursor-pointer" data-url="${imgUrl}">
+            <img src="${imgUrl}" alt="${isDraw ? 'Drawing' : 'Photo'}" class="w-full max-h-[300px] object-cover" />
+            ${isHd ? `<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-bold">HD</span>` : ''}
+          </div>
+        `;
+      }
+      if (typeof txt === 'string' && txt.startsWith('__STICKER__|')) {
+        const parts = txt.split('|');
+        const content = parts[1] || '🔥';
+        const sub = parts[2] || '';
+        if (sub === 'badge') {
+          return `<div class="px-4 py-2.5 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 text-white font-extrabold text-lg tracking-wide shadow-lg animate-bounce">${content}</div>`;
+        }
+        return `<div class="text-6xl leading-none py-1 animate-[bounce_1.8s_infinite] drop-shadow-md">${content}</div>`;
       }
       return `<span>${txt}</span>`;
     }
@@ -11082,6 +11235,322 @@
     });
     document.getElementById('inc-call-accept')?.addEventListener('click', acceptIncomingCall);
     document.getElementById('inc-call-decline')?.addEventListener('click', () => endSnapgramCall(true));
+
+    // --- DM Camera (15871.png), HD Gallery, Animated Stickers (15863.png), & Draw ---
+    async function sendDmMediaPayload(msgText) {
+      const conv = state.conversations.find(c => c.id === state.activeConvId);
+      if (!conv) return;
+      conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
+      conv.seen = 'Delivered';
+      render();
+      await saveMessageToSupabase(conv.title, msgText);
+    }
+
+    async function uploadDmImageToSupa(blob, filename) {
+      let url = '';
+      if (typeof uploadFileToSupabase === 'function' && state.currentUser.supaToken) {
+        try {
+          const f = new File([blob], filename, { type: blob.type || 'image/jpeg' });
+          url = await uploadFileToSupabase(f, 'dm', () => {});
+        } catch {}
+      }
+      if (!url) {
+        url = await new Promise(resolve => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.readAsDataURL(blob);
+        });
+      }
+      return url;
+    }
+
+    // 1. DM Camera
+    const dmCamState = { stream: null, facing: 'user', fx: 'none', hd: true, capturedBlob: null };
+    const DM_CAM_FILTERS = {
+      none: { css: 'none', overlay: '' },
+      glow: { css: 'brightness(1.25) contrast(1.05) saturate(1.12)', overlay: '' },
+      crown: { css: 'brightness(1.1) saturate(1.15)', overlay: '<span class="drop-shadow-lg">👑</span>' },
+      hearts: { css: 'brightness(1.1) saturate(1.2)', overlay: '<div class="flex gap-6 animate-pulse"><span>💕</span><span>❤️</span><span>💖</span></div>' },
+      sparkles: { css: 'contrast(1.08) brightness(1.15)', overlay: '<div class="flex gap-8"><span>🦋</span><span>✨</span><span>🦋</span></div>' },
+      warm: { css: 'sepia(0.25) brightness(1.1) saturate(1.25)', overlay: '' },
+      cool: { css: 'brightness(1.06) hue-rotate(15deg) saturate(1.1)', overlay: '' },
+      bw: { css: 'grayscale(1) contrast(1.15)', overlay: '' }
+    };
+
+    async function startDmCamStream() {
+      if (dmCamState.stream) dmCamState.stream.getTracks().forEach(t => t.stop());
+      try {
+        dmCamState.stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: dmCamState.facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false
+        });
+        const v = document.getElementById('dm-cam-video');
+        if (v) v.srcObject = dmCamState.stream;
+      } catch {
+        showToast('Camera permission needed');
+      }
+    }
+
+    function openDmCameraModal() {
+      const conv = state.conversations.find(c => c.id === state.activeConvId);
+      const peerEl = document.getElementById('dm-cam-peer');
+      if (peerEl) peerEl.textContent = conv?.title || 'User';
+      dmCamState.fx = 'none';
+      dmCamState.capturedBlob = null;
+      document.getElementById('dm-cam-video')?.classList.remove('hidden');
+      document.getElementById('dm-cam-preview-img')?.classList.add('hidden');
+      document.getElementById('dm-cam-controls-live')?.classList.remove('hidden');
+      document.getElementById('dm-cam-controls-preview')?.classList.add('hidden');
+      document.getElementById('dm-cam-effects-strip')?.classList.remove('hidden');
+      document.getElementById('dm-cam-ar-overlay').innerHTML = '';
+      document.getElementById('dm-cam-video').style.filter = 'none';
+      document.getElementById('dm-camera-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+      startDmCamStream();
+    }
+
+    function closeDmCameraModal() {
+      if (dmCamState.stream) { dmCamState.stream.getTracks().forEach(t => t.stop()); dmCamState.stream = null; }
+      document.getElementById('dm-camera-modal')?.classList.add('hidden');
+    }
+
+    document.getElementById('dm-cam-close')?.addEventListener('click', closeDmCameraModal);
+    document.getElementById('dm-cam-flip')?.addEventListener('click', () => {
+      dmCamState.facing = dmCamState.facing === 'user' ? 'environment' : 'user';
+      startDmCamStream();
+    });
+    document.getElementById('dm-cam-open-gallery')?.addEventListener('click', () => {
+      closeDmCameraModal();
+      openDmGalleryModal();
+    });
+    document.querySelectorAll('.dm-cam-fx-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        dmCamState.fx = btn.dataset.fx || 'none';
+        document.querySelectorAll('.dm-cam-fx-btn').forEach(b => {
+          const act = b.dataset.fx === dmCamState.fx;
+          b.className = `dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold ${act ? 'bg-pink-500 text-white' : 'bg-white/15 text-white'}`;
+        });
+        const cfg = DM_CAM_FILTERS[dmCamState.fx] || DM_CAM_FILTERS.none;
+        const v = document.getElementById('dm-cam-video');
+        const ov = document.getElementById('dm-cam-ar-overlay');
+        if (v) v.style.filter = cfg.css;
+        if (ov) ov.innerHTML = cfg.overlay;
+      });
+    });
+    document.getElementById('dm-cam-shutter')?.addEventListener('click', () => {
+      const v = document.getElementById('dm-cam-video');
+      const c = document.getElementById('dm-cam-canvas');
+      if (!v || !c || !v.videoWidth) return;
+      c.width = v.videoWidth; c.height = v.videoHeight;
+      const ctx = c.getContext('2d');
+      const cfg = DM_CAM_FILTERS[dmCamState.fx] || DM_CAM_FILTERS.none;
+      ctx.save();
+      if (dmCamState.facing === 'user') { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
+      ctx.filter = cfg.css;
+      ctx.drawImage(v, 0, 0, c.width, c.height);
+      ctx.restore();
+      if (dmCamState.fx === 'crown') { ctx.font = '84px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👑', c.width / 2, 120); }
+      else if (dmCamState.fx === 'hearts') { ctx.font = '68px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💕 ❤️ 💖', c.width / 2, 110); }
+      else if (dmCamState.fx === 'sparkles') { ctx.font = '68px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('🦋 ✨ 🦋', c.width / 2, 110); }
+      c.toBlob(blob => {
+        dmCamState.capturedBlob = blob;
+        const pImg = document.getElementById('dm-cam-preview-img');
+        if (pImg) { pImg.src = URL.createObjectURL(blob); pImg.classList.remove('hidden'); }
+        v.classList.add('hidden');
+        document.getElementById('dm-cam-controls-live')?.classList.add('hidden');
+        document.getElementById('dm-cam-controls-preview')?.classList.remove('hidden');
+        document.getElementById('dm-cam-effects-strip')?.classList.add('hidden');
+      }, 'image/jpeg', 0.94);
+    });
+    document.getElementById('dm-cam-retake')?.addEventListener('click', () => {
+      dmCamState.capturedBlob = null;
+      document.getElementById('dm-cam-video')?.classList.remove('hidden');
+      document.getElementById('dm-cam-preview-img')?.classList.add('hidden');
+      document.getElementById('dm-cam-controls-live')?.classList.remove('hidden');
+      document.getElementById('dm-cam-controls-preview')?.classList.add('hidden');
+      document.getElementById('dm-cam-effects-strip')?.classList.remove('hidden');
+    });
+    document.getElementById('dm-cam-hd-toggle')?.addEventListener('click', e => {
+      dmCamState.hd = !dmCamState.hd;
+      e.currentTarget.textContent = dmCamState.hd ? 'HD: ON' : 'HD: OFF';
+      e.currentTarget.className = `px-3 py-2 rounded-full text-white text-xs font-bold ${dmCamState.hd ? 'bg-emerald-500' : 'bg-zinc-700'}`;
+    });
+    document.getElementById('dm-cam-send')?.addEventListener('click', async () => {
+      const blob = dmCamState.capturedBlob;
+      if (!blob) return;
+      closeDmCameraModal();
+      showToast('Sending photo...');
+      const url = await uploadDmImageToSupa(blob, `dm_cam_${Date.now()}.jpg`);
+      await sendDmMediaPayload(`__PHOTO__|${url}|${dmCamState.hd ? 'hd' : 'sd'}`);
+    });
+
+    // 2. DM Gallery Photo Picker (HD)
+    const dmGalState = { file: null, hd: true };
+    function openDmGalleryModal() {
+      dmGalState.file = null;
+      document.getElementById('dm-gal-preview-img')?.classList.add('hidden');
+      document.getElementById('dm-gal-pick-label')?.classList.remove('hidden');
+      const sBtn = document.getElementById('dm-gal-send-btn');
+      if (sBtn) sBtn.disabled = true;
+      document.getElementById('dm-gallery-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    document.getElementById('dm-gal-close')?.addEventListener('click', () => document.getElementById('dm-gallery-modal')?.classList.add('hidden'));
+    document.getElementById('dm-gal-hd-btn')?.addEventListener('click', e => {
+      dmGalState.hd = !dmGalState.hd;
+      e.currentTarget.textContent = dmGalState.hd ? 'HD ON' : 'HD OFF';
+      e.currentTarget.className = `px-2.5 py-1 rounded-full text-white text-[11px] font-bold ${dmGalState.hd ? 'bg-emerald-500' : 'bg-zinc-600'}`;
+      const sBtn = document.getElementById('dm-gal-send-btn');
+      if (sBtn) sBtn.textContent = dmGalState.hd ? 'Send HD Photo' : 'Send Photo';
+    });
+    document.getElementById('dm-gal-file-input')?.addEventListener('change', e => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      dmGalState.file = f;
+      const pImg = document.getElementById('dm-gal-preview-img');
+      if (pImg) { pImg.src = URL.createObjectURL(f); pImg.classList.remove('hidden'); }
+      document.getElementById('dm-gal-pick-label')?.classList.add('hidden');
+      const sBtn = document.getElementById('dm-gal-send-btn');
+      if (sBtn) sBtn.disabled = false;
+    });
+    document.getElementById('dm-gal-send-btn')?.addEventListener('click', async () => {
+      if (!dmGalState.file) return;
+      const f = dmGalState.file;
+      document.getElementById('dm-gallery-modal')?.classList.add('hidden');
+      showToast(dmGalState.hd ? 'Sending HD photo...' : 'Sending photo...');
+      const maxDim = dmGalState.hd ? 2048 : 1080;
+      const qual = dmGalState.hd ? 0.94 : 0.78;
+      const blob = await new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+            else { w = Math.round(w * maxDim / h); h = maxDim; }
+          }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          c.toBlob(b => resolve(b || f), 'image/jpeg', qual);
+        };
+        img.src = URL.createObjectURL(f);
+      });
+      const url = await uploadDmImageToSupa(blob, `dm_gal_${Date.now()}.jpg`);
+      await sendDmMediaPayload(`__PHOTO__|${url}|${dmGalState.hd ? 'hd' : 'sd'}`);
+    });
+
+    // 3. Animated Stickers Drawer (15863.png)
+    const DM_STICKERS = [
+      { txt: '😂', kw: 'laugh funny lol', kind: 'emoji' },
+      { txt: '❤️‍🔥', kw: 'love heart fire', kind: 'emoji' },
+      { txt: '😭', kw: 'cry sad emotional', kind: 'emoji' },
+      { txt: '🥳', kw: 'party celebrate', kind: 'emoji' },
+      { txt: '🫶', kw: 'heart hands love', kind: 'emoji' },
+      { txt: '💀', kw: 'dead skull funny', kind: 'emoji' },
+      { txt: '😎', kw: 'cool swag', kind: 'emoji' },
+      { txt: '🥺', kw: 'cute please', kind: 'emoji' },
+      { txt: '🔥', kw: 'fire lit hot', kind: 'emoji' },
+      { txt: '💯', kw: '100 real', kind: 'emoji' },
+      { txt: '🐱', kw: 'cat cute meow', kind: 'emoji' },
+      { txt: '🚀', kw: 'rocket boom', kind: 'emoji' },
+      { txt: 'LOL 😂', kw: 'lol funny badge', kind: 'badge' },
+      { txt: 'LOVE ❤️', kw: 'love badge', kind: 'badge' },
+      { txt: 'OMG! 😱', kw: 'omg shocked badge', kind: 'badge' },
+      { txt: 'MISS U 💕', kw: 'miss you badge', kind: 'badge' },
+      { txt: 'SLAY 👑', kw: 'slay queen king badge', kind: 'badge' },
+      { txt: 'GOOD VIBES ✨', kw: 'vibes chill badge', kind: 'badge' }
+    ];
+    function renderDmStickers(q = '') {
+      const grid = document.getElementById('dm-sticker-grid');
+      if (!grid) return;
+      const lq = q.trim().toLowerCase();
+      const items = DM_STICKERS.filter(s => !lq || s.kw.includes(lq) || s.txt.toLowerCase().includes(lq));
+      grid.innerHTML = items.map(s => `
+        <button type="button" class="dm-sticker-pick flex items-center justify-center p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition active:scale-95" data-txt="${s.txt}" data-kind="${s.kind}">
+          ${s.kind === 'badge'
+            ? `<span class="px-2.5 py-1.5 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-500 text-white text-xs font-extrabold shadow animate-pulse">${s.txt}</span>`
+            : `<span class="text-4xl hover:scale-110 transition">${s.txt}</span>`}
+        </button>
+      `).join('');
+      grid.querySelectorAll('.dm-sticker-pick').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.getElementById('dm-sticker-modal')?.classList.add('hidden');
+          sendDmMediaPayload(`__STICKER__|${btn.dataset.txt}|${btn.dataset.kind}`);
+        });
+      });
+    }
+    function openDmStickerModal() {
+      const inp = document.getElementById('dm-sticker-search');
+      if (inp) inp.value = '';
+      renderDmStickers('');
+      document.getElementById('dm-sticker-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    document.getElementById('dm-sticker-close')?.addEventListener('click', () => document.getElementById('dm-sticker-modal')?.classList.add('hidden'));
+    document.getElementById('dm-sticker-search')?.addEventListener('input', e => renderDmStickers(e.target.value));
+
+    // 4. Draw on Chat / Doodle Modal
+    const dmDrawState = { drawing: false, color: '#111827' };
+    function openDmDrawModal() {
+      const c = document.getElementById('dm-draw-canvas');
+      if (c) {
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, c.width, c.height);
+      }
+      document.getElementById('dm-draw-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    document.getElementById('dm-draw-close')?.addEventListener('click', () => document.getElementById('dm-draw-modal')?.classList.add('hidden'));
+    document.getElementById('dm-draw-clear')?.addEventListener('click', () => {
+      const c = document.getElementById('dm-draw-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+    });
+    document.querySelectorAll('.dm-draw-color').forEach(btn => {
+      btn.addEventListener('click', () => {
+        dmDrawState.color = btn.dataset.color || '#111827';
+        document.querySelectorAll('.dm-draw-color').forEach(b => b.classList.remove('ring-2', 'ring-offset-1', 'ring-pink-500'));
+        btn.classList.add('ring-2', 'ring-offset-1', 'ring-pink-500');
+      });
+    });
+    (() => {
+      const c = document.getElementById('dm-draw-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      const getPt = e => {
+        const rect = c.getBoundingClientRect();
+        const t = e.touches ? e.touches[0] : e;
+        return { x: (t.clientX - rect.left) * (c.width / rect.width), y: (t.clientY - rect.top) * (c.height / rect.height) };
+      };
+      const start = e => { e.preventDefault(); dmDrawState.drawing = true; const p = getPt(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+      const move = e => {
+        if (!dmDrawState.drawing) return;
+        e.preventDefault();
+        const p = getPt(e);
+        ctx.strokeStyle = dmDrawState.color;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      };
+      const end = () => { dmDrawState.drawing = false; };
+      c.addEventListener('mousedown', start); c.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+      c.addEventListener('touchstart', start, { passive: false }); c.addEventListener('touchmove', move, { passive: false }); c.addEventListener('touchend', end);
+    })();
+    document.getElementById('dm-draw-send')?.addEventListener('click', () => {
+      const c = document.getElementById('dm-draw-canvas');
+      if (!c) return;
+      c.toBlob(async blob => {
+        document.getElementById('dm-draw-modal')?.classList.add('hidden');
+        showToast('Sending drawing...');
+        const url = await uploadDmImageToSupa(blob, `dm_draw_${Date.now()}.jpg`);
+        await sendDmMediaPayload(`__DRAW__|${url}|hd`);
+      }, 'image/jpeg', 0.92);
+    });
 
     setInterval(() => {
       if (state.isAuthenticated) pollCallSignals();
