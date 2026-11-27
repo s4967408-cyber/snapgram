@@ -1361,43 +1361,42 @@
       <button id="dm-cam-flip" type="button" class="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
     </div>
     <div id="dm-cam-controls-preview" class="hidden relative z-20 px-4 pb-5 pt-2.5 bg-black space-y-2.5 shrink-0">
-      <!-- Strictly 2 options: 1x View once OR 2x Allow replay -->
       <div class="flex items-center justify-center gap-2">
-        <button type="button" class="dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#0095F6] text-white" data-limit="1">1x View once</button>
-        <button type="button" class="dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/15 text-white" data-limit="2">2x Allow replay</button>
+        <button type="button" class="dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#0095F6] text-white flex items-center gap-1" data-limit="1"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" stroke="none">1</text></svg></button>
+        <button type="button" class="dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/15 text-white flex items-center gap-1" data-limit="2"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" stroke="none">2</text></svg></button>
+        <button type="button" class="dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/15 text-white flex items-center gap-1" data-limit="0">∞ Unlimited</button>
       </div>
       <div class="flex items-center justify-between gap-2.5">
         <button id="dm-cam-retake" type="button" class="px-4 py-2.5 rounded-full bg-white/15 text-xs font-bold">Retake</button>
-        <button id="dm-cam-hd-toggle" type="button" class="px-3 py-2 rounded-full bg-emerald-500 text-white text-xs font-bold">HD: ON</button>
+        <button id="dm-cam-hd-toggle" type="button" class="relative px-2.5 py-1 rounded-md bg-zinc-950 border border-white text-white text-xs font-extrabold tracking-tight">HD<span class="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-white text-black text-[9px] font-black flex items-center justify-center">✓</span></button>
         <button id="dm-cam-send" type="button" class="flex-1 py-2.5 px-5 rounded-full bg-[#0095F6] text-white text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="send" class="w-4 h-4"></i> Send</button>
       </div>
     </div>
   </div>
 
-  <!-- DM Gallery Photo & Video Picker + HD + 1x/2x View Limit Modal -->
+  <!-- DM Gallery Photo & Video Picker (Matches 15908.png IG HD + Clock-1 / Clock-2 / Unlimited) -->
   <div id="dm-gallery-modal" class="hidden fixed inset-0 z-[91] bg-black/55 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
-    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-5 space-y-3.5 shadow-2xl">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-4 space-y-3.5 shadow-2xl">
+      <div class="flex justify-center"><span class="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span></div>
       <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold">Send Photo / Video</h3>
-        <div class="flex items-center gap-2">
-          <button id="dm-gal-hd-btn" type="button" class="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[11px] font-bold">HD ON</button>
-          <button id="dm-gal-close" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
-        </div>
+        <button id="dm-gal-close" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <h3 class="text-sm font-bold flex items-center gap-1">Recents <i data-lucide="chevron-down" class="w-4 h-4"></i></h3>
+        <button id="dm-gal-hd-btn" type="button" class="relative px-2 py-0.5 rounded-md bg-zinc-950 text-white text-[11px] font-black tracking-tight border border-zinc-950" title="Toggle HD">HD<span id="dm-gal-hd-check" class="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-zinc-950 text-white border border-white text-[9px] flex items-center justify-center">✓</span></button>
       </div>
       <div id="dm-gal-preview-box" class="w-full h-56 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex flex-col items-center justify-center overflow-hidden border border-dashed border-zinc-300 dark:border-zinc-700">
         <img id="dm-gal-preview-img" src="" alt="" class="hidden w-full h-full object-contain bg-black" />
         <video id="dm-gal-preview-vid" controls playsinline class="hidden w-full h-full object-contain bg-black"></video>
         <label id="dm-gal-pick-label" for="dm-gal-file-input" class="flex flex-col items-center gap-2 cursor-pointer p-6 text-center">
-          <span class="w-12 h-12 rounded-full bg-[#0095F6]/15 text-[#0095F6] flex items-center justify-center"><i data-lucide="image-plus" class="w-6 h-6"></i></span>
-          <span class="text-sm font-semibold">Choose Photo or Video</span>
-          <span class="text-[11px] text-zinc-500">Supports HD &amp; 1x / 2x view limit</span>
+          <span class="w-12 h-12 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center"><i data-lucide="images" class="w-6 h-6"></i></span>
+          <span class="text-sm font-semibold">Recents · Choose Photo or Video</span>
         </label>
         <input id="dm-gal-file-input" type="file" accept="image/*,video/*" class="hidden" />
       </div>
-      <!-- Strictly 2 options: 1x View once OR 2x Allow replay -->
+      <!-- 3 options: Clock-1, Clock-2, Unlimited -->
       <div class="flex items-center gap-2">
-        <button type="button" class="dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold bg-[#0095F6] text-white" data-limit="1">1x View once</button>
-        <button type="button" class="dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200" data-limit="2">2x Allow replay</button>
+        <button type="button" class="dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold bg-[#0095F6] text-white flex items-center justify-center gap-1" data-limit="1"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" stroke="none">1</text></svg></button>
+        <button type="button" class="dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 flex items-center justify-center gap-1" data-limit="2"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" stroke="none">2</text></svg></button>
+        <button type="button" class="dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 flex items-center justify-center gap-1" data-limit="0">∞ Unlimited</button>
       </div>
       <div class="flex items-center gap-2">
         <label for="dm-gal-file-input" class="py-2.5 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold cursor-pointer">Change</label>
@@ -2538,7 +2537,7 @@
                 </div>
               ` : ''}
 
-              <div id="chat-messages-area" class="flex-1 p-4 space-y-3 overflow-y-auto relative select-none ${isDarkTheme || themeCfg.customPhoto ? 'text-white' : 'text-zinc-900'}" style="${chatBgStyle}" data-conv-id="${conv.id}">
+              <div id="chat-messages-area" class="flex-1 min-h-0 w-full max-w-full p-3.5 space-y-3 overflow-y-auto overflow-x-hidden overscroll-contain relative select-none ${isDarkTheme || themeCfg.customPhoto ? 'text-white' : 'text-zinc-900'}" style="${chatBgStyle}" data-conv-id="${conv.id}">
                 ${themeCfg.patternHtml || ''}
                 <!-- Instagram-style Peer Profile Intro + Profile / Safety tips / Block row -->
                 <div class="text-center pt-3 pb-5 space-y-2 relative z-10">
@@ -2577,9 +2576,9 @@
                   const isShareMsg = typeof m.text === 'string' && (m.text.startsWith('__SHARE__|') || m.text.startsWith('__PHOTO__|') || m.text.startsWith('__VIDEO__|') || m.text.startsWith('__STICKER__|') || m.text.startsWith('__DRAW__|'));
                   return `
                     <div id="msg-bubble-${m.id}" class="flex flex-col ${isMine ? 'items-end' : 'items-start'} relative z-10 transition-colors duration-500 rounded-2xl">
-                      <div class="flex items-end gap-2 max-w-[82%] group">
+                      <div class="flex items-end gap-2 max-w-[82%] min-w-0 group">
                         ${!isMine ? renderAvatar(peerAvatar, m.sender, 'w-7 h-7 shrink-0 mb-1') : ''}
-                        <div role="button" tabindex="0" class="msg-react-btn text-left relative transition cursor-pointer ${
+                        <div role="button" tabindex="0" class="msg-react-btn max-w-full break-words text-left relative transition cursor-pointer ${
                           isShareMsg
                             ? 'p-0 bg-transparent rounded-2xl'
                             : (isMine
@@ -4319,9 +4318,9 @@
             const pUrl = photoCard.dataset.url || '';
             const mid = photoCard.dataset.msgId || '';
             const kind = photoCard.dataset.kind || 'photo';
-            const limit = Number(photoCard.dataset.limit) === 2 ? 2 : 1;
+            const limit = Number(photoCard.dataset.limit);
             const used = getDmMediaViewCount(mid);
-            if (used >= limit) {
+            if (limit > 0 && used >= limit) {
               showToast(`Already opened (${limit}x limit)`);
               return;
             }
@@ -4386,6 +4385,9 @@
       });
 
       const chatMsgsArea = document.getElementById('chat-messages-area');
+      if (chatMsgsArea) {
+        chatMsgsArea.scrollTop = chatMsgsArea.scrollHeight;
+      }
       if (chatMsgsArea) {
         let bgHoldTimer = null;
         const startBgHold = (e) => {
@@ -5391,6 +5393,12 @@
       if (mobHeader) mobHeader.style.display = (isReelsTab || isDmThreadMobile) ? 'none' : '';
       const mobNav = document.getElementById('mobile-nav');
       if (mobNav) mobNav.style.display = isDmThreadMobile ? 'none' : '';
+      const lockMobDm = isDmThreadMobile && window.innerWidth < 768;
+      document.documentElement.style.overflow = lockMobDm ? 'hidden' : '';
+      document.body.style.overflow = lockMobDm ? 'hidden' : '';
+      document.body.style.position = lockMobDm ? 'fixed' : '';
+      document.body.style.inset = lockMobDm ? '0' : '';
+      document.body.style.width = lockMobDm ? '100%' : '';
       const ptrEl = document.getElementById('ptr-indicator');
       if (ptrEl) ptrEl.style.display = isReelsTab ? 'none' : '';
       const mainWrapper = document.getElementById('main-wrapper');
@@ -7271,9 +7279,10 @@
         const isDraw = txt.startsWith('__DRAW__|');
         const mediaUrl = parts[1] || '';
         const isHd = parts[2] === 'hd';
-        const limit = Number(parts[3]) === 2 ? 2 : 1;
+        const rawLim = parts[3] === undefined ? 1 : Number(parts[3]);
+        const limit = rawLim === 0 ? 0 : (rawLim === 2 ? 2 : 1);
         const viewsUsed = getDmMediaViewCount(msgId);
-        const exhausted = viewsUsed >= limit;
+        const exhausted = limit > 0 && viewsUsed >= limit;
         const label = isVideo ? 'Video' : 'Photo';
         return `
           <button type="button" class="dm-photo-card flex items-center gap-2.5 px-4 py-2.5 rounded-3xl text-sm font-semibold border transition cursor-pointer ${
@@ -7287,7 +7296,7 @@
               <i data-lucide="${exhausted ? 'check' : (isVideo ? 'play' : 'camera')}" class="w-3.5 h-3.5"></i>
             </span>
             <span>${exhausted ? 'Opened' : label}</span>
-            ${!exhausted ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isMine ? 'bg-white/20' : 'bg-zinc-200 text-zinc-600'}">${limit}x${isHd ? ' HD' : ''}</span>` : ''}
+            ${!exhausted ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isMine ? 'bg-white/20' : 'bg-zinc-200 text-zinc-600'}">${limit === 0 ? '∞' : limit + 'x'}${isHd ? ' HD' : ''}</span>` : ''}
           </button>
         `;
       }
@@ -11508,10 +11517,10 @@
     });
     document.querySelectorAll('.dm-cam-limit-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        dmCamState.limit = Number(btn.dataset.limit) === 2 ? 2 : 1;
+        dmCamState.limit = Number(btn.dataset.limit);
         document.querySelectorAll('.dm-cam-limit-btn').forEach(b => {
           const act = Number(b.dataset.limit) === dmCamState.limit;
-          b.className = `dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold ${act ? 'bg-[#0095F6] text-white' : 'bg-white/15 text-white'}`;
+          b.className = `dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 ${act ? 'bg-[#0095F6] text-white' : 'bg-white/15 text-white'}`;
         });
       });
     });
@@ -11581,8 +11590,10 @@
     document.getElementById('dm-cam-retake')?.addEventListener('click', resetDmCamPreviewUi);
     document.getElementById('dm-cam-hd-toggle')?.addEventListener('click', e => {
       dmCamState.hd = !dmCamState.hd;
-      e.currentTarget.textContent = dmCamState.hd ? 'HD: ON' : 'HD: OFF';
-      e.currentTarget.className = `px-3 py-2 rounded-full text-white text-xs font-bold ${dmCamState.hd ? 'bg-emerald-500' : 'bg-zinc-700'}`;
+      e.currentTarget.innerHTML = dmCamState.hd
+        ? 'HD<span class="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-white text-black text-[9px] font-black flex items-center justify-center">✓</span>'
+        : 'HD';
+      e.currentTarget.className = `relative px-2.5 py-1 rounded-md text-xs font-extrabold tracking-tight border ${dmCamState.hd ? 'bg-zinc-950 border-white text-white' : 'bg-transparent border-zinc-500 text-zinc-400'}`;
     });
     document.getElementById('dm-cam-send')?.addEventListener('click', async () => {
       const blob = dmCamState.capturedBlob;
@@ -11617,17 +11628,19 @@
     document.getElementById('dm-gal-close')?.addEventListener('click', () => document.getElementById('dm-gallery-modal')?.classList.add('hidden'));
     document.querySelectorAll('.dm-gal-limit-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        dmGalState.limit = Number(btn.dataset.limit) === 2 ? 2 : 1;
+        dmGalState.limit = Number(btn.dataset.limit);
         document.querySelectorAll('.dm-gal-limit-btn').forEach(b => {
           const act = Number(b.dataset.limit) === dmGalState.limit;
-          b.className = `dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold ${act ? 'bg-[#0095F6] text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200'}`;
+          b.className = `dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 ${act ? 'bg-[#0095F6] text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200'}`;
         });
       });
     });
     document.getElementById('dm-gal-hd-btn')?.addEventListener('click', e => {
       dmGalState.hd = !dmGalState.hd;
-      e.currentTarget.textContent = dmGalState.hd ? 'HD ON' : 'HD OFF';
-      e.currentTarget.className = `px-2.5 py-1 rounded-full text-white text-[11px] font-bold ${dmGalState.hd ? 'bg-emerald-500' : 'bg-zinc-600'}`;
+      e.currentTarget.innerHTML = dmGalState.hd
+        ? 'HD<span class="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-zinc-950 text-white border border-white text-[9px] flex items-center justify-center">✓</span>'
+        : 'HD';
+      e.currentTarget.className = `relative px-2 py-0.5 rounded-md text-[11px] font-black tracking-tight border ${dmGalState.hd ? 'bg-zinc-950 text-white border-zinc-950' : 'bg-white text-zinc-400 border-zinc-300'}`;
       const sBtn = document.getElementById('dm-gal-send-btn');
       if (sBtn) sBtn.textContent = dmGalState.hd ? 'Send HD' : 'Send';
     });
