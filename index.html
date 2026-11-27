@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <style>html, body { overflow-x: clip; touch-action: manipulation; }</style>
+  <style>html { height: auto; } body { overflow-x: clip; min-height: 100dvh; touch-action: manipulation; }</style>
   <title>SNAPGRAM — Interactive Social Media Platform</title>
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4755,7 +4755,10 @@
           conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
           conv.seen = 'Delivered';
           if (conv.isGroup) {
-            const payload = `__GRP_MSG__|${conv.id}|${conv.title}|${(conv.members || []).join(',')}|${msgText}`;
+            const cmid = 'gm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+            const lastM = conv.messages[conv.messages.length - 1];
+            if (lastM) lastM.clientMsgId = cmid;
+            const payload = `__GRP_MSG__|${conv.id}|${conv.title}|${(conv.members || []).join(',')}|${cmid}|${msgText}`;
             (conv.members || []).filter(m => m !== state.currentUser.username).forEach(mem => saveMessageToSupabase(mem, payload));
             upsertLocalGroup(conv);
           } else {
@@ -6269,8 +6272,8 @@
       const mobNav = document.getElementById('mobile-nav');
       if (mobNav) mobNav.style.display = isDmThreadMobile ? 'none' : '';
       const lockMobDm = isDmThreadMobile && window.innerWidth < 768;
-      document.documentElement.style.overflowY = lockMobDm ? 'hidden' : 'auto';
-      document.body.style.overflowY = lockMobDm ? 'hidden' : 'auto';
+      document.documentElement.style.overflowY = lockMobDm ? 'hidden' : '';
+      document.body.style.overflowY = lockMobDm ? 'hidden' : '';
       document.body.style.position = lockMobDm ? 'fixed' : '';
       document.body.style.inset = lockMobDm ? '0' : '';
       document.body.style.width = lockMobDm ? '100%' : '';
@@ -8841,6 +8844,15 @@
 
     const shareSheetState = { kind: 'post', item: null, selected: new Set(), search: '' };
 
+    function getUnsentSigsSet() {
+      try { return new Set(JSON.parse(localStorage.getItem('snapgram_unsent_sigs_' + getChatStorageUser()) || '[]')); } catch { return new Set(); }
+    }
+    function addUnsentSig(sig) {
+      if (!sig) return;
+      const s = getUnsentSigsSet();
+      s.add(String(sig));
+      localStorage.setItem('snapgram_unsent_sigs_' + getChatStorageUser(), JSON.stringify([...s]));
+    }
     function getDeletedMsgIdsSet() {
       try { return new Set(JSON.parse(localStorage.getItem('snapgram_deleted_msg_ids_' + getChatStorageUser()) || '[]')); } catch { return new Set(); }
     }
@@ -9005,21 +9017,41 @@
     document.getElementById('msg-act-unsend')?.addEventListener('click', async () => {
       const conv = state.conversations.find(c => c.id === state.activeConvId);
       const mid = activeActionMsgId;
+      const targetMsg = conv?.messages.find(m => String(m.id) === String(mid));
       if (conv && mid != null) {
+        if (targetMsg) {
+          addUnsentSig(targetMsg.clientMsgId || `${targetMsg.sender}|${targetMsg.text}`);
+        }
         conv.messages = conv.messages.filter(m => String(m.id) !== String(mid));
         addDeletedMsgId(mid);
+        if (conv.isGroup) upsertLocalGroup(conv);
       }
       closeMsgActionsModal();
       render();
       showToast('Message unsent for everyone');
       const cfg = loadSupaConfig();
-      if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken && mid && !String(mid).startsWith('m')) {
+      if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken) {
         try {
           const fresh = await ensureFreshSupaToken();
-          await fetch(`${cfg.url}/rest/v1/snapgram_messages?id=eq.${encodeURIComponent(mid)}`, {
-            method: 'DELETE',
-            headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}` }
-          });
+          if (mid && !String(mid).startsWith('m')) {
+            await fetch(`${cfg.url}/rest/v1/snapgram_messages?id=eq.${encodeURIComponent(mid)}`, {
+              method: 'DELETE',
+              headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}` }
+            });
+          } else if (targetMsg) {
+            const me = state.currentUser.username;
+            if (targetMsg.clientMsgId) {
+              await fetch(`${cfg.url}/rest/v1/snapgram_messages?sender_username=eq.${encodeURIComponent(me)}&text=like.*${encodeURIComponent(targetMsg.clientMsgId)}*`, {
+                method: 'DELETE',
+                headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}` }
+              });
+            } else {
+              await fetch(`${cfg.url}/rest/v1/snapgram_messages?sender_username=eq.${encodeURIComponent(me)}&text=eq.${encodeURIComponent(targetMsg.text)}`, {
+                method: 'DELETE',
+                headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}` }
+              });
+            }
+          }
         } catch {}
       }
     });
@@ -9371,8 +9403,9 @@
         const deletedMap = getDeletedChatsMap();
         const deletedMsgIdsSet = getDeletedMsgIdsSet();
         const convMap = {};
+        const unsentSigs = getUnsentSigsSet();
         getSavedGroupsList().forEach(g => {
-          convMap[g.id] = { ...g, isGroup: true, messages: g.messages || [] };
+          convMap[g.id] = { ...g, isGroup: true, messages: [] };
         });
         rows.forEach(m => {
           const peer = m.sender_username === me ? m.recipient_username : m.sender_username;
@@ -9392,7 +9425,7 @@
               messages: []
             };
           }
-          if (deletedMsgIdsSet.has(String(m.id))) return;
+          if (deletedMsgIdsSet.has(String(m.id)) || unsentSigs.has(`${m.sender_username}|${m.text}`)) return;
           if (typeof m.text === 'string' && m.text.startsWith('__CALL__|')) {
             handleIncomingCallSignalRow(m);
             return;
@@ -9405,13 +9438,18 @@
             const gid = gparts[1];
             const gname = gparts[2] || 'Group Chat';
             const gmembers = (gparts[3] || '').split(',').filter(Boolean);
-            const gtxt = gparts.slice(4).join('|');
+            const hasCmid = gparts.length >= 6 && gparts[4].startsWith('gm_');
+            const cmid = hasCmid ? gparts[4] : `${m.sender_username}|${gparts.slice(4).join('|')}|${new Date(m.created_at).getMinutes()}`;
+            const gtxt = hasCmid ? gparts.slice(5).join('|') : gparts.slice(4).join('|');
+            if (unsentSigs.has(cmid) || deletedMsgIdsSet.has(String(cmid))) return;
             if (!convMap[gid]) {
               convMap[gid] = { id: gid, isGroup: true, box: 'primary', title: gname, subtitle: `${gmembers.length} members`, avatar: '', members: gmembers, online: false, seen: '', messages: [] };
               upsertLocalGroup(convMap[gid]);
             }
+            if (convMap[gid].messages.some(x => x.clientMsgId === cmid)) return;
             convMap[gid].messages.push({
               id: m.id,
+              clientMsgId: cmid,
               sender: m.sender_username,
               text: gtxt,
               time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -12746,6 +12784,41 @@
         showToast(`Reel quality set to ${uploadState.reelQuality}`);
       });
     });
+
+    // Horizontal Swipe Navigation across main tabs (Home -> Search -> Reels -> Create -> Profile)
+    (() => {
+      let sx = 0, sy = 0, swiping = false;
+      const el = document.getElementById('main-content');
+      if (!el) return;
+      el.addEventListener('touchstart', e => {
+        if (!e.touches || e.touches.length !== 1) return;
+        if (e.target.closest('.overflow-x-auto, input, textarea, canvas, #chat-messages-area, #story-modal')) { swiping = false; return; }
+        sx = e.touches[0].clientX;
+        sy = e.touches[0].clientY;
+        swiping = true;
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (!swiping || !e.changedTouches || !e.changedTouches.length) return;
+        swiping = false;
+        if (state.activeTab === 'messages') return;
+        const dx = e.changedTouches[0].clientX - sx;
+        const dy = e.changedTouches[0].clientY - sy;
+        if (Math.abs(dx) < 75 || Math.abs(dx) < Math.abs(dy) * 1.8) return;
+        const order = ['home', 'explore', 'reels', 'create', 'profile'];
+        const curIdx = order.indexOf(state.activeTab);
+        if (curIdx < 0) return;
+        const nextIdx = dx < 0 ? curIdx + 1 : curIdx - 1;
+        if (nextIdx < 0 || nextIdx >= order.length) return;
+        const target = order[nextIdx];
+        if (target === 'create') {
+          if (typeof openCreateModal === 'function') openCreateModal('post');
+          return;
+        }
+        state.activeTab = target;
+        render();
+        window.scrollTo(0, 0);
+      }, { passive: true });
+    })();
 
     window.addEventListener('DOMContentLoaded', () => { render(); if (state.isAuthenticated) { ensureFreshSupaToken().then(() => { syncUserActivity('login'); loadRemoteMedia(); loadMyMessages(); loadOwnFollowData(); loadExploreUsers(); loadNotifications(); if (state.currentUser.isAdmin) loadAdminData(); }).catch(() => {}); } });
   
