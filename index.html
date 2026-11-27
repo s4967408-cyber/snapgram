@@ -1054,17 +1054,99 @@
     </div>
   </div>
 
-  <!-- New Message User Search Modal -->
-  <div id="new-chat-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl max-h-[80vh] flex flex-col">
-      <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base">New Message</h3>
-        <button id="close-new-chat" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+  <!-- Instagram-Style New Message Modal (Matches 15918.png) -->
+  <div id="new-chat-modal" class="hidden fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="bg-white dark:bg-zinc-950 sm:border border-zinc-200 dark:border-zinc-800 w-full h-[100dvh] sm:h-[82vh] sm:max-w-md sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+      <div class="px-4 py-3.5 flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-900 shrink-0">
+        <button id="close-new-chat" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Back"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+        <h3 class="font-bold text-lg">New message</h3>
       </div>
-      <input id="new-chat-search" type="text" placeholder="Search @username..." class="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none" />
-      <div id="new-chat-users-list" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 space-y-1">
+      <div class="px-4 py-2.5 flex items-center gap-2.5 border-b border-zinc-100 dark:border-zinc-900 shrink-0">
+        <span class="text-sm font-semibold text-zinc-500">To:</span>
+        <input id="new-chat-search" type="text" placeholder="Search" class="flex-1 bg-transparent text-sm focus:outline-none text-zinc-900 dark:text-white" />
+      </div>
+      <div class="px-4 pt-3 pb-1 shrink-0">
+        <button id="open-new-group-btn" type="button" class="w-full flex items-center gap-3.5 py-2 px-1 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition text-left">
+          <span class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white flex items-center justify-center shrink-0">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </span>
+          <span class="text-sm font-semibold">Group chat</span>
+        </button>
+      </div>
+      <div class="px-4 pt-3 pb-1.5 shrink-0">
+        <p class="text-xs font-bold text-zinc-900 dark:text-white">Suggested</p>
+      </div>
+      <div id="new-chat-users-list" class="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
         <p class="text-xs text-zinc-500 py-4 text-center">Loading users...</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Instagram-Style New Group Chat Modal (Matches 15919.png) -->
+  <div id="new-group-modal" class="hidden fixed inset-0 z-[82] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="bg-white dark:bg-zinc-950 sm:border border-zinc-200 dark:border-zinc-800 w-full h-[100dvh] sm:h-[84vh] sm:max-w-md sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+      <div class="px-4 py-3.5 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900 shrink-0">
+        <div class="flex items-center gap-3">
+          <button id="back-to-new-chat" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Back"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+          <h3 class="font-bold text-lg">New group chat</h3>
+        </div>
+        <button id="create-group-confirm-btn" type="button" disabled class="px-3.5 py-1.5 rounded-full bg-[#0095F6] disabled:opacity-40 text-white text-xs font-bold">Create</button>
+      </div>
+      <div class="px-4 py-3 space-y-2.5 shrink-0">
+        <div class="flex items-center gap-3">
+          <label for="new-group-icon-input" class="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center overflow-hidden cursor-pointer shrink-0" title="Choose group icon">
+            <img id="new-group-icon-preview" src="" alt="" class="hidden w-full h-full object-cover" />
+            <i id="new-group-icon-placeholder" data-lucide="camera" class="w-5 h-5 text-zinc-500"></i>
+          </label>
+          <input id="new-group-icon-input" type="file" accept="image/*" class="hidden" />
+          <input id="new-group-name-input" type="text" placeholder="Group name (optional)" class="flex-1 px-3.5 py-2.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none" />
+        </div>
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-2.5 text-zinc-400"></i>
+          <input id="new-group-search" type="text" placeholder="Search" class="w-full pl-9 pr-3 py-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-sm focus:outline-none" />
+        </div>
+        <button id="create-group-link-btn" type="button" class="w-full flex items-center justify-between py-2 px-1 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition text-left">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"><i data-lucide="link" class="w-5 h-5"></i></span>
+            <div>
+              <p class="text-sm font-semibold">Create group with a link</p>
+              <p class="text-[11px] text-zinc-500">Anyone with the link can join the group.</p>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-[#0095F6] text-white text-[10px] font-bold">New</span>
+        </button>
+      </div>
+      <div class="px-4 pb-1.5 flex items-center justify-between shrink-0">
+        <p class="text-xs font-bold text-zinc-900 dark:text-white">Suggested</p>
+        <p id="new-group-sel-count" class="text-[11px] font-semibold text-[#0095F6]"></p>
+      </div>
+      <div id="new-group-users-list" class="flex-1 overflow-y-auto px-3 pb-6 space-y-1">
+        <p class="text-xs text-zinc-500 py-4 text-center">Loading followers &amp; following...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group Info & Edit Name / Icon Modal -->
+  <div id="group-info-modal" class="hidden fixed inset-0 z-[84] bg-black/55 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl max-h-[82vh] flex flex-col">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold">Group Details</h3>
+        <button id="close-group-info" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="flex items-center gap-3">
+        <label for="edit-group-icon-input" class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 border border-zinc-200 dark:border-zinc-700" title="Change group icon">
+          <img id="edit-group-icon-preview" src="" alt="" class="hidden w-full h-full object-cover" />
+          <i id="edit-group-icon-placeholder" data-lucide="users" class="w-6 h-6 text-zinc-500"></i>
+        </label>
+        <input id="edit-group-icon-input" type="file" accept="image/*" class="hidden" />
+        <input id="edit-group-name-input" type="text" placeholder="Group name" class="flex-1 px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none" />
+        <button id="save-group-info-btn" type="button" class="px-3.5 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-bold">Save</button>
+      </div>
+      <div class="flex-1 overflow-y-auto space-y-1.5">
+        <p class="text-xs font-bold text-zinc-500 uppercase">Members</p>
+        <div id="group-info-members" class="space-y-1.5"></div>
+      </div>
+      <button id="leave-group-btn" type="button" class="w-full py-2.5 rounded-xl bg-red-500/10 text-red-500 text-xs font-bold">Leave Group</button>
     </div>
   </div>
 
@@ -2503,7 +2585,7 @@
                   <button id="chat-back-btn" class="md:hidden p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 shrink-0" aria-label="Back">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                   </button>
-                  <button type="button" class="open-user-profile flex items-center gap-2.5 min-w-0 text-left group" data-username="${conv.title}">
+                  <button type="button" class="${conv.isGroup ? 'open-group-info-btn' : 'open-user-profile'} flex items-center gap-2.5 min-w-0 text-left group" data-conv-id="${conv.id}" data-username="${conv.title}">
                     <div class="relative shrink-0">
                       ${renderAvatar(peerAvatar, conv.title, 'w-9 h-9')}
                       ${conv.online ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
@@ -2513,7 +2595,7 @@
                         <span class="truncate">${peerFullName}</span>
                         <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
                       </p>
-                      <p class="text-[11px] text-zinc-500 truncate">@${conv.title}</p>
+                      <p class="text-[11px] text-zinc-500 truncate">${conv.isGroup ? ((conv.members || []).length + ' members · Tap for info') : ('@' + conv.title)}</p>
                     </div>
                   </button>
                 </div>
@@ -2757,7 +2839,12 @@
                     </p>
                     <p class="text-[11px] text-zinc-400 mt-0.5">${n.dateTime || n.time}</p>
                   </div>
-                  ${isFollowNotif && actorLower !== (state.currentUser.username || '').toLowerCase() ? `
+                  ${n.type === 'group_invite' ? `
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <button type="button" class="grp-inv-confirm px-3 py-1 rounded-lg bg-[#0095F6] text-white text-xs font-semibold" data-notif-id="${n.id}" data-group-id="${n.targetId || ''}" data-from="${n.actor}">Confirm</button>
+                      <button type="button" class="grp-inv-delete px-3 py-1 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs font-semibold" data-notif-id="${n.id}">Delete</button>
+                    </div>
+                  ` : ''}${isFollowNotif && actorLower !== (state.currentUser.username || '').toLowerCase() ? `
                     <button type="button" class="notif-follow-back-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                       alreadyFollowing ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
                       : alreadyRequested ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
@@ -4264,6 +4351,9 @@
         });
       });
 
+      document.querySelectorAll('.open-group-info-btn').forEach(btn => {
+        btn.addEventListener('click', () => openGroupInfoModal(btn.dataset.convId));
+      });
       document.querySelectorAll('.chat-call-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const conv = state.conversations.find(c => c.id === state.activeConvId);
@@ -4481,10 +4571,39 @@
           const msgText = input.value.trim();
           conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
           conv.seen = 'Delivered';
-          saveMessageToSupabase(conv.title, msgText);
+          if (conv.isGroup) {
+            const payload = `__GRP_MSG__|${conv.id}|${conv.title}|${(conv.members || []).join(',')}|${msgText}`;
+            (conv.members || []).filter(m => m !== state.currentUser.username).forEach(mem => saveMessageToSupabase(mem, payload));
+            upsertLocalGroup(conv);
+          } else {
+            saveMessageToSupabase(conv.title, msgText);
+          }
           render();
         });
       }
+
+      document.querySelectorAll('.grp-inv-confirm').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const gid = btn.dataset.groupId || ('grp_' + Date.now());
+          const fromUser = btn.dataset.from || 'Group';
+          const grpObj = { id: gid, isGroup: true, box: 'primary', title: `${fromUser}'s Group`, subtitle: 'Joined group', avatar: '', members: [fromUser, state.currentUser.username], online: false, seen: '', messages: [] };
+          upsertLocalGroup(grpObj);
+          if (!state.conversations.some(c => c.id === gid)) state.conversations.unshift(grpObj);
+          state.notifications = state.notifications.filter(x => String(x.id) !== String(btn.dataset.notifId));
+          state.activeConvId = gid;
+          state.mobileChatOpen = true;
+          state.activeTab = 'messages';
+          showToast('Joined group chat ✓');
+          render();
+        });
+      });
+      document.querySelectorAll('.grp-inv-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.notifications = state.notifications.filter(x => String(x.id) !== String(btn.dataset.notifId));
+          showToast('Group invite deleted');
+          render();
+        });
+      });
 
       document.querySelectorAll('.notif-follow-back-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -4798,6 +4917,228 @@
         });
       });
     }
+
+    async function openNewGroupModal() {
+      document.getElementById('new-chat-modal')?.classList.add('hidden');
+      document.getElementById('new-group-modal')?.classList.remove('hidden');
+      newGroupState.selected = new Set();
+      newGroupState.iconDataUrl = '';
+      newGroupState.search = '';
+      const nameInp = document.getElementById('new-group-name-input');
+      const srchInp = document.getElementById('new-group-search');
+      const prevImg = document.getElementById('new-group-icon-preview');
+      const prevPh = document.getElementById('new-group-icon-placeholder');
+      if (nameInp) nameInp.value = '';
+      if (srchInp) srchInp.value = '';
+      prevImg?.classList.add('hidden');
+      prevPh?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+      await loadOwnFollowData();
+      renderNewGroupUsers();
+    }
+
+    function renderNewGroupUsers() {
+      const listEl = document.getElementById('new-group-users-list');
+      const cBtn = document.getElementById('create-group-confirm-btn');
+      const cntEl = document.getElementById('new-group-sel-count');
+      if (!listEl) return;
+
+      const allowedSet = new Set([
+        ...(state.ownFollowingUsernames || []).map(x => x.toLowerCase()),
+        ...(state.ownFollowerUsernames || []).map(x => x.toLowerCase())
+      ]);
+      const allowedIds = new Set([...(state.ownFollowingIds || []), ...(state.ownFollowerIds || [])]);
+      const q = (newGroupState.search || '').trim().toLowerCase();
+
+      const pool = cachedDirectoryUsers.filter(u => {
+        const un = (u.username || '').toLowerCase();
+        if (!allowedSet.has(un) && !allowedIds.has(u.id)) return false;
+        if (!q) return true;
+        return un.includes(q) || (u.full_name || '').toLowerCase().includes(q);
+      });
+
+      if (!pool.length) {
+        listEl.innerHTML = '<p class="text-xs text-zinc-500 py-8 text-center">You can add people whom you follow or who follow you.</p>';
+      } else {
+        listEl.innerHTML = pool.map(u => {
+          const isSel = newGroupState.selected.has(u.username);
+          return `
+            <button type="button" class="grp-pick-user w-full text-left py-2.5 px-2 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-between gap-3 transition" data-uname="${u.username}">
+              <div class="flex items-center gap-3 min-w-0">
+                ${renderAvatar(u.avatar_url, u.username, 'w-11 h-11 shrink-0')}
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold truncate flex items-center gap-1">
+                    <span>${u.full_name || u.username}</span>
+                    ${u.is_private ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-medium">Private</span>' : ''}
+                  </p>
+                  <p class="text-xs text-zinc-500 truncate">@${u.username}</p>
+                </div>
+              </div>
+              <span class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'bg-[#0095F6] border-[#0095F6] text-white' : 'border-zinc-300 dark:border-zinc-700'}">
+                ${isSel ? '✓' : ''}
+              </span>
+            </button>
+          `;
+        }).join('');
+
+        listEl.querySelectorAll('.grp-pick-user').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const un = btn.dataset.uname;
+            if (newGroupState.selected.has(un)) newGroupState.selected.delete(un);
+            else newGroupState.selected.add(un);
+            renderNewGroupUsers();
+          });
+        });
+      }
+
+      const n = newGroupState.selected.size;
+      if (cBtn) {
+        cBtn.disabled = n === 0;
+        cBtn.textContent = n > 0 ? `Create (${n})` : 'Create';
+      }
+      if (cntEl) cntEl.textContent = n > 0 ? `${n} selected` : '';
+    }
+
+    document.getElementById('open-new-group-btn')?.addEventListener('click', openNewGroupModal);
+    document.getElementById('back-to-new-chat')?.addEventListener('click', () => {
+      document.getElementById('new-group-modal')?.classList.add('hidden');
+      document.getElementById('new-chat-modal')?.classList.remove('hidden');
+    });
+    document.getElementById('new-group-search')?.addEventListener('input', e => {
+      newGroupState.search = e.target.value;
+      renderNewGroupUsers();
+    });
+    document.getElementById('new-group-icon-input')?.addEventListener('change', e => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = 256; c.height = 256;
+          c.getContext('2d').drawImage(img, 0, 0, 256, 256);
+          newGroupState.iconDataUrl = c.toDataURL('image/jpeg', 0.8);
+          const p = document.getElementById('new-group-icon-preview');
+          if (p) { p.src = newGroupState.iconDataUrl; p.classList.remove('hidden'); }
+          document.getElementById('new-group-icon-placeholder')?.classList.add('hidden');
+        };
+        img.src = ev.target.result;
+      };
+      r.readAsDataURL(f);
+    });
+    document.getElementById('create-group-link-btn')?.addEventListener('click', () => {
+      const gName = (document.getElementById('new-group-name-input')?.value || '').trim() || 'Snapgram Group';
+      const gid = 'g_' + Date.now();
+      const link = `${window.location.origin}${window.location.pathname}?join_group=${encodeURIComponent(gid)}&name=${encodeURIComponent(gName)}`;
+      navigator.clipboard?.writeText(link).catch(() => {});
+      showToast('Group invite link copied ✓');
+    });
+    document.getElementById('create-group-confirm-btn')?.addEventListener('click', async () => {
+      if (!newGroupState.selected.size) return;
+      const rawName = (document.getElementById('new-group-name-input')?.value || '').trim();
+      const selectedArr = [...newGroupState.selected];
+      const publicMembers = [state.currentUser.username];
+      const privateInvites = [];
+      for (const uname of selectedArr) {
+        const uObj = cachedDirectoryUsers.find(u => u.username === uname);
+        if (uObj?.is_private) privateInvites.push(uname);
+        else publicMembers.push(uname);
+      }
+      const grpId = 'grp_' + Date.now();
+      const grpName = rawName || selectedArr.slice(0, 3).join(', ');
+      const grpObj = {
+        id: grpId,
+        isGroup: true,
+        box: 'primary',
+        title: grpName,
+        subtitle: `${publicMembers.length} members`,
+        avatar: newGroupState.iconDataUrl || '',
+        members: publicMembers,
+        pendingMembers: privateInvites,
+        online: false,
+        seen: '',
+        messages: []
+      };
+      upsertLocalGroup(grpObj);
+      if (!state.conversations.some(c => c.id === grpId)) state.conversations.unshift(grpObj);
+      state.activeConvId = grpId;
+      state.mobileChatOpen = true;
+      state.activeTab = 'messages';
+      document.getElementById('new-group-modal')?.classList.add('hidden');
+
+      for (const privU of privateInvites) {
+        createNotification(privU, 'group_invite', `wants to add you to group "${grpName}"`, grpId);
+        await saveMessageToSupabase(privU, `__GRP_INVITE__|${grpId}|${grpName}|${publicMembers.join(',')}`);
+      }
+      if (privateInvites.length) showToast(`Group created! Invite sent to ${privateInvites.length} private account(s)`);
+      else showToast(`Group "${grpName}" created ✓`);
+      render();
+    });
+
+    function openGroupInfoModal(convId) {
+      const conv = state.conversations.find(c => c.id === convId);
+      if (!conv || !conv.isGroup) return;
+      const modal = document.getElementById('group-info-modal');
+      modal.dataset.convId = conv.id;
+      document.getElementById('edit-group-name-input').value = conv.title || '';
+      const pImg = document.getElementById('edit-group-icon-preview');
+      const pPh = document.getElementById('edit-group-icon-placeholder');
+      if (conv.avatar) { pImg.src = conv.avatar; pImg.classList.remove('hidden'); pPh.classList.add('hidden'); }
+      else { pImg.classList.add('hidden'); pPh.classList.remove('hidden'); }
+      const memEl = document.getElementById('group-info-members');
+      memEl.innerHTML = (conv.members || []).map(m => `<div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold flex items-center justify-between"><span>@${m}</span><span class="text-emerald-500">Member</span></div>`).join('') +
+        (conv.pendingMembers || []).map(m => `<div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold flex items-center justify-between"><span>@${m}</span><span class="text-amber-500">Pending (Private)</span></div>`).join('');
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    document.getElementById('close-group-info')?.addEventListener('click', () => document.getElementById('group-info-modal')?.classList.add('hidden'));
+    document.getElementById('edit-group-icon-input')?.addEventListener('change', e => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = 256; c.height = 256;
+          c.getContext('2d').drawImage(img, 0, 0, 256, 256);
+          const dataUrl = c.toDataURL('image/jpeg', 0.82);
+          const modal = document.getElementById('group-info-modal');
+          modal.dataset.newIcon = dataUrl;
+          const pImg = document.getElementById('edit-group-icon-preview');
+          if (pImg) { pImg.src = dataUrl; pImg.classList.remove('hidden'); }
+          document.getElementById('edit-group-icon-placeholder')?.classList.add('hidden');
+        };
+        img.src = ev.target.result;
+      };
+      r.readAsDataURL(f);
+    });
+    document.getElementById('save-group-info-btn')?.addEventListener('click', () => {
+      const modal = document.getElementById('group-info-modal');
+      const cid = modal.dataset.convId;
+      const conv = state.conversations.find(c => c.id === cid);
+      if (conv) {
+        const newName = (document.getElementById('edit-group-name-input')?.value || '').trim();
+        if (newName) conv.title = newName;
+        if (modal.dataset.newIcon) { conv.avatar = modal.dataset.newIcon; delete modal.dataset.newIcon; }
+        upsertLocalGroup(conv);
+      }
+      modal.classList.add('hidden');
+      render();
+      showToast('Group updated ✓');
+    });
+    document.getElementById('leave-group-btn')?.addEventListener('click', () => {
+      const modal = document.getElementById('group-info-modal');
+      const cid = modal.dataset.convId;
+      saveSavedGroupsList(getSavedGroupsList().filter(g => g.id !== cid));
+      state.conversations = state.conversations.filter(c => c.id !== cid);
+      state.activeConvId = state.conversations[0]?.id || null;
+      state.mobileChatOpen = false;
+      modal.classList.add('hidden');
+      render();
+      showToast('Left group');
+    });
 
     const ACCOUNTS_KEY = 'snapgram_accounts_v1';
     const SESSION_KEY = 'snapgram_session_v1';
@@ -8496,6 +8837,9 @@
         const deletedMap = getDeletedChatsMap();
         const deletedMsgIdsSet = getDeletedMsgIdsSet();
         const convMap = {};
+        getSavedGroupsList().forEach(g => {
+          convMap[g.id] = { ...g, isGroup: true, messages: g.messages || [] };
+        });
         rows.forEach(m => {
           const peer = m.sender_username === me ? m.recipient_username : m.sender_username;
           const peerKey = (peer || '').toLowerCase();
@@ -8517,6 +8861,28 @@
           if (deletedMsgIdsSet.has(String(m.id))) return;
           if (typeof m.text === 'string' && m.text.startsWith('__CALL__|')) {
             handleIncomingCallSignalRow(m);
+            return;
+          }
+          if (typeof m.text === 'string' && m.text.startsWith('__GRP_INVITE__|')) {
+            return;
+          }
+          if (typeof m.text === 'string' && m.text.startsWith('__GRP_MSG__|')) {
+            const gparts = m.text.split('|');
+            const gid = gparts[1];
+            const gname = gparts[2] || 'Group Chat';
+            const gmembers = (gparts[3] || '').split(',').filter(Boolean);
+            const gtxt = gparts.slice(4).join('|');
+            if (!convMap[gid]) {
+              convMap[gid] = { id: gid, isGroup: true, box: 'primary', title: gname, subtitle: `${gmembers.length} members`, avatar: '', members: gmembers, online: false, seen: '', messages: [] };
+              upsertLocalGroup(convMap[gid]);
+            }
+            convMap[gid].messages.push({
+              id: m.id,
+              sender: m.sender_username,
+              text: gtxt,
+              time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              reaction: ''
+            });
             return;
           }
           convMap[peer].messages.push({
@@ -8558,6 +8924,22 @@
       } catch {}
     }
 
+    function getSavedGroupsList() {
+      try { return JSON.parse(localStorage.getItem('snapgram_groups_' + getChatStorageUser()) || '[]'); } catch { return []; }
+    }
+    function saveSavedGroupsList(arr) {
+      localStorage.setItem('snapgram_groups_' + getChatStorageUser(), JSON.stringify(arr));
+    }
+    function upsertLocalGroup(grp) {
+      const list = getSavedGroupsList();
+      const idx = list.findIndex(g => g.id === grp.id);
+      if (idx >= 0) list[idx] = { ...list[idx], ...grp };
+      else list.unshift(grp);
+      saveSavedGroupsList(list);
+    }
+
+    const newGroupState = { selected: new Set(), iconDataUrl: '', search: '' };
+
     let cachedDirectoryUsers = [];
     async function openNewChatModal() {
       document.getElementById('new-chat-modal').classList.remove('hidden');
@@ -8569,7 +8951,7 @@
       const cfg = loadSupaConfig();
       if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken) {
         try {
-          const res = await fetch(`${cfg.url}/rest/v1/snapgram_users?select=username,full_name,avatar_url,is_verified,is_blocked`, {
+          const res = await fetch(`${cfg.url}/rest/v1/snapgram_users?select=id,username,full_name,avatar_url,is_verified,is_blocked,is_private`, {
             headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}` }
           });
           if (res.ok) {
@@ -9174,6 +9556,9 @@
         const fIds = new Set(rows.filter(r => r.follower_id === meId && r.status === 'accepted').map(r => r.following_id));
         const pIds = new Set(rows.filter(r => r.follower_id === meId && r.status === 'pending').map(r => r.following_id));
         state.ownFollowingIds = [...fIds];
+        const flrIds = new Set(rows.filter(r => r.following_id === meId && r.status === 'accepted').map(r => r.follower_id));
+        state.ownFollowerIds = [...flrIds];
+        state.ownFollowerUsernames = rows.filter(r => r.following_id === meId && r.status === 'accepted').map(r => (r.follower_username || '').toLowerCase());
         state.ownFollowingUsernames = (state.exploreUsers || []).filter(u => fIds.has(u.id)).map(u => (u.username || '').toLowerCase());
         state.ownPendingUsernames = (state.exploreUsers || []).filter(u => pIds.has(u.id)).map(u => (u.username || '').toLowerCase());
         state.followRequests = rows
