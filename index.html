@@ -2,7 +2,8 @@
 <html lang="en" class="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <style>html, body { touch-action: pan-x pan-y; overscroll-behavior: none; }</style>
   <title>SNAPGRAM — Interactive Social Media Platform</title>
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1311,25 +1312,36 @@
     </div>
   </div>
 
-  <!-- Instagram-Style DM Camera Modal with Face Filters & Effects (Matches 15871.png) -->
-  <div id="dm-camera-modal" class="hidden fixed inset-0 z-[92] bg-black text-white flex flex-col justify-between overflow-hidden select-none">
+  <!-- Instagram-Style DM Camera Modal (No Zoom, Photo/Video + 1x/2x Limit) -->
+  <div id="dm-camera-modal" class="hidden fixed inset-0 h-[100dvh] z-[92] bg-black text-white flex flex-col justify-between overflow-hidden select-none">
     <!-- Top Bar -->
-    <div class="relative z-20 px-4 pt-4 pb-2 flex items-center justify-between">
-      <button id="dm-cam-close" type="button" class="p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm"><i data-lucide="x" class="w-6 h-6"></i></button>
-      <div class="px-3.5 py-1 rounded-full bg-black/45 backdrop-blur-md text-xs font-semibold">Message <span id="dm-cam-peer">User</span></div>
-      <button id="dm-cam-flash" type="button" class="p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm" title="Flash / Bright"><i data-lucide="zap" class="w-5 h-5"></i></button>
+    <div class="relative z-20 px-4 pt-3 pb-2 flex items-center justify-between shrink-0 bg-black/60">
+      <button id="dm-cam-close" type="button" class="p-2 rounded-full bg-white/10 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <div class="flex items-center gap-2">
+        <span class="px-3 py-1 rounded-full bg-white/10 text-xs font-semibold">Message <span id="dm-cam-peer">User</span></span>
+        <div class="flex bg-white/10 rounded-full p-0.5 text-[11px] font-bold">
+          <button id="dm-cam-mode-photo" type="button" class="px-2.5 py-1 rounded-full bg-white text-black">Photo</button>
+          <button id="dm-cam-mode-video" type="button" class="px-2.5 py-1 rounded-full text-white">Video</button>
+        </div>
+      </div>
+      <button id="dm-cam-flash" type="button" class="p-2 rounded-full bg-white/10 hover:bg-white/20" title="Flash / Bright"><i data-lucide="zap" class="w-5 h-5"></i></button>
     </div>
 
-    <!-- Live Camera / Captured Preview -->
-    <div class="relative flex-1 flex items-center justify-center overflow-hidden">
-      <video id="dm-cam-video" autoplay muted playsinline class="w-full h-full object-cover -scale-x-100"></video>
-      <img id="dm-cam-preview-img" src="" alt="Preview" class="hidden w-full h-full object-cover" />
-      <div id="dm-cam-ar-overlay" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-start pt-14 text-5xl"></div>
+    <!-- Live Camera / Captured Preview (object-contain prevents zoom) -->
+    <div class="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden bg-black">
+      <video id="dm-cam-video" autoplay muted playsinline class="w-full h-full object-contain -scale-x-100"></video>
+      <img id="dm-cam-preview-img" src="" alt="Preview" class="hidden w-full h-full object-contain" />
+      <video id="dm-cam-preview-vid" controls playsinline class="hidden w-full h-full object-contain"></video>
+      <div id="dm-cam-ar-overlay" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-start pt-10 text-5xl"></div>
+      <div id="dm-cam-rec-badge" class="hidden absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+        <span id="dm-cam-rec-time">0:00</span>
+      </div>
       <canvas id="dm-cam-canvas" class="hidden"></canvas>
     </div>
 
     <!-- Effects / Filters Bar -->
-    <div id="dm-cam-effects-strip" class="relative z-20 px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar bg-gradient-to-t from-black/80 to-transparent">
+    <div id="dm-cam-effects-strip" class="relative z-20 px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar bg-black/80 shrink-0">
       <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-pink-500 text-white" data-fx="none">Normal</button>
       <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="glow">✨ Bright Glow</button>
       <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="crown">👑 Crown</button>
@@ -1340,43 +1352,56 @@
       <button type="button" class="dm-cam-fx-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 text-white" data-fx="bw">🖤 B&amp;W</button>
     </div>
 
-    <!-- Bottom Shutter / Send Controls -->
-    <div id="dm-cam-controls-live" class="relative z-20 px-6 pb-8 pt-3 bg-black flex items-center justify-between">
+    <!-- Bottom Shutter / Send Controls (Always visible) -->
+    <div id="dm-cam-controls-live" class="relative z-20 px-6 pb-5 pt-2 bg-black flex items-center justify-between shrink-0">
       <button id="dm-cam-open-gallery" type="button" class="w-11 h-11 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center"><i data-lucide="image" class="w-5 h-5"></i></button>
-      <button id="dm-cam-shutter" type="button" class="w-20 h-20 rounded-full border-4 border-white p-1 flex items-center justify-center active:scale-95 transition">
-        <span class="w-full h-full rounded-full bg-white block"></span>
+      <button id="dm-cam-shutter" type="button" class="w-16 h-16 rounded-full border-4 border-white p-1 flex items-center justify-center active:scale-95 transition">
+        <span id="dm-cam-shutter-dot" class="w-full h-full rounded-full bg-white block transition"></span>
       </button>
       <button id="dm-cam-flip" type="button" class="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
     </div>
-    <div id="dm-cam-controls-preview" class="hidden relative z-20 px-5 pb-8 pt-3 bg-black flex items-center justify-between gap-3">
-      <button id="dm-cam-retake" type="button" class="px-4 py-2.5 rounded-full bg-white/15 text-xs font-bold">Retake</button>
-      <button id="dm-cam-hd-toggle" type="button" class="px-3 py-2 rounded-full bg-emerald-500 text-white text-xs font-bold">HD: ON</button>
-      <button id="dm-cam-send" type="button" class="flex-1 py-2.5 px-5 rounded-full bg-[#0095F6] text-white text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="send" class="w-4 h-4"></i> Send</button>
+    <div id="dm-cam-controls-preview" class="hidden relative z-20 px-4 pb-5 pt-2.5 bg-black space-y-2.5 shrink-0">
+      <!-- Strictly 2 options: 1x View once OR 2x Allow replay -->
+      <div class="flex items-center justify-center gap-2">
+        <button type="button" class="dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#0095F6] text-white" data-limit="1">1x View once</button>
+        <button type="button" class="dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/15 text-white" data-limit="2">2x Allow replay</button>
+      </div>
+      <div class="flex items-center justify-between gap-2.5">
+        <button id="dm-cam-retake" type="button" class="px-4 py-2.5 rounded-full bg-white/15 text-xs font-bold">Retake</button>
+        <button id="dm-cam-hd-toggle" type="button" class="px-3 py-2 rounded-full bg-emerald-500 text-white text-xs font-bold">HD: ON</button>
+        <button id="dm-cam-send" type="button" class="flex-1 py-2.5 px-5 rounded-full bg-[#0095F6] text-white text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="send" class="w-4 h-4"></i> Send</button>
+      </div>
     </div>
   </div>
 
-  <!-- DM Gallery Photo Picker + HD Toggle Modal -->
+  <!-- DM Gallery Photo & Video Picker + HD + 1x/2x View Limit Modal -->
   <div id="dm-gallery-modal" class="hidden fixed inset-0 z-[91] bg-black/55 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
-    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-5 space-y-3.5 shadow-2xl">
       <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold">Send Photo</h3>
+        <h3 class="text-base font-bold">Send Photo / Video</h3>
         <div class="flex items-center gap-2">
           <button id="dm-gal-hd-btn" type="button" class="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[11px] font-bold">HD ON</button>
           <button id="dm-gal-close" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
       </div>
-      <div id="dm-gal-preview-box" class="w-full h-64 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex flex-col items-center justify-center overflow-hidden border border-dashed border-zinc-300 dark:border-zinc-700">
+      <div id="dm-gal-preview-box" class="w-full h-56 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex flex-col items-center justify-center overflow-hidden border border-dashed border-zinc-300 dark:border-zinc-700">
         <img id="dm-gal-preview-img" src="" alt="" class="hidden w-full h-full object-contain bg-black" />
+        <video id="dm-gal-preview-vid" controls playsinline class="hidden w-full h-full object-contain bg-black"></video>
         <label id="dm-gal-pick-label" for="dm-gal-file-input" class="flex flex-col items-center gap-2 cursor-pointer p-6 text-center">
           <span class="w-12 h-12 rounded-full bg-[#0095F6]/15 text-[#0095F6] flex items-center justify-center"><i data-lucide="image-plus" class="w-6 h-6"></i></span>
-          <span class="text-sm font-semibold">Choose photo from Gallery</span>
-          <span class="text-[11px] text-zinc-500">Supports HD full-quality sending</span>
+          <span class="text-sm font-semibold">Choose Photo or Video</span>
+          <span class="text-[11px] text-zinc-500">Supports HD &amp; 1x / 2x view limit</span>
         </label>
-        <input id="dm-gal-file-input" type="file" accept="image/*" class="hidden" />
+        <input id="dm-gal-file-input" type="file" accept="image/*,video/*" class="hidden" />
+      </div>
+      <!-- Strictly 2 options: 1x View once OR 2x Allow replay -->
+      <div class="flex items-center gap-2">
+        <button type="button" class="dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold bg-[#0095F6] text-white" data-limit="1">1x View once</button>
+        <button type="button" class="dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200" data-limit="2">2x Allow replay</button>
       </div>
       <div class="flex items-center gap-2">
-        <label for="dm-gal-file-input" class="py-2.5 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold cursor-pointer">Change Photo</label>
-        <button id="dm-gal-send-btn" type="button" disabled class="flex-1 py-2.5 px-4 rounded-xl bg-[#0095F6] disabled:opacity-40 text-white text-sm font-bold">Send HD Photo</button>
+        <label for="dm-gal-file-input" class="py-2.5 px-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold cursor-pointer">Change</label>
+        <button id="dm-gal-send-btn" type="button" disabled class="flex-1 py-2.5 px-4 rounded-xl bg-[#0095F6] disabled:opacity-40 text-white text-sm font-bold">Send HD</button>
       </div>
     </div>
   </div>
@@ -2399,7 +2424,7 @@
       const myBubbleClass = themeCfg.myBubbleClass || 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white';
 
       return `
-        <div class="max-w-5xl mx-auto h-[calc(100dvh-3.5rem)] md:h-screen flex border-x border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+        <div class="max-w-5xl mx-auto ${state.mobileChatOpen ? 'h-[100dvh]' : 'h-[calc(100dvh-3.5rem)]'} md:h-screen flex border-x border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
           <!-- Instagram DM Inbox -->
           <aside class="${state.mobileChatOpen ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
             <div class="px-4 pt-4 pb-2 flex items-center justify-between">
@@ -2522,7 +2547,7 @@
                 ${conv.messages.map((m, idx) => {
                   const isMine = m.sender === state.currentUser.username;
                   const isLast = idx === conv.messages.length - 1;
-                  const isShareMsg = typeof m.text === 'string' && (m.text.startsWith('__SHARE__|') || m.text.startsWith('__PHOTO__|') || m.text.startsWith('__STICKER__|') || m.text.startsWith('__DRAW__|'));
+                  const isShareMsg = typeof m.text === 'string' && (m.text.startsWith('__SHARE__|') || m.text.startsWith('__PHOTO__|') || m.text.startsWith('__VIDEO__|') || m.text.startsWith('__STICKER__|') || m.text.startsWith('__DRAW__|'));
                   return `
                     <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'} relative z-10">
                       <div class="flex items-end gap-2 max-w-[82%] group">
@@ -4263,11 +4288,28 @@
           if (photoCard) {
             e.stopPropagation();
             const pUrl = photoCard.dataset.url || '';
-            if (pUrl) {
-              const body = document.getElementById('post-detail-body');
-              body.innerHTML = `<div class="bg-black w-full max-h-[80vh] flex items-center justify-center"><img src="${pUrl}" class="w-full max-h-[80vh] object-contain" /></div>`;
-              document.getElementById('post-detail-modal').classList.remove('hidden');
+            const mid = photoCard.dataset.msgId || '';
+            const kind = photoCard.dataset.kind || 'photo';
+            const limit = Number(photoCard.dataset.limit) === 2 ? 2 : 1;
+            const used = getDmMediaViewCount(mid);
+            if (used >= limit) {
+              showToast(`Already opened (${limit}x limit)`);
+              return;
             }
+            if (!pUrl || pUrl === '[object Object]') {
+              showToast('Media could not be loaded');
+              return;
+            }
+            incrementDmMediaViewCount(mid);
+            const body = document.getElementById('post-detail-body');
+            const isVid = kind === 'video' || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(pUrl) || pUrl.startsWith('data:video');
+            body.innerHTML = `<div class="bg-black w-full max-h-[82vh] flex items-center justify-center">${
+              isVid
+                ? `<video src="${pUrl}" controls autoplay playsinline class="w-full max-h-[82vh] object-contain"></video>`
+                : `<img src="${pUrl}" alt="Photo" class="w-full max-h-[82vh] object-contain" />`
+            }</div>`;
+            document.getElementById('post-detail-modal').classList.remove('hidden');
+            render();
             return;
           }
           const shareCard = e.target.closest('.shared-media-card');
@@ -5291,6 +5333,8 @@
       const mobHeader = document.getElementById('mobile-top-header');
       const isDmThreadMobile = state.activeTab === 'messages' && state.mobileChatOpen;
       if (mobHeader) mobHeader.style.display = (isReelsTab || isDmThreadMobile) ? 'none' : '';
+      const mobNav = document.getElementById('mobile-nav');
+      if (mobNav) mobNav.style.display = isDmThreadMobile ? 'none' : '';
       const ptrEl = document.getElementById('ptr-indicator');
       if (ptrEl) ptrEl.style.display = isReelsTab ? 'none' : '';
       const mainWrapper = document.getElementById('main-wrapper');
@@ -5298,7 +5342,7 @@
         mainWrapper.className = isReelsTab
           ? 'flex-1 md:pl-64 pb-14 md:pb-0 relative bg-black'
           : (state.activeTab === 'messages'
-            ? 'flex-1 md:pl-64 pb-14 md:pb-0 relative bg-white dark:bg-zinc-950'
+            ? (state.mobileChatOpen ? 'flex-1 md:pl-64 pb-0 relative bg-white dark:bg-zinc-950' : 'flex-1 md:pl-64 pb-14 md:pb-0 relative bg-white dark:bg-zinc-950')
             : 'flex-1 md:pl-64 pb-20 md:pb-10 relative');
       }
       const metaTheme = document.getElementById('meta-theme-color');
@@ -7165,16 +7209,30 @@
           </div>
         `;
       }
-      if (typeof txt === 'string' && (txt.startsWith('__PHOTO__|') || txt.startsWith('__DRAW__|'))) {
+      if (typeof txt === 'string' && (txt.startsWith('__PHOTO__|') || txt.startsWith('__VIDEO__|') || txt.startsWith('__DRAW__|'))) {
         const parts = txt.split('|');
+        const isVideo = txt.startsWith('__VIDEO__|');
         const isDraw = txt.startsWith('__DRAW__|');
-        const imgUrl = parts[1] || '';
+        const mediaUrl = parts[1] || '';
         const isHd = parts[2] === 'hd';
+        const limit = Number(parts[3]) === 2 ? 2 : 1;
+        const viewsUsed = getDmMediaViewCount(msgId);
+        const exhausted = viewsUsed >= limit;
+        const label = isVideo ? 'Video' : 'Photo';
         return `
-          <div class="dm-photo-card relative max-w-[225px] rounded-2xl overflow-hidden shadow-md border border-black/10 ${isDraw ? 'bg-white' : 'bg-zinc-900'} cursor-pointer" data-url="${imgUrl}">
-            <img src="${imgUrl}" alt="${isDraw ? 'Drawing' : 'Photo'}" class="w-full max-h-[300px] object-cover" />
-            ${isHd ? `<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-bold">HD</span>` : ''}
-          </div>
+          <button type="button" class="dm-photo-card flex items-center gap-2.5 px-4 py-2.5 rounded-3xl text-sm font-semibold border transition cursor-pointer ${
+            exhausted
+              ? 'bg-zinc-100 text-zinc-400 border-zinc-200'
+              : (isMine
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white border-transparent shadow-sm'
+                : 'bg-zinc-100 text-zinc-900 border-zinc-200 hover:bg-zinc-200')
+          }" data-msg-id="${msgId}" data-url="${mediaUrl}" data-kind="${isVideo ? 'video' : (isDraw ? 'draw' : 'photo')}" data-limit="${limit}">
+            <span class="w-7 h-7 rounded-full ${exhausted ? 'bg-zinc-200 text-zinc-400' : (isMine ? 'bg-white/25 text-white' : 'bg-[#0095F6] text-white')} flex items-center justify-center shrink-0">
+              <i data-lucide="${exhausted ? 'check' : (isVideo ? 'play' : 'camera')}" class="w-3.5 h-3.5"></i>
+            </span>
+            <span>${exhausted ? 'Opened' : label}</span>
+            ${!exhausted ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isMine ? 'bg-white/20' : 'bg-zinc-200 text-zinc-600'}">${limit}x${isHd ? ' HD' : ''}</span>` : ''}
+          </button>
         `;
       }
       if (typeof txt === 'string' && txt.startsWith('__STICKER__|')) {
@@ -11246,12 +11304,25 @@
       await saveMessageToSupabase(conv.title, msgText);
     }
 
+    function getDmMediaViewsMap() {
+      try { return JSON.parse(localStorage.getItem('snapgram_dm_views_' + getChatStorageUser()) || '{}'); } catch { return {}; }
+    }
+    function getDmMediaViewCount(msgId) {
+      return Number(getDmMediaViewsMap()[String(msgId)] || 0);
+    }
+    function incrementDmMediaViewCount(msgId) {
+      const m = getDmMediaViewsMap();
+      m[String(msgId)] = Number(m[String(msgId)] || 0) + 1;
+      localStorage.setItem('snapgram_dm_views_' + getChatStorageUser(), JSON.stringify(m));
+    }
+
     async function uploadDmImageToSupa(blob, filename) {
       let url = '';
       if (typeof uploadFileToSupabase === 'function' && state.currentUser.supaToken) {
         try {
           const f = new File([blob], filename, { type: blob.type || 'image/jpeg' });
-          url = await uploadFileToSupabase(f, 'dm', () => {});
+          const up = await uploadFileToSupabase(f, 'dm', () => {});
+          url = (up && typeof up === 'object') ? (up.publicUrl || '') : (typeof up === 'string' ? up : '');
         } catch {}
       }
       if (!url) {
@@ -11264,8 +11335,8 @@
       return url;
     }
 
-    // 1. DM Camera
-    const dmCamState = { stream: null, facing: 'user', fx: 'none', hd: true, capturedBlob: null };
+    // 1. DM Camera (Photo + Video + 1x/2x Limit + No Zoom)
+    const dmCamState = { stream: null, facing: 'user', fx: 'none', hd: true, mode: 'photo', limit: 1, capturedBlob: null, isVideoBlob: false, rec: null, chunks: [], recTimer: null, recSec: 0 };
     const DM_CAM_FILTERS = {
       none: { css: 'none', overlay: '' },
       glow: { css: 'brightness(1.25) contrast(1.05) saturate(1.12)', overlay: '' },
@@ -11281,8 +11352,8 @@
       if (dmCamState.stream) dmCamState.stream.getTracks().forEach(t => t.stop());
       try {
         dmCamState.stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: dmCamState.facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
-          audio: false
+          video: { facingMode: dmCamState.facing, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: dmCamState.mode === 'video'
         });
         const v = document.getElementById('dm-cam-video');
         if (v) v.srcObject = dmCamState.stream;
@@ -11291,17 +11362,29 @@
       }
     }
 
+    function resetDmCamPreviewUi() {
+      dmCamState.capturedBlob = null;
+      dmCamState.isVideoBlob = false;
+      document.getElementById('dm-cam-video')?.classList.remove('hidden');
+      document.getElementById('dm-cam-preview-img')?.classList.add('hidden');
+      document.getElementById('dm-cam-preview-vid')?.classList.add('hidden');
+      document.getElementById('dm-cam-controls-live')?.classList.remove('hidden');
+      document.getElementById('dm-cam-controls-preview')?.classList.add('hidden');
+      document.getElementById('dm-cam-effects-strip')?.classList.remove('hidden');
+      document.getElementById('dm-cam-rec-badge')?.classList.add('hidden');
+    }
+
     function openDmCameraModal() {
       const conv = state.conversations.find(c => c.id === state.activeConvId);
       const peerEl = document.getElementById('dm-cam-peer');
       if (peerEl) peerEl.textContent = conv?.title || 'User';
       dmCamState.fx = 'none';
-      dmCamState.capturedBlob = null;
-      document.getElementById('dm-cam-video')?.classList.remove('hidden');
-      document.getElementById('dm-cam-preview-img')?.classList.add('hidden');
-      document.getElementById('dm-cam-controls-live')?.classList.remove('hidden');
-      document.getElementById('dm-cam-controls-preview')?.classList.add('hidden');
-      document.getElementById('dm-cam-effects-strip')?.classList.remove('hidden');
+      dmCamState.mode = 'photo';
+      dmCamState.limit = 1;
+      resetDmCamPreviewUi();
+      document.getElementById('dm-cam-mode-photo').className = 'px-2.5 py-1 rounded-full bg-white text-black';
+      document.getElementById('dm-cam-mode-video').className = 'px-2.5 py-1 rounded-full text-white';
+      document.getElementById('dm-cam-shutter-dot').className = 'w-full h-full rounded-full bg-white block transition';
       document.getElementById('dm-cam-ar-overlay').innerHTML = '';
       document.getElementById('dm-cam-video').style.filter = 'none';
       document.getElementById('dm-camera-modal')?.classList.remove('hidden');
@@ -11310,9 +11393,26 @@
     }
 
     function closeDmCameraModal() {
+      clearInterval(dmCamState.recTimer);
+      if (dmCamState.rec && dmCamState.rec.state === 'recording') { try { dmCamState.rec.stop(); } catch {} }
       if (dmCamState.stream) { dmCamState.stream.getTracks().forEach(t => t.stop()); dmCamState.stream = null; }
       document.getElementById('dm-camera-modal')?.classList.add('hidden');
     }
+
+    document.getElementById('dm-cam-mode-photo')?.addEventListener('click', () => {
+      dmCamState.mode = 'photo';
+      document.getElementById('dm-cam-mode-photo').className = 'px-2.5 py-1 rounded-full bg-white text-black';
+      document.getElementById('dm-cam-mode-video').className = 'px-2.5 py-1 rounded-full text-white';
+      document.getElementById('dm-cam-shutter-dot').className = 'w-full h-full rounded-full bg-white block transition';
+      startDmCamStream();
+    });
+    document.getElementById('dm-cam-mode-video')?.addEventListener('click', () => {
+      dmCamState.mode = 'video';
+      document.getElementById('dm-cam-mode-video').className = 'px-2.5 py-1 rounded-full bg-white text-black';
+      document.getElementById('dm-cam-mode-photo').className = 'px-2.5 py-1 rounded-full text-white';
+      document.getElementById('dm-cam-shutter-dot').className = 'w-full h-full rounded-full bg-red-500 block transition';
+      startDmCamStream();
+    });
 
     document.getElementById('dm-cam-close')?.addEventListener('click', closeDmCameraModal);
     document.getElementById('dm-cam-flip')?.addEventListener('click', () => {
@@ -11337,8 +11437,54 @@
         if (ov) ov.innerHTML = cfg.overlay;
       });
     });
+    document.querySelectorAll('.dm-cam-limit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        dmCamState.limit = Number(btn.dataset.limit) === 2 ? 2 : 1;
+        document.querySelectorAll('.dm-cam-limit-btn').forEach(b => {
+          const act = Number(b.dataset.limit) === dmCamState.limit;
+          b.className = `dm-cam-limit-btn px-3.5 py-1.5 rounded-full text-xs font-bold ${act ? 'bg-[#0095F6] text-white' : 'bg-white/15 text-white'}`;
+        });
+      });
+    });
+
     document.getElementById('dm-cam-shutter')?.addEventListener('click', () => {
       const v = document.getElementById('dm-cam-video');
+      if (dmCamState.mode === 'video') {
+        if (dmCamState.rec && dmCamState.rec.state === 'recording') {
+          dmCamState.rec.stop();
+          clearInterval(dmCamState.recTimer);
+          return;
+        }
+        if (!dmCamState.stream) return;
+        dmCamState.chunks = [];
+        dmCamState.recSec = 0;
+        const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus' : 'video/webm';
+        const rec = new MediaRecorder(dmCamState.stream, { mimeType: mime });
+        dmCamState.rec = rec;
+        rec.ondataavailable = e => { if (e.data.size > 0) dmCamState.chunks.push(e.data); };
+        rec.onstop = () => {
+          const blob = new Blob(dmCamState.chunks, { type: 'video/webm' });
+          dmCamState.capturedBlob = blob;
+          dmCamState.isVideoBlob = true;
+          const pv = document.getElementById('dm-cam-preview-vid');
+          if (pv) { pv.src = URL.createObjectURL(blob); pv.classList.remove('hidden'); }
+          v?.classList.add('hidden');
+          document.getElementById('dm-cam-rec-badge')?.classList.add('hidden');
+          document.getElementById('dm-cam-controls-live')?.classList.add('hidden');
+          document.getElementById('dm-cam-controls-preview')?.classList.remove('hidden');
+          document.getElementById('dm-cam-effects-strip')?.classList.add('hidden');
+        };
+        rec.start();
+        document.getElementById('dm-cam-rec-badge')?.classList.remove('hidden');
+        document.getElementById('dm-cam-rec-time').textContent = '0:00';
+        dmCamState.recTimer = setInterval(() => {
+          dmCamState.recSec += 1;
+          const m = Math.floor(dmCamState.recSec / 60), s = dmCamState.recSec % 60;
+          document.getElementById('dm-cam-rec-time').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }, 1000);
+        return;
+      }
+
       const c = document.getElementById('dm-cam-canvas');
       if (!v || !c || !v.videoWidth) return;
       c.width = v.videoWidth; c.height = v.videoHeight;
@@ -11354,6 +11500,7 @@
       else if (dmCamState.fx === 'sparkles') { ctx.font = '68px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('🦋 ✨ 🦋', c.width / 2, 110); }
       c.toBlob(blob => {
         dmCamState.capturedBlob = blob;
+        dmCamState.isVideoBlob = false;
         const pImg = document.getElementById('dm-cam-preview-img');
         if (pImg) { pImg.src = URL.createObjectURL(blob); pImg.classList.remove('hidden'); }
         v.classList.add('hidden');
@@ -11362,14 +11509,7 @@
         document.getElementById('dm-cam-effects-strip')?.classList.add('hidden');
       }, 'image/jpeg', 0.94);
     });
-    document.getElementById('dm-cam-retake')?.addEventListener('click', () => {
-      dmCamState.capturedBlob = null;
-      document.getElementById('dm-cam-video')?.classList.remove('hidden');
-      document.getElementById('dm-cam-preview-img')?.classList.add('hidden');
-      document.getElementById('dm-cam-controls-live')?.classList.remove('hidden');
-      document.getElementById('dm-cam-controls-preview')?.classList.add('hidden');
-      document.getElementById('dm-cam-effects-strip')?.classList.remove('hidden');
-    });
+    document.getElementById('dm-cam-retake')?.addEventListener('click', resetDmCamPreviewUi);
     document.getElementById('dm-cam-hd-toggle')?.addEventListener('click', e => {
       dmCamState.hd = !dmCamState.hd;
       e.currentTarget.textContent = dmCamState.hd ? 'HD: ON' : 'HD: OFF';
@@ -11377,38 +11517,65 @@
     });
     document.getElementById('dm-cam-send')?.addEventListener('click', async () => {
       const blob = dmCamState.capturedBlob;
+      const isVid = dmCamState.isVideoBlob;
+      const lim = dmCamState.limit;
       if (!blob) return;
       closeDmCameraModal();
-      showToast('Sending photo...');
-      const url = await uploadDmImageToSupa(blob, `dm_cam_${Date.now()}.jpg`);
-      await sendDmMediaPayload(`__PHOTO__|${url}|${dmCamState.hd ? 'hd' : 'sd'}`);
+      showToast(isVid ? 'Sending video...' : 'Sending photo...');
+      const ext = isVid ? 'webm' : 'jpg';
+      const url = await uploadDmImageToSupa(blob, `dm_cam_${Date.now()}.${ext}`);
+      await sendDmMediaPayload(`${isVid ? '__VIDEO__' : '__PHOTO__'}|${url}|${dmCamState.hd ? 'hd' : 'sd'}|${lim}`);
     });
 
-    // 2. DM Gallery Photo Picker (HD)
-    const dmGalState = { file: null, hd: true };
+    // 2. DM Gallery Photo & Video Picker (HD + 1x/2x Limit)
+    const dmGalState = { file: null, hd: true, limit: 1, isVideo: false };
     function openDmGalleryModal() {
       dmGalState.file = null;
+      dmGalState.isVideo = false;
+      dmGalState.limit = 1;
       document.getElementById('dm-gal-preview-img')?.classList.add('hidden');
+      document.getElementById('dm-gal-preview-vid')?.classList.add('hidden');
       document.getElementById('dm-gal-pick-label')?.classList.remove('hidden');
       const sBtn = document.getElementById('dm-gal-send-btn');
       if (sBtn) sBtn.disabled = true;
+      document.querySelectorAll('.dm-gal-limit-btn').forEach(b => {
+        const act = Number(b.dataset.limit) === 1;
+        b.className = `dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold ${act ? 'bg-[#0095F6] text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200'}`;
+      });
       document.getElementById('dm-gallery-modal')?.classList.remove('hidden');
       if (window.lucide) window.lucide.createIcons();
     }
     document.getElementById('dm-gal-close')?.addEventListener('click', () => document.getElementById('dm-gallery-modal')?.classList.add('hidden'));
+    document.querySelectorAll('.dm-gal-limit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        dmGalState.limit = Number(btn.dataset.limit) === 2 ? 2 : 1;
+        document.querySelectorAll('.dm-gal-limit-btn').forEach(b => {
+          const act = Number(b.dataset.limit) === dmGalState.limit;
+          b.className = `dm-gal-limit-btn flex-1 py-2 rounded-xl text-xs font-bold ${act ? 'bg-[#0095F6] text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200'}`;
+        });
+      });
+    });
     document.getElementById('dm-gal-hd-btn')?.addEventListener('click', e => {
       dmGalState.hd = !dmGalState.hd;
       e.currentTarget.textContent = dmGalState.hd ? 'HD ON' : 'HD OFF';
       e.currentTarget.className = `px-2.5 py-1 rounded-full text-white text-[11px] font-bold ${dmGalState.hd ? 'bg-emerald-500' : 'bg-zinc-600'}`;
       const sBtn = document.getElementById('dm-gal-send-btn');
-      if (sBtn) sBtn.textContent = dmGalState.hd ? 'Send HD Photo' : 'Send Photo';
+      if (sBtn) sBtn.textContent = dmGalState.hd ? 'Send HD' : 'Send';
     });
     document.getElementById('dm-gal-file-input')?.addEventListener('change', e => {
       const f = e.target.files?.[0];
       if (!f) return;
       dmGalState.file = f;
+      dmGalState.isVideo = (f.type || '').startsWith('video/');
       const pImg = document.getElementById('dm-gal-preview-img');
-      if (pImg) { pImg.src = URL.createObjectURL(f); pImg.classList.remove('hidden'); }
+      const pVid = document.getElementById('dm-gal-preview-vid');
+      if (dmGalState.isVideo) {
+        pImg?.classList.add('hidden');
+        if (pVid) { pVid.src = URL.createObjectURL(f); pVid.classList.remove('hidden'); }
+      } else {
+        pVid?.classList.add('hidden');
+        if (pImg) { pImg.src = URL.createObjectURL(f); pImg.classList.remove('hidden'); }
+      }
       document.getElementById('dm-gal-pick-label')?.classList.add('hidden');
       const sBtn = document.getElementById('dm-gal-send-btn');
       if (sBtn) sBtn.disabled = false;
@@ -11416,27 +11583,32 @@
     document.getElementById('dm-gal-send-btn')?.addEventListener('click', async () => {
       if (!dmGalState.file) return;
       const f = dmGalState.file;
+      const isVid = dmGalState.isVideo;
+      const lim = dmGalState.limit;
       document.getElementById('dm-gallery-modal')?.classList.add('hidden');
-      showToast(dmGalState.hd ? 'Sending HD photo...' : 'Sending photo...');
-      const maxDim = dmGalState.hd ? 2048 : 1080;
-      const qual = dmGalState.hd ? 0.94 : 0.78;
-      const blob = await new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => {
-          let w = img.width, h = img.height;
-          if (w > maxDim || h > maxDim) {
-            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
-            else { w = Math.round(w * maxDim / h); h = maxDim; }
-          }
-          const c = document.createElement('canvas');
-          c.width = w; c.height = h;
-          c.getContext('2d').drawImage(img, 0, 0, w, h);
-          c.toBlob(b => resolve(b || f), 'image/jpeg', qual);
-        };
-        img.src = URL.createObjectURL(f);
-      });
-      const url = await uploadDmImageToSupa(blob, `dm_gal_${Date.now()}.jpg`);
-      await sendDmMediaPayload(`__PHOTO__|${url}|${dmGalState.hd ? 'hd' : 'sd'}`);
+      showToast(isVid ? 'Sending video...' : (dmGalState.hd ? 'Sending HD photo...' : 'Sending photo...'));
+      let blob = f;
+      if (!isVid) {
+        const maxDim = dmGalState.hd ? 2048 : 1080;
+        const qual = dmGalState.hd ? 0.94 : 0.78;
+        blob = await new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+              else { w = Math.round(w * maxDim / h); h = maxDim; }
+            }
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            c.toBlob(b => resolve(b || f), 'image/jpeg', qual);
+          };
+          img.src = URL.createObjectURL(f);
+        });
+      }
+      const url = await uploadDmImageToSupa(blob, `dm_gal_${Date.now()}_${f.name || 'media'}`);
+      await sendDmMediaPayload(`${isVid ? '__VIDEO__' : '__PHOTO__'}|${url}|${dmGalState.hd ? 'hd' : 'sd'}|${lim}`);
     });
 
     // 3. Animated Stickers Drawer (15863.png)
