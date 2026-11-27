@@ -127,6 +127,22 @@
       </div>
     </header>
 
+    <!-- Instagram-Style Floating Notification Summary Pill (Likes, Comments, Follows) -->
+    <button id="ig-notif-popover" type="button" class="hidden md:hidden fixed top-14 right-9 z-40 px-3.5 py-2 rounded-2xl bg-[#FF3040] text-white shadow-xl flex items-center gap-4 active:scale-95 transition">
+      <span id="pop-like-wrap" class="flex flex-col items-center leading-none gap-0.5">
+        <i data-lucide="heart" class="w-4 h-4 fill-white"></i>
+        <span id="pop-like-count" class="text-[11px] font-extrabold">0</span>
+      </span>
+      <span id="pop-comment-wrap" class="flex flex-col items-center leading-none gap-0.5">
+        <i data-lucide="message-circle" class="w-4 h-4 fill-white"></i>
+        <span id="pop-comment-count" class="text-[11px] font-extrabold">0</span>
+      </span>
+      <span id="pop-follow-wrap" class="flex flex-col items-center leading-none gap-0.5">
+        <i data-lucide="user" class="w-4 h-4 fill-white"></i>
+        <span id="pop-follow-count" class="text-[11px] font-extrabold">0</span>
+      </span>
+    </button>
+
     <!-- Main Content -->
     <div id="main-wrapper" class="flex-1 md:pl-64 pb-20 md:pb-10 relative">
       <div id="ptr-indicator" class="overflow-hidden flex items-center justify-center transition-[height,opacity] duration-200 ease-out opacity-0" style="height: 0px;">
@@ -2028,6 +2044,25 @@
           <div class="flex items-center justify-between gap-2">
             <h1 class="text-xl font-bold">Activity & Notifications</h1>
             <button type="button" id="act-refresh-btn" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-xs font-semibold">Refresh</button>
+          </div>
+
+          <!-- Instagram-Style Likes / Comments / Follows Summary -->
+          <div class="grid grid-cols-3 gap-2.5">
+            <div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex flex-col items-center gap-1">
+              <i data-lucide="heart" class="w-5 h-5 text-rose-500"></i>
+              <span class="text-base font-extrabold">${state.notifications.filter(n => n.type === 'like').length}</span>
+              <span class="text-[11px] text-zinc-500 font-medium">Likes</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex flex-col items-center gap-1">
+              <i data-lucide="message-circle" class="w-5 h-5 text-sky-500"></i>
+              <span class="text-base font-extrabold">${state.notifications.filter(n => n.type === 'comment').length}</span>
+              <span class="text-[11px] text-zinc-500 font-medium">Comments</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col items-center gap-1">
+              <i data-lucide="user" class="w-5 h-5 text-emerald-500"></i>
+              <span class="text-base font-extrabold">${state.notifications.filter(n => n.type === 'follow' || n.type === 'follow_request').length + state.followRequests.length}</span>
+              <span class="text-[11px] text-zinc-500 font-medium">Followers</span>
+            </div>
           </div>
 
           ${typeof Notification !== 'undefined' && perm !== 'granted' ? `
@@ -4469,7 +4504,16 @@
 
     document.getElementById('theme-toggle-desktop').addEventListener('click', toggleTheme);
     document.getElementById('theme-toggle-mobile').addEventListener('click', toggleTheme);
-    document.getElementById('activity-btn-mobile').addEventListener('click', () => { state.activeTab = 'activity'; state.unreadNotifCount = 0; loadNotifications(); render(); });
+    const openActivityFromNotif = () => {
+      state.activeTab = 'activity';
+      state.unreadNotifCount = 0;
+      if (state.currentUser?.username) localStorage.setItem('snapgram_last_notif_seen_' + state.currentUser.username.toLowerCase(), String(Date.now()));
+      document.getElementById('ig-notif-popover')?.classList.add('hidden');
+      loadNotifications();
+      render();
+    };
+    document.getElementById('activity-btn-mobile').addEventListener('click', openActivityFromNotif);
+    document.getElementById('ig-notif-popover')?.addEventListener('click', openActivityFromNotif);
     const msgBtnMob = document.getElementById('messages-btn-mobile');
     if (msgBtnMob) msgBtnMob.addEventListener('click', () => {
       state.unreadMsgCount = 0;
@@ -6404,6 +6448,10 @@
     }
 
     async function startVoiceNoteRecording() {
+      const vnBarHidden = document.getElementById('chat-voice-bar')?.classList.contains('hidden');
+      if (vnState.recorder && (vnState.recorder.state === 'inactive' || vnBarHidden)) {
+        resetVoiceNoteUI();
+      }
       if (vnState.recorder) return;
       try {
         vnState.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -7097,7 +7145,8 @@
           if (!state.activeConvId || !loaded.some(c => c.id === state.activeConvId)) {
             state.activeConvId = loaded[0].id;
           }
-          render();
+          const vnBarVisible = !document.getElementById('chat-voice-bar')?.classList.contains('hidden');
+          if (!vnState.recorder && !vnBarVisible) render();
         }
       } catch {}
     }
@@ -9327,8 +9376,37 @@
           actor: r.actor_username,
           type: r.type,
           text: r.text,
+          createdAtMs: new Date(r.created_at).getTime(),
           time: new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }));
+        const seenKey = 'snapgram_last_notif_seen_' + me.toLowerCase();
+        if (state.activeTab === 'activity') {
+          localStorage.setItem(seenKey, String(Date.now()));
+          document.getElementById('ig-notif-popover')?.classList.add('hidden');
+        } else {
+          const lastSeen = Number(localStorage.getItem(seenKey) || 0);
+          const unreadRows = state.notifications.filter(n => n.createdAtMs > lastSeen);
+          const likeCnt = unreadRows.filter(n => n.type === 'like').length;
+          const commCnt = unreadRows.filter(n => n.type === 'comment').length;
+          const folCnt = unreadRows.filter(n => n.type === 'follow' || n.type === 'follow_request').length + state.followRequests.length;
+          const total = likeCnt + commCnt + folCnt;
+          if (total > 0) {
+            state.unreadNotifCount = Math.max(state.unreadNotifCount, total);
+            const pop = document.getElementById('ig-notif-popover');
+            if (pop) {
+              document.getElementById('pop-like-count').textContent = String(likeCnt);
+              document.getElementById('pop-comment-count').textContent = String(commCnt);
+              document.getElementById('pop-follow-count').textContent = String(folCnt);
+              document.getElementById('pop-like-wrap').classList.toggle('hidden', likeCnt === 0);
+              document.getElementById('pop-comment-wrap').classList.toggle('hidden', commCnt === 0);
+              document.getElementById('pop-follow-wrap').classList.toggle('hidden', folCnt === 0);
+              pop.classList.remove('hidden');
+              if (window.lucide) window.lucide.createIcons();
+              clearTimeout(window.__notifPopTimer);
+              window.__notifPopTimer = setTimeout(() => pop.classList.add('hidden'), 7000);
+            }
+          }
+        }
         renderNav();
         if (state.activeTab === 'activity') render();
       } catch {}
