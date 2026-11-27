@@ -1164,6 +1164,66 @@
     </div>
   </div>
 
+  <!-- Instagram-Style Share Sheet Modal (Following Multi-Select up to 10 + External Actions) -->
+  <div id="share-sheet-modal" class="hidden fixed inset-0 z-[85] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl max-w-md w-full pt-3 pb-4 shadow-2xl flex flex-col max-h-[82vh]">
+      <div class="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700 mx-auto mb-3 shrink-0"></div>
+      <div class="px-4 pb-3 flex items-center gap-2 shrink-0">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-2.5 text-zinc-400"></i>
+          <input id="share-search-input" type="text" placeholder="Search" class="w-full pl-9 pr-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm focus:outline-none" />
+        </div>
+        <button id="close-share-sheet" type="button" class="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700" aria-label="Close">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Following Users 3-Column Grid (Multi-Select up to 10) -->
+      <div id="share-users-grid" class="flex-1 overflow-y-auto px-4 py-2 grid grid-cols-3 gap-x-3 gap-y-4 content-start min-h-[180px]"></div>
+
+      <!-- Send Selected Button (appears when 1..10 users selected) -->
+      <div id="share-send-bar" class="hidden px-4 py-2.5 border-t border-zinc-100 dark:border-zinc-800 shrink-0">
+        <button id="share-send-confirm-btn" type="button" class="w-full py-2.5 rounded-xl bg-[#0095F6] hover:bg-[#1877F2] text-white text-sm font-bold transition">Send</button>
+      </div>
+
+      <!-- Bottom Horizontal Action Bar (No Meta AI, No Threads) -->
+      <div class="border-t border-zinc-100 dark:border-zinc-800 pt-3 px-3 flex items-start gap-4 overflow-x-auto no-scrollbar shrink-0">
+        <button type="button" id="sh-act-story" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"><i data-lucide="plus-circle" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">Add to story</span>
+        </button>
+        <button type="button" id="sh-act-wa" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center"><i data-lucide="message-circle" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">WhatsApp</span>
+        </button>
+        <button type="button" id="sh-act-copy" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"><i data-lucide="link" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">Copy link</span>
+        </button>
+        <button type="button" id="sh-act-share" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"><i data-lucide="share-2" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">Share</span>
+        </button>
+        <button type="button" id="sh-act-wastatus" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center"><i data-lucide="circle-dot" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">WhatsApp Status</span>
+        </button>
+        <button type="button" id="sh-act-snap" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-yellow-400 text-black flex items-center justify-center"><i data-lucide="ghost" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">Snapchat</span>
+        </button>
+        <button type="button" id="sh-act-download" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center"><i data-lucide="download" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">Download</span>
+        </button>
+        <button type="button" id="sh-act-sms" class="flex flex-col items-center gap-1.5 shrink-0 w-16 text-center">
+          <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center"><i data-lucide="message-square" class="w-5 h-5"></i></div>
+          <span class="text-[11px] leading-tight">SMS</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Instagram-Style One-Tap Music Picker Modal -->
   <div id="music-modal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
     <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl h-[80vh] sm:h-[75vh] flex flex-col">
@@ -3265,7 +3325,7 @@
       });
 
       document.querySelectorAll('.share-btn').forEach(btn => {
-        btn.addEventListener('click', () => showToast('Post link copied to share'));
+        btn.addEventListener('click', () => openShareSheet('post', btn.dataset.postId));
       });
 
       document.querySelectorAll('.comment-form').forEach(form => {
@@ -3326,7 +3386,7 @@
         btn.addEventListener('click', () => openPostDetailModal(btn.dataset.reelId, 'reel'));
       });
       document.querySelectorAll('.reel-share-btn').forEach(btn => {
-        btn.addEventListener('click', () => showToast('Reel link copied to share'));
+        btn.addEventListener('click', () => openShareSheet('reel', btn.dataset.reelId));
       });
       document.querySelectorAll('.reel-follow-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -3552,7 +3612,7 @@
         const durStr = formatVnTime(Math.max(1, vnState.seconds));
         const fx = vnState.effect || 'normal';
         const processed = await applyVoiceChangerToBlob(vnState.rawBlob, fx);
-        let audioUrl = URL.createObjectURL(processed);
+        let audioUrl = '';
         try {
           if (state.currentUser.supaUserId) {
             const ext = processed.type.includes('wav') ? 'wav' : 'webm';
@@ -3561,6 +3621,14 @@
             if (up?.publicUrl) audioUrl = up.publicUrl;
           }
         } catch {}
+        if (!audioUrl) {
+          audioUrl = await new Promise(res => {
+            const fr = new FileReader();
+            fr.onload = () => res(fr.result || '');
+            fr.onerror = () => res(URL.createObjectURL(processed));
+            fr.readAsDataURL(processed);
+          });
+        }
         const msgText = `__VOICE__|${audioUrl}|${durStr}|${fx}`;
         conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
         conv.seen = 'Delivered';
@@ -6413,6 +6481,19 @@
           </div>
         `;
       }
+      if (typeof txt === 'string' && txt.startsWith('__SHARE__|')) {
+        const parts = txt.split('|');
+        const skind = parts[1] || 'post';
+        const sid = parts[2] || '';
+        const surl = parts[3] || '';
+        const sowner = parts[4] || 'user';
+        return `
+          <div class="shared-media-card space-y-1.5 max-w-[200px]" data-skind="${skind}" data-sid="${sid}">
+            ${surl ? `<img src="${surl}" alt="Shared ${skind}" class="w-full h-36 object-cover rounded-xl bg-black/20" />` : ''}
+            <p class="text-xs font-semibold">Shared @${sowner}'s ${skind}</p>
+          </div>
+        `;
+      }
       return `<span>${txt}</span>`;
     }
 
@@ -6473,8 +6554,9 @@
 
         const rateMap = { robot: 1.0, girl: 1.38, boys: 0.90, aunty: 1.22, uncle: 0.80, oldman: 0.70 };
         const rate = rateMap[effect] || 1.0;
-        const outLen = Math.max(1, Math.ceil(decoded.duration / rate * decoded.sampleRate));
-        const offCtx = new OfflineAudioContext(1, outLen, decoded.sampleRate);
+        const targetSr = 16000;
+        const outLen = Math.max(1, Math.ceil(decoded.duration / rate * targetSr));
+        const offCtx = new OfflineAudioContext(1, outLen, targetSr);
 
         const src = offCtx.createBufferSource();
         src.buffer = decoded;
@@ -7066,6 +7148,164 @@
       modal.classList.remove('hidden');
       if (window.lucide) window.lucide.createIcons();
     }
+
+    const shareSheetState = { kind: 'post', item: null, selected: new Set(), search: '' };
+
+    function openShareSheet(kind, itemId) {
+      const pool = kind === 'reel' ? state.reels : kind === 'story' ? state.stories : state.posts;
+      const item = pool.find(x => x.id === itemId);
+      if (!item) return;
+      shareSheetState.kind = kind;
+      shareSheetState.item = item;
+      shareSheetState.selected = new Set();
+      shareSheetState.search = '';
+      const inp = document.getElementById('share-search-input');
+      if (inp) inp.value = '';
+      renderShareSheetUsers();
+      document.getElementById('share-sheet-modal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function renderShareSheetUsers() {
+      const grid = document.getElementById('share-users-grid');
+      const sendBar = document.getElementById('share-send-bar');
+      const sendBtn = document.getElementById('share-send-confirm-btn');
+      if (!grid) return;
+
+      const followingSet = new Set((state.ownFollowingUsernames || []).map(u => u.toLowerCase()));
+      const q = (shareSheetState.search || '').trim().toLowerCase();
+      const followingUsers = (state.exploreUsers || []).filter(u => {
+        const uname = (u.username || '').toLowerCase();
+        if (!followingSet.has(uname)) return false;
+        if (!q) return true;
+        return uname.includes(q) || (u.full_name || '').toLowerCase().includes(q);
+      });
+
+      if (!followingUsers.length) {
+        grid.innerHTML = `<div class="col-span-3 py-8 text-center text-xs text-zinc-500">${followingSet.size ? 'No matching followed accounts' : 'Follow people first to share posts & reels with them'}</div>`;
+      } else {
+        grid.innerHTML = followingUsers.map(u => {
+          const uname = u.username;
+          const isSel = shareSheetState.selected.has(uname);
+          return `
+            <button type="button" class="share-user-tile flex flex-col items-center gap-1.5 text-center group" data-username="${uname}">
+              <div class="relative w-16 h-16 rounded-full p-0.5 ${isSel ? 'ring-2 ring-[#0095F6]' : ''}">
+                ${renderAvatar(u.avatar_url || '', uname, 'w-full h-full')}
+                ${isSel ? `<span class="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[#0095F6] text-white text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-zinc-900">✓</span>` : ''}
+              </div>
+              <span class="text-xs font-medium max-w-[82px] truncate">${uname}</span>
+            </button>
+          `;
+        }).join('');
+
+        grid.querySelectorAll('.share-user-tile').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const un = btn.dataset.username;
+            if (shareSheetState.selected.has(un)) {
+              shareSheetState.selected.delete(un);
+            } else {
+              if (shareSheetState.selected.size >= 10) {
+                showToast('You can select up to 10 people at once');
+                return;
+              }
+              shareSheetState.selected.add(un);
+            }
+            renderShareSheetUsers();
+          });
+        });
+      }
+
+      const cnt = shareSheetState.selected.size;
+      if (sendBar && sendBtn) {
+        sendBar.classList.toggle('hidden', cnt === 0);
+        sendBtn.textContent = cnt > 1 ? `Send (${cnt})` : 'Send';
+      }
+    }
+
+    document.getElementById('close-share-sheet')?.addEventListener('click', () => {
+      document.getElementById('share-sheet-modal').classList.add('hidden');
+    });
+    document.getElementById('share-sheet-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'share-sheet-modal') document.getElementById('share-sheet-modal').classList.add('hidden');
+    });
+    document.getElementById('share-search-input')?.addEventListener('input', e => {
+      shareSheetState.search = e.target.value;
+      renderShareSheetUsers();
+    });
+    document.getElementById('share-send-confirm-btn')?.addEventListener('click', async () => {
+      const it = shareSheetState.item;
+      if (!it || !shareSheetState.selected.size) return;
+      const mediaUrl = it.thumbnailUrl || it.img || it.videoUrl || '';
+      const msgText = `__SHARE__|${shareSheetState.kind}|${it.id}|${mediaUrl}|${it.username || 'user'}`;
+      for (const peer of shareSheetState.selected) {
+        await saveMessageToSupabase(peer, msgText);
+        let conv = state.conversations.find(c => c.title.toLowerCase() === peer.toLowerCase());
+        if (!conv) {
+          conv = { id: 'dm_' + peer, box: 'primary', title: peer, subtitle: 'Snapgram Direct', avatar: '', online: false, seen: '', messages: [] };
+          state.conversations.unshift(conv);
+        }
+        conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
+      }
+      const n = shareSheetState.selected.size;
+      document.getElementById('share-sheet-modal').classList.add('hidden');
+      showToast(`Sent to ${n} ${n === 1 ? 'person' : 'people'} ✓`);
+    });
+
+    function getShareUrl() {
+      const it = shareSheetState.item;
+      return `${window.location.origin}${window.location.pathname}?${shareSheetState.kind}=${encodeURIComponent(it?.id || '')}`;
+    }
+    document.getElementById('sh-act-story')?.addEventListener('click', () => {
+      const it = shareSheetState.item;
+      document.getElementById('share-sheet-modal').classList.add('hidden');
+      if (it && (it.img || it.videoUrl)) {
+        openIgPlusScreen('story');
+        showToast('Select photo or video to add to your story');
+      }
+    });
+    document.getElementById('sh-act-copy')?.addEventListener('click', () => {
+      const url = getShareUrl();
+      navigator.clipboard?.writeText(url).catch(() => {});
+      document.getElementById('share-sheet-modal').classList.add('hidden');
+      showToast('Link copied ✓');
+    });
+    document.getElementById('sh-act-wa')?.addEventListener('click', () => {
+      window.open(`https://wa.me/?text=${encodeURIComponent('Check this out on Snapgram: ' + getShareUrl())}`, '_blank');
+    });
+    document.getElementById('sh-act-wastatus')?.addEventListener('click', () => {
+      window.open(`https://wa.me/?text=${encodeURIComponent(getShareUrl())}`, '_blank');
+    });
+    document.getElementById('sh-act-snap')?.addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({ title: 'Snapgram', url: getShareUrl() }).catch(() => {});
+      } else {
+        window.open(`https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(getShareUrl())}`, '_blank');
+      }
+    });
+    document.getElementById('sh-act-sms')?.addEventListener('click', () => {
+      window.location.href = `sms:?body=${encodeURIComponent('Check this out on Snapgram: ' + getShareUrl())}`;
+    });
+    document.getElementById('sh-act-share')?.addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({ title: 'Snapgram', text: shareSheetState.item?.caption || 'Check this on Snapgram', url: getShareUrl() }).catch(() => {});
+      } else {
+        navigator.clipboard?.writeText(getShareUrl()).catch(() => {});
+        showToast('Link copied ✓');
+      }
+    });
+    document.getElementById('sh-act-download')?.addEventListener('click', () => {
+      const it = shareSheetState.item;
+      const mediaUrl = it?.videoUrl || it?.img || '';
+      if (!mediaUrl) return;
+      const a = document.createElement('a');
+      a.href = mediaUrl;
+      a.download = `snapgram_${shareSheetState.kind}_${Date.now()}`;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('Downloading...');
+    });
 
     function closeHiddenPinModal() {
       document.getElementById('hidden-pin-modal').classList.add('hidden');
