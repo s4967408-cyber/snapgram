@@ -1960,14 +1960,14 @@
                     <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
                       <div class="flex items-end gap-2 max-w-[78%] group">
                         ${!isMine ? renderAvatar(conv.avatar, m.sender, 'w-6 h-6 shrink-0 mb-1') : ''}
-                        <button class="msg-react-btn text-left relative px-4 py-2.5 rounded-3xl text-sm transition ${
+                        <div role="button" tabindex="0" class="msg-react-btn text-left relative px-4 py-2.5 rounded-3xl text-sm transition cursor-pointer ${
                           isMine
                             ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white'
                             : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
                         }" data-msg-id="${m.id}" title="Tap to react">
                           ${renderChatMsgContent(m.text, m.id, isMine)}
                           ${m.reaction ? `<span class="absolute -bottom-2 ${isMine ? 'left-2' : 'right-2'} text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow">${m.reaction}</span>` : ''}
-                        </button>
+                        </div>
                       </div>
                       ${isMine && isLast && conv.seen ? `<span class="text-[10px] text-zinc-400 mt-1.5 mr-1">${conv.seen}</span>` : ''}
                     </div>
@@ -2096,15 +2096,24 @@
           ${state.notifications.length ? `
             <div class="space-y-2">
               <h2 class="text-xs font-semibold uppercase text-zinc-500">Recent Notifications</h2>
-              ${state.notifications.map(n => `
-                <div class="p-3 rounded-xl ${n.type === 'restriction' || n.type === 'block' ? 'bg-red-500/10 border border-red-500/30' : 'bg-zinc-50 dark:bg-zinc-900'} flex justify-between items-center gap-3 text-sm">
-                  <p class="min-w-0">
-                    <button type="button" class="open-user-profile font-semibold mr-1 hover:underline" data-username="${n.actor}">@${n.actor}</button>
-                    <span>${n.text}</span>
-                  </p>
-                  <span class="text-xs text-zinc-400 shrink-0">${n.time}</span>
+              ${state.notifications.map(n => {
+                const actorU = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === (n.actor || '').toLowerCase());
+                const actorAv = actorU?.avatar_url || '';
+                return `
+                <div class="p-3 rounded-xl ${n.type === 'restriction' || n.type === 'block' ? 'bg-red-500/10 border border-red-500/30' : 'bg-zinc-50 dark:bg-zinc-900'} flex items-center gap-3 text-sm">
+                  <button type="button" class="open-user-profile shrink-0" data-username="${n.actor}">
+                    ${renderAvatar(actorAv, n.actor, 'w-10 h-10')}
+                  </button>
+                  <div class="flex-1 min-w-0">
+                    <p class="leading-snug">
+                      <button type="button" class="open-user-profile font-semibold mr-1 hover:underline" data-username="${n.actor}">@${n.actor}</button>
+                      <span>${n.text}</span>
+                    </p>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">${n.dateTime || n.time}</p>
+                  </div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
           ` : ''}
 
@@ -3526,7 +3535,7 @@
           if (state.currentUser.supaUserId) {
             const ext = processed.type.includes('wav') ? 'wav' : 'webm';
             const file = new File([processed], `voice_${Date.now()}.${ext}`, { type: processed.type || 'audio/webm' });
-            const up = await uploadFileToSupabase(file, () => {});
+            const up = await uploadFileToSupabase(file, 'voice', () => {});
             if (up?.publicUrl) audioUrl = up.publicUrl;
           }
         } catch {}
@@ -3546,14 +3555,23 @@
           if (!window.__dmVoiceAudio) window.__dmVoiceAudio = new Audio();
           const a = window.__dmVoiceAudio;
           const glyph = btn.querySelector('.vn-play-glyph');
+          const durEl = btn.closest('.flex')?.querySelector('.vn-dur-label');
           if (a.src === url && !a.paused) {
             a.pause();
             if (glyph) glyph.textContent = '▶';
             return;
           }
           document.querySelectorAll('.vn-play-glyph').forEach(g => { g.textContent = '▶'; });
-          a.src = url;
-          a.onended = () => { if (glyph) glyph.textContent = '▶'; };
+          if (a.src !== url) a.src = url;
+          a.ontimeupdate = () => {
+            if (durEl && a.duration && !isNaN(a.duration)) {
+              durEl.textContent = `${formatVnTime(Math.floor(a.currentTime))} / ${formatVnTime(Math.ceil(a.duration))}`;
+            }
+          };
+          a.onended = () => {
+            if (glyph) glyph.textContent = '▶';
+            if (durEl && btn.dataset.dur) durEl.textContent = btn.dataset.dur;
+          };
           a.play().then(() => { if (glyph) glyph.textContent = '❚❚'; }).catch(() => { showToast('Could not play voice note'); });
         });
       });
@@ -6288,15 +6306,15 @@
         const fx = parts[3] && parts[3] !== 'normal' ? parts[3] : '';
         return `
           <div class="flex items-center gap-2.5 min-w-[175px]">
-            <button type="button" class="vn-play-btn w-8 h-8 rounded-full ${isMine ? 'bg-white/25 text-white' : 'bg-pink-500 text-white'} flex items-center justify-center shrink-0" data-url="${url}" data-msg-id="${msgId}" aria-label="Play voice note">
+            <button type="button" class="vn-play-btn w-8 h-8 rounded-full ${isMine ? 'bg-white/25 text-white' : 'bg-pink-500 text-white'} flex items-center justify-center shrink-0" data-url="${url}" data-dur="${dur}" data-msg-id="${msgId}" aria-label="Play voice note">
               <span class="vn-play-glyph text-xs font-bold">▶</span>
             </button>
             <div class="flex-1 min-w-0 space-y-1">
               <div class="flex items-center gap-0.5 h-4">
                 ${[45,80,55,95,70,40,85,60,90,50,75,65].map(h => `<span class="w-1 rounded-full ${isMine ? 'bg-white/80' : 'bg-zinc-500 dark:bg-zinc-400'}" style="height:${h}%"></span>`).join('')}
               </div>
-              <div class="flex items-center justify-between text-[10px] ${isMine ? 'text-white/85' : 'text-zinc-500'} font-semibold">
-                <span>${dur}</span>
+              <div class="flex items-center justify-between gap-2 text-[10px] ${isMine ? 'text-white/85' : 'text-zinc-500'} font-semibold">
+                <span class="vn-dur-label">${dur}</span>
                 ${fx ? `<span class="px-1.5 py-0.2 rounded-full ${isMine ? 'bg-white/20' : 'bg-zinc-200 dark:bg-zinc-700'} capitalize">${fx}</span>` : ''}
               </div>
             </div>
@@ -9377,6 +9395,7 @@
           type: r.type,
           text: r.text,
           createdAtMs: new Date(r.created_at).getTime(),
+          dateTime: new Date(r.created_at).toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' · ' + new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           time: new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }));
         const seenKey = 'snapgram_last_notif_seen_' + me.toLowerCase();
