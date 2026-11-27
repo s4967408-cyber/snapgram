@@ -1220,9 +1220,9 @@
     </div>
   </div>
 
-  <!-- Full-Screen Post Detail Modal -->
-  <div id="post-detail-modal" class="hidden fixed inset-0 z-[75] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 md:p-6">
-    <div class="w-full max-w-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
+  <!-- Full-Screen Scrollable Post/Reel Detail Modal -->
+  <div id="post-detail-modal" class="hidden fixed inset-0 z-[75] bg-black/90 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4">
+    <div class="w-full h-full sm:h-[92vh] sm:max-w-lg bg-white dark:bg-zinc-950 sm:border sm:border-zinc-200 dark:sm:border-zinc-800 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col">
       <header class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
         <span class="text-sm font-bold">Post</span>
         <button id="close-post-detail" type="button" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -1340,6 +1340,8 @@
       conversations: [],
       activeConvId: null,
       followRequests: [],
+      ownFollowingUsernames: [],
+      ownPendingUsernames: [],
       notifications: [],
       unreadNotifCount: 0,
       unreadMsgCount: 0,
@@ -2078,27 +2080,38 @@
           ${state.followRequests.length ? `
             <div class="space-y-2">
               <h2 class="text-xs font-semibold uppercase text-zinc-500">Follow Requests</h2>
-              ${state.followRequests.map(r => `
-                <div class="flex items-center justify-between p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                  <button type="button" class="open-user-profile text-left" data-user-id="${r.followerId || ''}" data-username="${r.username}">
-                    <p class="text-sm font-semibold hover:underline">@${r.username}</p>
-                    <p class="text-xs text-zinc-500">${r.fullName}</p>
+              ${state.followRequests.map(r => {
+                const rU = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === (r.username || '').toLowerCase());
+                const rAv = r.avatar || rU?.avatar_url || '';
+                return `
+                <div class="flex items-center justify-between gap-2 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                  <button type="button" class="open-user-profile flex items-center gap-3 min-w-0 text-left" data-user-id="${r.followerId || ''}" data-username="${r.username}">
+                    ${renderAvatar(rAv, r.username, 'w-10 h-10')}
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold truncate hover:underline">@${r.username}</p>
+                      <p class="text-xs text-zinc-500 truncate">requested to follow you</p>
+                    </div>
                   </button>
-                  <div class="flex gap-2">
-                    <button class="req-action px-3 py-1.5 rounded-lg bg-pink-500 text-white text-xs font-semibold" data-req-id="${r.id}" data-action="accept">Accept</button>
-                    <button class="req-action px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs" data-req-id="${r.id}" data-action="decline">Decline</button>
+                  <div class="flex gap-1.5 shrink-0">
+                    <button class="req-action px-3 py-1.5 rounded-lg bg-[#0095F6] hover:bg-[#1877F2] text-white text-xs font-semibold" data-req-id="${r.id}" data-req-username="${r.username}" data-action="accept">Confirm</button>
+                    <button class="req-action px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs font-semibold" data-req-id="${r.id}" data-req-username="${r.username}" data-action="delete">Delete</button>
                   </div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
           ` : ''}
 
           ${state.notifications.length ? `
             <div class="space-y-2">
               <h2 class="text-xs font-semibold uppercase text-zinc-500">Recent Notifications</h2>
-              ${state.notifications.map(n => {
-                const actorU = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === (n.actor || '').toLowerCase());
+              ${state.notifications.filter(n => !(n.type === 'follow_request' && state.followRequests.some(fr => (fr.username || '').toLowerCase() === (n.actor || '').toLowerCase()))).map(n => {
+                const actorLower = (n.actor || '').toLowerCase();
+                const actorU = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === actorLower);
                 const actorAv = actorU?.avatar_url || '';
+                const isFollowNotif = n.type === 'follow';
+                const alreadyFollowing = (state.ownFollowingUsernames || []).includes(actorLower);
+                const alreadyRequested = (state.ownPendingUsernames || []).includes(actorLower);
                 return `
                 <div class="p-3 rounded-xl ${n.type === 'restriction' || n.type === 'block' ? 'bg-red-500/10 border border-red-500/30' : 'bg-zinc-50 dark:bg-zinc-900'} flex items-center gap-3 text-sm">
                   <button type="button" class="open-user-profile shrink-0" data-username="${n.actor}">
@@ -2111,6 +2124,15 @@
                     </p>
                     <p class="text-[11px] text-zinc-400 mt-0.5">${n.dateTime || n.time}</p>
                   </div>
+                  ${isFollowNotif && actorLower !== (state.currentUser.username || '').toLowerCase() ? `
+                    <button type="button" class="notif-follow-back-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      alreadyFollowing ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
+                      : alreadyRequested ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                      : 'bg-[#0095F6] hover:bg-[#1877F2] text-white'
+                    }" data-username="${n.actor}">
+                      ${alreadyFollowing ? 'Following' : alreadyRequested ? 'Requested' : 'Follow back'}
+                    </button>
+                  ` : ''}
                 </div>
               `;
               }).join('')}
@@ -3648,6 +3670,49 @@
         });
       }
 
+      document.querySelectorAll('.notif-follow-back-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const targetUname = (btn.dataset.username || '').trim();
+          const targetLower = targetUname.toLowerCase();
+          if (!targetLower) return;
+          if ((state.ownFollowingUsernames || []).includes(targetLower) || (state.ownPendingUsernames || []).includes(targetLower)) {
+            openUserProfile({ username: targetUname });
+            return;
+          }
+          const targetU = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === targetLower);
+          const cfg = loadSupaConfig();
+          const meId = state.currentUser.supaUserId;
+          if (cfg.url.startsWith('https://') && cfg.anonKey && meId && targetU?.id) {
+            try {
+              const fresh = await ensureFreshSupaToken();
+              const isPriv = !!targetU.is_private;
+              const status = isPriv ? 'pending' : 'accepted';
+              await fetch(`${cfg.url}/rest/v1/snapgram_follows`, {
+                method: 'POST',
+                headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
+                body: JSON.stringify({ follower_id: meId, following_id: targetU.id, status })
+              });
+              if (isPriv) {
+                state.ownPendingUsernames.push(targetLower);
+                createNotification(targetUname, 'follow_request', 'requested to follow you');
+                showToast('Follow request sent');
+              } else {
+                state.ownFollowingUsernames.push(targetLower);
+                state.currentUser.following += 1;
+                createNotification(targetUname, 'follow', 'started following you');
+                showToast('Following @' + targetUname);
+              }
+              render();
+              return;
+            } catch {}
+          }
+          state.ownFollowingUsernames.push(targetLower);
+          state.currentUser.following += 1;
+          showToast('Following @' + targetUname);
+          render();
+        });
+      });
+
       document.querySelectorAll('.req-action').forEach(btn => {
         btn.addEventListener('click', async () => {
           const reqId = btn.dataset.reqId;
@@ -3670,9 +3735,36 @@
               }
             } catch {}
           }
+          const reqUname = (btn.dataset.reqUsername || '').toLowerCase();
           state.followRequests = state.followRequests.filter(r => r.id !== reqId);
-          if (act === 'accept') state.currentUser.followers += 1;
-          showToast(act === 'accept' ? 'Follow request accepted' : 'Follow request removed');
+          if (act === 'accept') {
+            state.currentUser.followers += 1;
+            const existingIdx = state.notifications.findIndex(n => (n.actor || '').toLowerCase() === reqUname && n.type === 'follow_request');
+            if (existingIdx !== -1) {
+              state.notifications[existingIdx].type = 'follow';
+              state.notifications[existingIdx].text = 'started following you';
+            } else if (reqUname) {
+              state.notifications.unshift({
+                id: 'n_' + Date.now(),
+                actor: btn.dataset.reqUsername,
+                type: 'follow',
+                text: 'started following you',
+                dateTime: 'Just now',
+                time: 'Just now'
+              });
+            }
+          } else {
+            state.notifications = state.notifications.filter(n => !((n.actor || '').toLowerCase() === reqUname && n.type === 'follow_request'));
+            if (cfg.url.startsWith('https://') && cfg.anonKey && state.currentUser.supaToken && reqUname) {
+              ensureFreshSupaToken().then(fresh => {
+                fetch(`${cfg.url}/rest/v1/snapgram_notifications?recipient_username=ilike.${encodeURIComponent(state.currentUser.username)}&actor_username=ilike.${encodeURIComponent(reqUname)}&type=eq.follow_request`, {
+                  method: 'DELETE',
+                  headers: { apikey: cfg.anonKey, Authorization: `Bearer ${fresh}` }
+                }).catch(() => {});
+              }).catch(() => {});
+            }
+          }
+          showToast(act === 'accept' ? 'Follow request accepted' : 'Follow request deleted');
           render();
         });
       });
@@ -7782,6 +7874,10 @@
         const rows = await res.json();
         state.currentUser.followers = rows.filter(r => r.following_id === meId && r.status === 'accepted').length;
         state.currentUser.following = rows.filter(r => r.follower_id === meId && r.status === 'accepted').length;
+        const fIds = new Set(rows.filter(r => r.follower_id === meId && r.status === 'accepted').map(r => r.following_id));
+        const pIds = new Set(rows.filter(r => r.follower_id === meId && r.status === 'pending').map(r => r.following_id));
+        state.ownFollowingUsernames = (state.exploreUsers || []).filter(u => fIds.has(u.id)).map(u => (u.username || '').toLowerCase());
+        state.ownPendingUsernames = (state.exploreUsers || []).filter(u => pIds.has(u.id)).map(u => (u.username || '').toLowerCase());
         state.followRequests = rows
           .filter(r => r.following_id === meId && r.status === 'pending')
           .map(r => ({ id: r.id, username: r.follower_username, fullName: '@' + r.follower_username, followerId: r.follower_id }));
@@ -7839,79 +7935,120 @@
       const pool = kind === 'reel'
         ? [...state.reels, ...(state.viewedProfile.reels || [])]
         : [...state.posts, ...(state.viewedProfile.posts || [])];
-      const p = pool.find(x => x.id === postId);
-      if (!p) return;
+      const clicked = pool.find(x => x.id === postId);
+      if (!clicked) return;
+
+      const seen = new Set();
+      const sameOwner = pool.filter(x => {
+        if (seen.has(x.id)) return false;
+        seen.add(x.id);
+        if (clicked.userId && x.userId) return x.userId === clicked.userId;
+        return (x.username || '').toLowerCase() === (clicked.username || '').toLowerCase();
+      });
+      const feedItems = sameOwner.length ? sameOwner : [clicked];
 
       const body = document.getElementById('post-detail-body');
-      const mediaList = Array.isArray(p.media) && p.media.length ? p.media : [{ url: p.videoUrl || p.img, type: p.mediaType || (kind === 'reel' ? 'video' : 'image') }];
-      const activeMedia = mediaList[0];
-      const dateLabel = p.createdAt ? new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-
-      body.innerHTML = `
-        <div class="space-y-3">
-          <div class="px-4 pt-3 flex items-center justify-between">
-            <button type="button" class="detail-open-profile flex items-center gap-2.5" data-user-id="${p.userId || ''}" data-username="${p.username}">
-              ${renderAvatar(p.userAvatar || '', p.username, 'w-8 h-8')}
-              <span class="text-sm font-semibold inline-flex items-center gap-1">${p.username}${renderVerifiedBadge(p.username)}</span>
-            </button>
-            ${dateLabel ? `<span class="text-[11px] text-zinc-400">${dateLabel}</span>` : ''}
-          </div>
-          <div class="bg-black max-h-[55vh] flex items-center justify-center overflow-hidden">
-            ${activeMedia.type === 'video'
-              ? `<video src="${activeMedia.url}" controls playsinline class="w-full max-h-[55vh] object-contain"></video>`
-              : `<img src="${activeMedia.url}" alt="Post" class="w-full max-h-[55vh] object-contain" />`
-            }
-          </div>
-          <div class="px-4 pb-4 space-y-2.5">
-            <div class="flex items-center gap-4">
-              <button type="button" id="detail-like-btn" class="flex items-center gap-1.5 text-sm font-semibold">
-                <i data-lucide="heart" class="w-5 h-5 ${p.liked ? 'fill-red-500 text-red-500' : ''}"></i>
-                <span>${p.likes.toLocaleString()}</span>
+      body.innerHTML = `<div class="divide-y divide-zinc-200 dark:divide-zinc-800">` + feedItems.map(p => {
+        const mediaList = Array.isArray(p.media) && p.media.length ? p.media : [{ url: p.videoUrl || p.img, type: p.mediaType || (kind === 'reel' ? 'video' : 'image') }];
+        const activeMedia = mediaList[0];
+        const dateLabel = p.createdAt ? new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const uObj = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === (p.username || '').toLowerCase());
+        const avUrl = p.userAvatar || uObj?.avatar_url || (p.username === state.currentUser.username ? state.currentUser.avatar : '');
+        return `
+          <article id="detail-item-${p.id}" class="pb-5">
+            <div class="px-4 py-3 flex items-center justify-between">
+              <button type="button" class="detail-open-profile flex items-center gap-2.5" data-user-id="${p.userId || ''}" data-username="${p.username}">
+                ${renderAvatar(avUrl, p.username, 'w-8 h-8')}
+                <span class="text-sm font-semibold inline-flex items-center gap-1">${p.username}${renderVerifiedBadge(p.username)}</span>
               </button>
-              <span class="text-xs text-zinc-500">${(p.comments || []).length} comments</span>
+              ${dateLabel ? `<span class="text-[11px] text-zinc-400">${dateLabel}</span>` : ''}
             </div>
-            ${renderMusicPill(p)}
-            ${p.caption ? `<p class="text-sm"><span class="font-semibold mr-1.5">${p.username}</span>${p.caption}</p>` : ''}
-            <div id="detail-comments-list" class="space-y-1.5 max-h-40 overflow-y-auto pt-1 border-t border-zinc-100 dark:border-zinc-800">
-              ${(p.comments || []).map(c => `<p class="text-xs"><button type="button" class="detail-open-profile font-semibold mr-1.5 hover:underline" data-username="${c.user}">${c.user}</button>${c.text}</p>`).join('') || '<p class="text-xs text-zinc-400">No comments yet.</p>'}
+            <div class="bg-black w-full max-h-[70vh] flex items-center justify-center overflow-hidden">
+              ${activeMedia.type === 'video'
+                ? `<video src="${activeMedia.url}" controls playsinline class="w-full max-h-[70vh] object-contain"></video>`
+                : `<img src="${activeMedia.url}" alt="Post" class="w-full max-h-[70vh] object-cover" />`
+              }
             </div>
-            <form id="detail-comment-form" class="flex gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-              <input id="detail-comment-input" type="text" placeholder="Add a comment..." class="flex-1 text-xs bg-transparent focus:outline-none" />
-              <button type="submit" class="text-xs font-semibold text-pink-500">Post</button>
-            </form>
-          </div>
-        </div>
-      `;
+            <div class="px-4 pt-3 space-y-2.5">
+              <div class="flex items-center gap-4">
+                <button type="button" class="detail-item-like flex items-center gap-1.5 text-sm font-semibold" data-item-id="${p.id}">
+                  <i data-lucide="heart" class="w-6 h-6 ${p.liked ? 'fill-red-500 text-red-500' : ''}"></i>
+                  <span class="detail-like-count">${p.likes.toLocaleString()}</span>
+                </button>
+                <span class="flex items-center gap-1.5 text-sm text-zinc-500">
+                  <i data-lucide="message-circle" class="w-6 h-6"></i>
+                  <span>${(p.comments || []).length}</span>
+                </span>
+              </div>
+              ${p.caption ? `<p class="text-sm"><span class="font-semibold mr-1.5">${p.username}</span>${p.caption}</p>` : ''}
+              ${p.musicTitle ? renderMusicPill(p) : ''}
+              <div class="detail-comments-list space-y-1 max-h-36 overflow-y-auto pt-1">
+                ${(p.comments || []).map(c => `<p class="text-xs"><span class="font-semibold mr-1">@${c.user}</span>${c.text}</p>`).join('')}
+              </div>
+              <form class="detail-item-comment-form flex gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800" data-item-id="${p.id}">
+                <input type="text" placeholder="Add a comment..." class="detail-comment-input flex-1 text-xs bg-transparent focus:outline-none py-1" />
+                <button type="submit" class="text-xs font-semibold text-pink-500">Post</button>
+              </form>
+            </div>
+          </article>
+        `;
+      }).join('') + `</div>`;
 
       document.getElementById('post-detail-modal').classList.remove('hidden');
       if (window.lucide) window.lucide.createIcons();
 
+      const targetEl = document.getElementById(`detail-item-${postId}`);
+      if (targetEl) {
+        setTimeout(() => targetEl.scrollIntoView({ behavior: 'auto', block: 'start' }), 20);
+      }
+
       body.querySelectorAll('.detail-open-profile').forEach(btn => {
         btn.addEventListener('click', () => {
           document.getElementById('post-detail-modal').classList.add('hidden');
-          openUserProfile({ userId: btn.dataset.userId || '', username: btn.dataset.username || '' });
+          openUserProfile({ userId: btn.dataset.userId, username: btn.dataset.username });
         });
       });
 
-      document.getElementById('detail-like-btn').addEventListener('click', () => {
-        p.liked = !p.liked;
-        p.likes = Math.max(0, p.likes + (p.liked ? 1 : -1));
-        saveUserEngagements();
-        syncMediaEngagement(p.id, { likes_count: p.likes });
-        openPostDetailModal(postId, kind);
-        render();
+      body.querySelectorAll('.detail-item-like').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const item = feedItems.find(x => x.id === btn.dataset.itemId);
+          if (!item) return;
+          item.liked = !item.liked;
+          item.likes += item.liked ? 1 : -1;
+          const cntEl = btn.querySelector('.detail-like-count');
+          if (cntEl) cntEl.textContent = item.likes.toLocaleString();
+          const ic = btn.querySelector('svg, i');
+          if (ic) ic.classList.toggle('fill-red-500', item.liked);
+          if (ic) ic.classList.toggle('text-red-500', item.liked);
+          syncMediaEngagementToSupabase(item);
+          if (item.liked && item.username && item.username !== state.currentUser.username) {
+            createNotification(item.username, 'like', kind === 'reel' ? 'liked your reel' : 'liked your post');
+          }
+        });
       });
 
-      document.getElementById('detail-comment-form').addEventListener('submit', e => {
-        e.preventDefault();
-        const inp = document.getElementById('detail-comment-input');
-        const txt = inp.value.trim();
-        if (!txt) return;
-        p.comments = p.comments || [];
-        p.comments.push({ user: state.currentUser.username, text: txt });
-        syncMediaEngagement(p.id, { comments: p.comments });
-        openPostDetailModal(postId, kind);
-        render();
+      body.querySelectorAll('.detail-item-comment-form').forEach(form => {
+        form.addEventListener('submit', e => {
+          e.preventDefault();
+          const item = feedItems.find(x => x.id === form.dataset.itemId);
+          const inp = form.querySelector('.detail-comment-input');
+          const txt = (inp?.value || '').trim();
+          if (!item || !txt) return;
+          item.comments = Array.isArray(item.comments) ? item.comments : [];
+          item.comments.push({ user: state.currentUser.username, text: txt });
+          syncMediaEngagementToSupabase(item);
+          if (item.username && item.username !== state.currentUser.username) {
+            createNotification(item.username, 'comment', `commented: "${txt.slice(0, 40)}"`);
+          }
+          const listEl = form.previousElementSibling;
+          if (listEl) {
+            const pTag = document.createElement('p');
+            pTag.className = 'text-xs';
+            pTag.innerHTML = `<span class="font-semibold mr-1">@${state.currentUser.username}</span>${txt}`;
+            listEl.appendChild(pTag);
+          }
+          inp.value = '';
+        });
       });
     }
 
