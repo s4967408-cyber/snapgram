@@ -2801,35 +2801,37 @@
 
               <div id="chat-messages-area" class="flex-1 min-h-0 w-full max-w-full p-3.5 space-y-3 overflow-y-auto overflow-x-hidden overscroll-contain relative select-none ${isDarkTheme || themeCfg.customPhoto ? 'text-white' : 'text-zinc-900'}" style="${chatBgStyle}" data-conv-id="${conv.id}">
                 ${themeCfg.patternHtml || ''}
-                <!-- Instagram-style Peer Profile Intro + Profile / Safety tips / Block row -->
+                <!-- Instagram-style Peer Profile Intro (Profile/Safety/Block hidden in Group Chats) -->
                 <div class="text-center pt-3 pb-5 space-y-2 relative z-10">
-                  <button type="button" class="open-user-profile inline-block rounded-full focus:outline-none" data-username="${conv.title}">
+                  <button type="button" class="${conv.isGroup ? 'open-group-info-btn' : 'open-user-profile'} inline-block rounded-full focus:outline-none" data-conv-id="${conv.id}" data-username="${conv.title}">
                     ${renderAvatar(peerAvatar, conv.title, 'w-20 h-20 mx-auto ring-2 ring-zinc-200/70')}
                   </button>
                   <div>
-                    <p class="text-base font-bold ${isDarkTheme || themeCfg.customPhoto ? 'text-white drop-shadow' : 'text-zinc-900'}">${peerFullName}</p>
-                    <p class="text-xs ${isDarkTheme || themeCfg.customPhoto ? 'text-white/80 drop-shadow' : 'text-zinc-500'}">${conv.title} · ${peerJoined}</p>
+                    <p class="text-base font-bold ${isDarkTheme || themeCfg.customPhoto ? 'text-white drop-shadow' : 'text-zinc-900'}">${conv.isGroup ? conv.title : peerFullName}</p>
+                    <p class="text-xs ${isDarkTheme || themeCfg.customPhoto ? 'text-white/80 drop-shadow' : 'text-zinc-500'}">${conv.isGroup ? ((conv.members || []).length + ' members · Snapgram Group') : (conv.title + ' · ' + peerJoined)}</p>
                   </div>
-                  <div class="flex items-center justify-center gap-8 pt-2">
-                    <button type="button" class="open-user-profile flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80" data-username="${conv.title}">
-                      <span class="w-10 h-10 rounded-full ${isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900'} flex items-center justify-center">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                      </span>
-                      <span>Profile</span>
-                    </button>
-                    <button id="chat-safety-tips-btn" type="button" class="flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80" data-username="${conv.title}">
-                      <span class="w-10 h-10 rounded-full ${isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900'} flex items-center justify-center">
-                        <i data-lucide="shield-check" class="w-5 h-5"></i>
-                      </span>
-                      <span>Safety tips</span>
-                    </button>
-                    <button id="chat-block-btn" type="button" class="flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80 ${isPeerBlocked ? 'text-red-500' : ''}" data-username="${conv.title}">
-                      <span class="w-10 h-10 rounded-full ${isPeerBlocked ? 'bg-red-500 text-white' : (isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900')} flex items-center justify-center">
-                        <i data-lucide="ban" class="w-5 h-5"></i>
-                      </span>
-                      <span>${isPeerBlocked ? 'Unblock' : 'Block'}</span>
-                    </button>
-                  </div>
+                  ${!conv.isGroup ? `
+                    <div class="flex items-center justify-center gap-8 pt-2">
+                      <button type="button" class="open-user-profile flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80" data-username="${conv.title}">
+                        <span class="w-10 h-10 rounded-full ${isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900'} flex items-center justify-center">
+                          <i data-lucide="user" class="w-5 h-5"></i>
+                        </span>
+                        <span>Profile</span>
+                      </button>
+                      <button id="chat-safety-tips-btn" type="button" class="flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80" data-username="${conv.title}">
+                        <span class="w-10 h-10 rounded-full ${isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900'} flex items-center justify-center">
+                          <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </span>
+                        <span>Safety tips</span>
+                      </button>
+                      <button id="chat-block-btn" type="button" class="flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80 ${isPeerBlocked ? 'text-red-500' : ''}" data-username="${conv.title}">
+                        <span class="w-10 h-10 rounded-full ${isPeerBlocked ? 'bg-red-500 text-white' : (isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900')} flex items-center justify-center">
+                          <i data-lucide="ban" class="w-5 h-5"></i>
+                        </span>
+                        <span>${isPeerBlocked ? 'Unblock' : 'Block'}</span>
+                      </button>
+                    </div>
+                  ` : ''}
                 </div>
 
                 ${conv.messages.map((m, idx) => {
