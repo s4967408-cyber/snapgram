@@ -2739,8 +2739,23 @@
 
             <div class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900">
               ${filteredConvs.map(c => {
+                const readMap = getConvReadTsMap();
+                const lastReadTs = Number(readMap[c.id] || 0);
+                const meLower = (state.currentUser.username || '').toLowerCase();
+                const unreadMsgs = (c.messages || []).filter(m => (m.sender || '').toLowerCase() !== meLower && Number(m.ts || 0) > lastReadTs);
+                const isUnread = unreadMsgs.length > 0;
                 const last = c.messages[c.messages.length - 1];
-                const lastLabel = !last ? 'No messages yet' : (last.text.startsWith('__VOICE__|') ? '🎤 Voice message' : (last.text.startsWith('__SHARE__|') ? '🎬 Shared a reel/post' : last.text));
+                let lastLabel = 'No messages yet';
+                if (last) {
+                  if (last.text.startsWith('__VOICE__|')) lastLabel = '🎤 Voice message';
+                  else if (last.text.startsWith('__PHOTO__|')) lastLabel = '📷 Photo';
+                  else if (last.text.startsWith('__VIDEO__|')) lastLabel = '🎥 Video';
+                  else if (last.text.startsWith('__DRAW__|')) lastLabel = '🎨 Drawing';
+                  else if (last.text.startsWith('__SHARE__|')) lastLabel = '🎬 Shared a reel/post';
+                  else if (last.text.startsWith('__STICKER__|')) lastLabel = last.text.split('|')[1] || 'Sticker';
+                  else if (isUnread && last.text.length > 28) lastLabel = unreadMsgs.length > 1 ? `${unreadMsgs.length} new messages` : 'New message';
+                  else lastLabel = last.text;
+                }
                 return `
                   <button class="conv-select w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition select-none ${conv && c.id === conv.id ? 'bg-zinc-100/80 dark:bg-zinc-900' : ''}" data-conv-id="${c.id}">
                     <div class="relative shrink-0">
@@ -2748,9 +2763,10 @@
                       ${c.online ? '<span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-semibold truncate">${c.title}</p>
-                      <p class="text-xs text-zinc-500 truncate">${lastLabel} ${last ? '· ' + last.time : ''}</p>
+                      <p class="${isUnread ? 'text-sm font-extrabold text-zinc-950 dark:text-white' : 'text-sm font-semibold text-zinc-800 dark:text-zinc-100'} truncate">${c.title}</p>
+                      <p class="${isUnread ? 'text-[13px] font-extrabold text-zinc-950 dark:text-white' : 'text-xs text-zinc-500'} truncate">${lastLabel} ${last ? '· ' + last.time : ''}</p>
                     </div>
+                    ${isUnread ? '<span class="w-2.5 h-2.5 rounded-full bg-[#0095F6] shrink-0"></span>' : ''}
                   </button>
                 `;
               }).join('') || `<p class="p-6 text-center text-xs text-zinc-500">${state.showHiddenChats ? 'No hidden chats yet. Long-press any chat to hide it.' : 'No conversations in this folder.'}</p>`}
@@ -4398,6 +4414,8 @@
           if (held) { e.preventDefault(); held = false; return; }
           state.activeConvId = btn.dataset.convId;
           state.mobileChatOpen = true;
+          const openedConv = state.conversations.find(c => c.id === state.activeConvId);
+          if (openedConv) markConvAsOpenedAndSendSeen(openedConv);
           render();
         });
       });
@@ -4473,7 +4491,7 @@
           });
         }
         const msgText = `__VOICE__|${audioUrl}|${durStr}|${fx}`;
-        conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
+        conv.messages.push({ id: 'm' + Date.now(), ts: Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
         conv.seen = 'Delivered';
         saveMessageToSupabase(conv.title, msgText);
         resetVoiceNoteUI();
@@ -4752,7 +4770,7 @@
           const conv = state.conversations.find(c => c.id === state.activeConvId);
           if (!conv) return;
           const msgText = input.value.trim();
-          conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
+          conv.messages.push({ id: 'm' + Date.now(), ts: Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
           conv.seen = 'Delivered';
           if (conv.isGroup) {
             const cmid = 'gm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
@@ -9152,7 +9170,7 @@
           conv = { id: 'dm_' + peer, box: 'primary', title: peer, subtitle: 'Snapgram Direct', avatar: '', online: false, seen: '', messages: [] };
           state.conversations.unshift(conv);
         }
-        conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
+        conv.messages.push({ id: 'm' + Date.now(), ts: Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
       }
       const n = shareSheetState.selected.size;
       document.getElementById('share-sheet-modal').classList.add('hidden');
@@ -9404,6 +9422,7 @@
         const deletedMsgIdsSet = getDeletedMsgIdsSet();
         const convMap = {};
         const unsentSigs = getUnsentSigsSet();
+        const peerSeenTsMap = {};
         getSavedGroupsList().forEach(g => {
           convMap[g.id] = { ...g, isGroup: true, messages: [] };
         });
@@ -9430,6 +9449,15 @@
             handleIncomingCallSignalRow(m);
             return;
           }
+          if (typeof m.text === 'string' && m.text.startsWith('__SEEN__|')) {
+            if (m.sender_username !== me) {
+              const sp = m.text.split('|');
+              const cKey = sp[1] === 'dm' ? ('dm_' + m.sender_username) : sp[1];
+              const sTs = Number(sp[2] || msgTs || 0);
+              peerSeenTsMap[cKey] = Math.max(Number(peerSeenTsMap[cKey] || 0), sTs);
+            }
+            return;
+          }
           if (typeof m.text === 'string' && m.text.startsWith('__GRP_INVITE__|')) {
             return;
           }
@@ -9450,6 +9478,7 @@
             convMap[gid].messages.push({
               id: m.id,
               clientMsgId: cmid,
+              ts: msgTs,
               sender: m.sender_username,
               text: gtxt,
               time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -9459,6 +9488,7 @@
           }
           convMap[peer].messages.push({
             id: m.id,
+            ts: msgTs,
             sender: m.sender_username,
             text: m.text,
             time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -9476,7 +9506,7 @@
           }
           state.unreadMsgCount = rows.filter(m => {
             if (m.sender_username === me) return false;
-            if (typeof m.text === 'string' && m.text.startsWith('__CALL__|')) return false;
+            if (typeof m.text === 'string' && (m.text.startsWith('__CALL__|') || m.text.startsWith('__SEEN__|') || m.text.startsWith('__GRP_INVITE__|'))) return false;
             const peerKey = (m.sender_username || '').toLowerCase();
             const ts = new Date(m.created_at).getTime();
             if (hiddenMap[peerKey]) return false;
@@ -9485,6 +9515,17 @@
           }).length;
         }
         const loaded = Object.values(convMap);
+        loaded.forEach(c => {
+          const lastM = c.messages[c.messages.length - 1];
+          if (lastM && (lastM.sender || '').toLowerCase() === (me || '').toLowerCase()) {
+            const seenTs = Number(peerSeenTsMap[c.id] || 0);
+            c.seen = (seenTs > 0 && seenTs >= Number(lastM.ts || 0) - 2000) ? 'Seen' : 'Delivered';
+          }
+        });
+        if (state.activeTab === 'messages' && (state.mobileChatOpen || window.innerWidth >= 768)) {
+          const activeC = loaded.find(c => c.id === state.activeConvId);
+          if (activeC) markConvAsOpenedAndSendSeen(activeC);
+        }
         if (loaded.length) {
           state.conversations = loaded;
           if (!state.activeConvId || !loaded.some(c => c.id === state.activeConvId)) {
@@ -9494,6 +9535,39 @@
           if (!vnState.recorder && !vnBarVisible) render();
         }
       } catch {}
+    }
+
+    function getConvReadTsMap() {
+      try { return JSON.parse(localStorage.getItem('snapgram_conv_read_ts_' + getChatStorageUser()) || '{}'); } catch { return {}; }
+    }
+    function markConvAsOpenedAndSendSeen(conv) {
+      if (!conv) return;
+      const readMap = getConvReadTsMap();
+      const now = Date.now();
+      readMap[conv.id] = now;
+      localStorage.setItem('snapgram_conv_read_ts_' + getChatStorageUser(), JSON.stringify(readMap));
+
+      // Find latest incoming message timestamp from other user(s)
+      const me = (state.currentUser.username || '').toLowerCase();
+      const incoming = (conv.messages || []).filter(m => (m.sender || '').toLowerCase() !== me);
+      if (!incoming.length) return;
+      const latest = incoming[incoming.length - 1];
+      const latestTs = Number(latest.ts || now);
+
+      // Avoid resending __SEEN__ if already acknowledged for this timestamp
+      const sentMapKey = 'snapgram_sent_seen_ts_' + getChatStorageUser();
+      let sentMap = {};
+      try { sentMap = JSON.parse(localStorage.getItem(sentMapKey) || '{}'); } catch {}
+      if (Number(sentMap[conv.id] || 0) >= latestTs) return;
+      sentMap[conv.id] = latestTs;
+      localStorage.setItem(sentMapKey, JSON.stringify(sentMap));
+
+      const sig = `__SEEN__|${conv.isGroup ? conv.id : 'dm'}|${latestTs}`;
+      if (conv.isGroup) {
+        (conv.members || []).filter(m => m.toLowerCase() !== me).forEach(mem => saveMessageToSupabase(mem, sig));
+      } else {
+        saveMessageToSupabase(conv.title, sig);
+      }
     }
 
     function getSavedGroupsList() {
@@ -12333,7 +12407,7 @@
     async function sendDmMediaPayload(msgText) {
       const conv = state.conversations.find(c => c.id === state.activeConvId);
       if (!conv) return;
-      conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
+      conv.messages.push({ id: 'm' + Date.now(), ts: Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
       conv.seen = 'Delivered';
       render();
       await saveMessageToSupabase(conv.title, msgText);
