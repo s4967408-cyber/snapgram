@@ -1126,28 +1126,206 @@
     </div>
   </div>
 
-  <!-- Group Info & Edit Name / Icon Modal -->
-  <div id="group-info-modal" class="hidden fixed inset-0 z-[84] bg-black/55 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
-    <div class="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl max-h-[82vh] flex flex-col">
-      <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold">Group Details</h3>
-        <button id="close-group-info" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div class="flex items-center gap-3">
-        <label for="edit-group-icon-input" class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden cursor-pointer shrink-0 border border-zinc-200 dark:border-zinc-700" title="Change group icon">
+  <!-- Instagram-Style Group Profile Modal (Matches 15930.png, 15936.png, 15937.png) -->
+  <div id="group-info-modal" class="hidden fixed inset-0 z-[84] bg-white dark:bg-zinc-950 flex flex-col overflow-hidden">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900 shrink-0">
+      <button id="close-group-info" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Back"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+      <span class="text-sm font-bold">Group info</span>
+      <span class="w-8"></span>
+    </div>
+    <div class="flex-1 overflow-y-auto pb-8">
+      <!-- Center Avatar, Name, Change Name & Image -->
+      <div class="px-5 pt-4 pb-5 flex flex-col items-center text-center space-y-2">
+        <label for="edit-group-icon-input" class="w-24 h-24 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden cursor-pointer border border-zinc-200 dark:border-zinc-700 shadow-sm">
           <img id="edit-group-icon-preview" src="" alt="" class="hidden w-full h-full object-cover" />
-          <i id="edit-group-icon-placeholder" data-lucide="users" class="w-6 h-6 text-zinc-500"></i>
+          <i id="edit-group-icon-placeholder" data-lucide="users" class="w-9 h-9 text-zinc-500"></i>
         </label>
         <input id="edit-group-icon-input" type="file" accept="image/*" class="hidden" />
-        <input id="edit-group-name-input" type="text" placeholder="Group name" class="flex-1 px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none" />
-        <button id="save-group-info-btn" type="button" class="px-3.5 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-bold">Save</button>
+        <h2 id="grp-prof-name-display" class="text-xl font-bold tracking-tight">Group Name</h2>
+        <button id="grp-change-name-img-btn" type="button" class="text-xs font-semibold text-[#0095F6] hover:underline">Change name and image</button>
+
+        <!-- Inline Name Editor (hidden until tapped) -->
+        <div id="grp-inline-edit-box" class="hidden w-full max-w-xs pt-2 flex items-center gap-2">
+          <input id="edit-group-name-input" type="text" placeholder="Group name" class="flex-1 px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent text-sm focus:outline-none" />
+          <button id="save-group-info-btn" type="button" class="px-3.5 py-1.5 rounded-xl bg-[#0095F6] text-white text-xs font-bold">Save</button>
+        </div>
+
+        <!-- 4 Action Icons Row: Add, Search, Mute, Options -->
+        <div class="grid grid-cols-4 gap-5 pt-4 w-full max-w-xs">
+          <button id="grp-act-add" type="button" class="flex flex-col items-center gap-1.5 text-xs font-medium">
+            <span class="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center"><i data-lucide="user-plus" class="w-5 h-5"></i></span>
+            <span>Add</span>
+          </button>
+          <button id="grp-act-search" type="button" class="flex flex-col items-center gap-1.5 text-xs font-medium">
+            <span class="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center"><i data-lucide="search" class="w-5 h-5"></i></span>
+            <span>Search</span>
+          </button>
+          <button id="grp-act-mute" type="button" class="flex flex-col items-center gap-1.5 text-xs font-medium">
+            <span class="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center"><i id="grp-mute-icon" data-lucide="bell" class="w-5 h-5"></i></span>
+            <span id="grp-mute-label">Mute</span>
+          </button>
+          <button id="grp-act-options" type="button" class="flex flex-col items-center gap-1.5 text-xs font-medium">
+            <span class="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center"><i data-lucide="more-horizontal" class="w-5 h-5"></i></span>
+            <span>Options</span>
+          </button>
+        </div>
       </div>
-      <div class="flex-1 overflow-y-auto space-y-1.5">
-        <p class="text-xs font-bold text-zinc-500 uppercase">Members</p>
-        <div id="group-info-members" class="space-y-1.5"></div>
+
+      <!-- Settings Rows -->
+      <div class="divide-y divide-zinc-100 dark:divide-zinc-900 px-4">
+        <button id="grp-row-theme" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60 px-1 rounded-xl">
+          <span id="grp-theme-swatch" class="w-7 h-7 rounded-full border border-zinc-200 dark:border-zinc-700 shrink-0" style="background:#ffffff;"></span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">Theme</p>
+            <p id="grp-theme-name" class="text-xs text-zinc-500 truncate">White (Default)</p>
+          </div>
+        </button>
+        <button id="grp-row-invite" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60 px-1 rounded-xl">
+          <span class="w-7 h-7 flex items-center justify-center shrink-0"><i data-lucide="link" class="w-5 h-5"></i></span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">Invite link</p>
+            <p id="grp-invite-preview" class="text-xs text-zinc-500 truncate"></p>
+          </div>
+        </button>
+        <button id="grp-row-people" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60 px-1 rounded-xl">
+          <span class="w-7 h-7 flex items-center justify-center shrink-0"><i data-lucide="users" class="w-5 h-5"></i></span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">People</p>
+            <p id="grp-people-preview" class="text-xs text-zinc-500 truncate"></p>
+          </div>
+        </button>
+        <button id="grp-row-privacy" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60 px-1 rounded-xl">
+          <span class="w-7 h-7 flex items-center justify-center shrink-0"><i data-lucide="lock" class="w-5 h-5"></i></span>
+          <span class="text-sm font-semibold">Privacy &amp; safety</span>
+        </button>
+        <button id="grp-row-nicknames" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60 px-1 rounded-xl">
+          <span class="w-7 h-7 flex items-center justify-center shrink-0"><i data-lucide="user-cog" class="w-5 h-5"></i></span>
+          <span class="text-sm font-semibold">Nicknames</span>
+        </button>
+        <button id="grp-row-create-new" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60 px-1 rounded-xl">
+          <span class="w-7 h-7 flex items-center justify-center shrink-0"><i data-lucide="user-plus" class="w-5 h-5"></i></span>
+          <span class="text-sm font-semibold">Create a new group chat</span>
+        </button>
       </div>
-      <button id="leave-group-btn" type="button" class="w-full py-2.5 rounded-xl bg-red-500/10 text-red-500 text-xs font-bold">Leave Group</button>
+
+      <!-- Shared Media Tabs & Grid -->
+      <div class="mt-3 border-t border-zinc-200 dark:border-zinc-800">
+        <div class="flex border-b border-zinc-200 dark:border-zinc-800">
+          <button type="button" class="flex-1 py-2.5 border-b-2 border-zinc-900 dark:border-white flex justify-center"><i data-lucide="grid" class="w-5 h-5"></i></button>
+          <button type="button" class="flex-1 py-2.5 text-zinc-400 flex justify-center"><i data-lucide="repeat" class="w-5 h-5"></i></button>
+        </div>
+        <div id="grp-shared-media-grid" class="grid grid-cols-3 gap-0.5 p-0.5"></div>
+      </div>
     </div>
+  </div>
+
+  <!-- Group Options Popup (Matches 15936.png: Leave, Mark as spam, Restrict, Block, Report) -->
+  <div id="group-options-modal" class="hidden fixed inset-0 z-[86] bg-black/45 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800">
+      <button id="leave-group-btn" type="button" class="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800"><i data-lucide="log-out" class="w-4 h-4"></i> Leave</button>
+      <button id="grp-opt-spam" type="button" class="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800"><i data-lucide="eye-off" class="w-4 h-4"></i> Mark as spam</button>
+      <button id="grp-opt-restrict" type="button" class="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800"><i data-lucide="shield-off" class="w-4 h-4"></i> Restrict</button>
+      <button id="grp-opt-block" type="button" class="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800"><i data-lucide="ban" class="w-4 h-4"></i> Block</button>
+      <button id="grp-opt-report" type="button" class="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"><i data-lucide="alert-octagon" class="w-4 h-4"></i> Report</button>
+    </div>
+  </div>
+
+  <!-- Group Invite Link + QR Code + Share Modal (Matches 15932.png) -->
+  <div id="group-invite-modal" class="hidden fixed inset-0 z-[86] bg-white dark:bg-zinc-950 flex flex-col">
+    <div class="px-4 py-3.5 flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-900">
+      <button id="close-grp-invite" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+      <h3 class="text-lg font-bold">Invite link</h3>
+    </div>
+    <div class="p-5 space-y-5">
+      <div class="space-y-1">
+        <p class="text-sm font-semibold">Invite link</p>
+        <p id="grp-inv-url-text" class="text-xs text-[#0095F6] break-all"></p>
+        <p class="text-xs text-zinc-500 pt-1">Anyone can request to join your group chat with this link. Only admins can approve requests.</p>
+      </div>
+      <div class="divide-y divide-zinc-100 dark:divide-zinc-900">
+        <button id="grp-inv-copy" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-sm font-medium"><i data-lucide="copy" class="w-5 h-5"></i> Copy</button>
+        <button id="grp-inv-send-sg" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-sm font-medium"><i data-lucide="send" class="w-5 h-5"></i> Send in Snapgram</button>
+        <button id="grp-inv-qr-btn" type="button" class="w-full py-3.5 flex items-center justify-between text-sm font-medium">
+          <span class="flex items-center gap-3.5"><i data-lucide="qr-code" class="w-5 h-5"></i> QR code</span>
+          <span class="px-2 py-0.5 rounded-full bg-[#0095F6] text-white text-[10px] font-bold">New</span>
+        </button>
+        <button id="grp-inv-share" type="button" class="w-full py-3.5 flex items-center gap-3.5 text-sm font-medium"><i data-lucide="share-2" class="w-5 h-5"></i> Share</button>
+      </div>
+      <div id="grp-qr-box" class="hidden p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center gap-2 text-center">
+        <canvas id="grp-qr-canvas" width="180" height="180" class="rounded-xl bg-white p-2 shadow"></canvas>
+        <p class="text-xs font-semibold">Scan to join group</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group People & Admin Hierarchy Modal (Matches 15933.png) -->
+  <div id="group-people-modal" class="hidden fixed inset-0 z-[86] bg-white dark:bg-zinc-950 flex flex-col">
+    <div class="px-4 py-3.5 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900">
+      <div class="flex items-center gap-3">
+        <button id="close-grp-people" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+        <h3 class="text-lg font-bold">People</h3>
+      </div>
+      <button id="grp-people-add-top" type="button" class="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="user-plus" class="w-5 h-5"></i></button>
+    </div>
+    <div id="grp-people-list-body" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+  </div>
+
+  <!-- Group Privacy & Safety Modal (Matches 15934.png) -->
+  <div id="group-privacy-modal" class="hidden fixed inset-0 z-[86] bg-white dark:bg-zinc-950 flex flex-col">
+    <div class="px-4 py-3.5 flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-900">
+      <button id="close-grp-privacy" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+      <h3 class="text-lg font-bold">Privacy &amp; safety</h3>
+    </div>
+    <div class="p-5 space-y-5">
+      <div class="space-y-4">
+        <p class="text-sm font-bold">Who can see your activity</p>
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <p class="text-sm font-semibold">Read receipts</p>
+            <p class="text-xs text-zinc-500">Others can see when you've read their messages.</p>
+          </div>
+          <input id="grp-priv-read" type="checkbox" checked class="w-5 h-5 accent-zinc-900" />
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <p class="text-sm font-semibold">Typing indicator</p>
+            <p class="text-xs text-zinc-500">Others can see when you're typing.</p>
+          </div>
+          <input id="grp-priv-typing" type="checkbox" checked class="w-5 h-5 accent-zinc-900" />
+        </label>
+      </div>
+      <div class="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-900">
+        <p class="text-sm font-bold">Actions you can take</p>
+        <button id="grp-priv-restrict" type="button" class="w-full py-2.5 flex items-center gap-3 text-sm font-medium"><i data-lucide="shield-off" class="w-5 h-5"></i> Restrict</button>
+        <button id="grp-priv-block" type="button" class="w-full py-2.5 flex items-center gap-3 text-sm font-medium"><i data-lucide="ban" class="w-5 h-5"></i> Block</button>
+        <button id="grp-priv-report" type="button" class="w-full py-2.5 flex items-center gap-3 text-sm font-semibold text-red-500"><i data-lucide="alert-octagon" class="w-5 h-5"></i> Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group Nicknames Modal -->
+  <div id="group-nicknames-modal" class="hidden fixed inset-0 z-[86] bg-white dark:bg-zinc-950 flex flex-col">
+    <div class="px-4 py-3.5 flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-900">
+      <button id="close-grp-nicknames" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+      <h3 class="text-lg font-bold">Nicknames</h3>
+    </div>
+    <p class="px-4 pt-3 text-xs text-zinc-500">Tap any member to set a nickname. A notification will appear inside the chat.</p>
+    <div id="grp-nicknames-list" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+  </div>
+
+  <!-- Group Add Members Modal (Admins Only, Matches 15935.png) -->
+  <div id="group-add-modal" class="hidden fixed inset-0 z-[87] bg-white dark:bg-zinc-950 flex flex-col">
+    <div class="px-4 py-3.5 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900">
+      <div class="flex items-center gap-3">
+        <button id="close-grp-add" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+        <h3 class="text-lg font-bold">Add people</h3>
+      </div>
+      <button id="confirm-grp-add-btn" type="button" disabled class="px-4 py-1.5 rounded-full bg-[#0095F6] disabled:opacity-40 text-white text-xs font-bold">Add</button>
+    </div>
+    <div class="px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-900">
+      <input id="grp-add-search" type="text" placeholder="Search" class="w-full px-3.5 py-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-sm focus:outline-none" />
+    </div>
+    <div id="grp-add-list" class="flex-1 overflow-y-auto p-3 space-y-1"></div>
   </div>
 
   <!-- Chat Long-Press Actions Sheet (Move Primary/General/Requests, Hide Chat, Delete Chat) -->
@@ -2402,11 +2580,13 @@
 
     const CHAT_THEMES = [
       { id: 'white', name: 'White (Default)', swatch: '#ffffff', bgStyle: 'background-color: #ffffff;', myBubbleClass: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white', isDark: false },
-      { id: 'love', name: 'Love ❤️', swatch: 'linear-gradient(135deg,#ff9a9e,#fecfef)', bgStyle: 'background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 50%, #ffd6e7 100%);', patternHtml: '<div class="pointer-events-none absolute inset-0 overflow-hidden opacity-20 flex flex-wrap justify-around items-center text-4xl select-none"><span>❤️</span><span>💕</span><span>💖</span><span>❤️</span><span>💗</span><span>💘</span></div>', myBubbleClass: 'bg-gradient-to-r from-rose-500 to-pink-500 text-white', isDark: false },
-      { id: 'crimson', name: 'Hearts 💘', swatch: 'linear-gradient(160deg,#ff758c,#ff7eb3)', bgStyle: 'background: linear-gradient(160deg, #ff758c 0%, #ff7eb3 100%);', patternHtml: '<div class="pointer-events-none absolute inset-0 overflow-hidden opacity-15 flex flex-wrap justify-around items-center text-5xl select-none"><span>💘</span><span>❤️</span><span>💞</span><span>❤️</span></div>', myBubbleClass: 'bg-white/25 backdrop-blur-md text-white border border-white/30', isDark: true },
-      { id: 'sunset', name: 'Sunset 🌅', swatch: 'linear-gradient(135deg,#ffecd2,#fcb69f)', bgStyle: 'background: linear-gradient(135deg, #fff1e6 0%, #ffd6ba 50%, #fcb69f 100%);', myBubbleClass: 'bg-gradient-to-r from-orange-500 to-rose-500 text-white', isDark: false },
-      { id: 'ocean', name: 'Ocean 🌊', swatch: 'linear-gradient(135deg,#a1c4fd,#c2e9fb)', bgStyle: 'background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);', myBubbleClass: 'bg-gradient-to-r from-sky-500 to-blue-600 text-white', isDark: false },
-      { id: 'lavender', name: 'Lavender 💜', swatch: 'linear-gradient(135deg,#e0c3fc,#8ec5fc)', bgStyle: 'background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);', myBubbleClass: 'bg-gradient-to-r from-violet-500 to-purple-600 text-white', isDark: false },
+      { id: 'olivia', name: 'Olivia Rodrigo', swatch: 'linear-gradient(160deg,#d8b4fe,#86efac)', bgStyle: 'background: linear-gradient(160deg, #f3e8ff 0%, #fbcfe8 45%, #bbf7d0 100%);', patternHtml: '<div class="pointer-events-none absolute inset-0 overflow-hidden opacity-20 flex flex-wrap justify-around items-center text-4xl select-none"><span>🦋</span><span>🌸</span><span>💜</span><span>🌺</span></div>', myBubbleClass: 'bg-gradient-to-r from-purple-600 to-pink-500 text-white', isDark: false },
+      { id: 'glowpup', name: 'Glow Pup', swatch: 'linear-gradient(135deg,#f0abfc,#c084fc)', bgStyle: 'background: linear-gradient(135deg, #fae8ff 0%, #f3e8ff 50%, #e9d5ff 100%);', myBubbleClass: 'bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white', isDark: false },
+      { id: 'supergirl', name: 'Supergirl', swatch: 'linear-gradient(135deg,#2563eb,#dc2626)', bgStyle: 'background: linear-gradient(160deg, #dbeafe 0%, #bfdbfe 60%, #fecaca 100%);', myBubbleClass: 'bg-gradient-to-r from-blue-600 to-red-500 text-white', isDark: false },
+      { id: 'avatar', name: 'Avatar', swatch: 'linear-gradient(135deg,#99f6e4,#0d9488)', bgStyle: 'background: linear-gradient(160deg, #ccfbf1 0%, #99f6e4 55%, #5eead4 100%);', myBubbleClass: 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white', isDark: false },
+      { id: 'pixel', name: 'Pixel Dreamscape', swatch: 'linear-gradient(135deg,#a5f3fc,#fbcfe8)', bgStyle: 'background: linear-gradient(135deg, #ecfeff 0%, #cffafe 50%, #fce7f3 100%);', myBubbleClass: 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white', isDark: false },
+      { id: 'odyssey', name: 'The Odyssey', swatch: 'linear-gradient(160deg,#38bdf8,#1e3a8a)', bgStyle: 'background: linear-gradient(160deg, #0c4a6e 0%, #1e3a8a 100%);', myBubbleClass: 'bg-white/20 backdrop-blur-md text-white', isDark: true },
+      { id: 'love', name: 'Love ❤️', swatch: 'linear-gradient(135deg,#ff9a9e,#fecfef)', bgStyle: 'background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 50%, #ffd6e7 100%);', patternHtml: '<div class="pointer-events-none absolute inset-0 overflow-hidden opacity-20 flex flex-wrap justify-around items-center text-4xl select-none"><span>❤️</span><span>💕</span><span>💖</span><span>❤️</span></div>', myBubbleClass: 'bg-gradient-to-r from-rose-500 to-pink-500 text-white', isDark: false },
       { id: 'midnight', name: 'Midnight 🌙', swatch: 'linear-gradient(160deg,#0f172a,#1e1b4b)', bgStyle: 'background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);', myBubbleClass: 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white', isDark: true }
     ];
 
@@ -2658,6 +2838,7 @@
                   const isShareMsg = typeof m.text === 'string' && (m.text.startsWith('__SHARE__|') || m.text.startsWith('__PHOTO__|') || m.text.startsWith('__VIDEO__|') || m.text.startsWith('__STICKER__|') || m.text.startsWith('__DRAW__|'));
                   return `
                     <div id="msg-bubble-${m.id}" class="flex flex-col ${isMine ? 'items-end' : 'items-start'} relative z-10 transition-colors duration-500 rounded-2xl">
+                      ${conv.isGroup && !isMine ? `<span class="text-[10px] font-semibold text-zinc-500 ml-9 mb-0.5">${getDisplayNickOrName(conv, m.sender)}</span>` : ''}
                       <div class="flex items-end gap-2 max-w-[82%] min-w-0 group">
                         ${!isMine ? renderAvatar(peerAvatar, m.sender, 'w-7 h-7 shrink-0 mb-1') : ''}
                         <div role="button" tabindex="0" class="msg-react-btn max-w-full break-words text-left relative transition cursor-pointer ${
@@ -5050,6 +5231,9 @@
       const grpObj = {
         id: grpId,
         isGroup: true,
+        creator: state.currentUser.username,
+        admins: [state.currentUser.username],
+        muted: false,
         box: 'primary',
         title: grpName,
         subtitle: `${publicMembers.length} members`,
@@ -5076,23 +5260,78 @@
       render();
     });
 
+    function getNicknamesMap(convId) {
+      try { return JSON.parse(localStorage.getItem('snapgram_nicks_' + getChatStorageUser() + '_' + convId) || '{}'); } catch { return {}; }
+    }
+    function setNicknameForMember(convId, uname, nick) {
+      const m = getNicknamesMap(convId);
+      if (nick) m[uname.toLowerCase()] = nick;
+      else delete m[uname.toLowerCase()];
+      localStorage.setItem('snapgram_nicks_' + getChatStorageUser() + '_' + convId, JSON.stringify(m));
+    }
+    function getDisplayNickOrName(conv, uname) {
+      if (!conv || !conv.isGroup) return uname;
+      const n = getNicknamesMap(conv.id)[(uname || '').toLowerCase()];
+      return n || uname;
+    }
+    function isGroupMainAdmin(conv) {
+      const me = (state.currentUser.username || '').toLowerCase();
+      return (conv?.creator || '').toLowerCase() === me;
+    }
+    function isGroupAdmin(conv) {
+      const me = (state.currentUser.username || '').toLowerCase();
+      if (isGroupMainAdmin(conv)) return true;
+      return (conv?.admins || []).some(a => a.toLowerCase() === me);
+    }
+
     function openGroupInfoModal(convId) {
       const conv = state.conversations.find(c => c.id === convId);
       if (!conv || !conv.isGroup) return;
+      if (!conv.creator) conv.creator = (conv.members || [])[0] || state.currentUser.username;
+      if (!Array.isArray(conv.admins) || !conv.admins.length) conv.admins = [conv.creator];
       const modal = document.getElementById('group-info-modal');
       modal.dataset.convId = conv.id;
+
+      document.getElementById('grp-prof-name-display').textContent = conv.title || 'Group';
       document.getElementById('edit-group-name-input').value = conv.title || '';
+      document.getElementById('grp-inline-edit-box')?.classList.add('hidden');
       const pImg = document.getElementById('edit-group-icon-preview');
       const pPh = document.getElementById('edit-group-icon-placeholder');
       if (conv.avatar) { pImg.src = conv.avatar; pImg.classList.remove('hidden'); pPh.classList.add('hidden'); }
       else { pImg.classList.add('hidden'); pPh.classList.remove('hidden'); }
-      const memEl = document.getElementById('group-info-members');
-      memEl.innerHTML = (conv.members || []).map(m => `<div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold flex items-center justify-between"><span>@${m}</span><span class="text-emerald-500">Member</span></div>`).join('') +
-        (conv.pendingMembers || []).map(m => `<div class="px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold flex items-center justify-between"><span>@${m}</span><span class="text-amber-500">Pending (Private)</span></div>`).join('');
+
+      const themeCfg = getChatThemeConfig(conv.id);
+      document.getElementById('grp-theme-swatch').style.background = themeCfg.swatch || '#ffffff';
+      document.getElementById('grp-theme-name').textContent = themeCfg.name || 'White';
+      const invUrl = `${window.location.origin}${window.location.pathname}?join_group=${encodeURIComponent(conv.id)}`;
+      document.getElementById('grp-invite-preview').textContent = invUrl;
+      const mems = conv.members || [];
+      document.getElementById('grp-people-preview').textContent = mems.length > 2
+        ? `${mems[0]}, ${mems[1]} and ${mems.length - 2} others`
+        : mems.join(', ');
+      document.getElementById('grp-mute-label').textContent = conv.muted ? 'Unmute' : 'Mute';
+      document.getElementById('grp-mute-icon')?.setAttribute('data-lucide', conv.muted ? 'bell-off' : 'bell');
+
+      // Shared media grid from conv.messages
+      const mediaGrid = document.getElementById('grp-shared-media-grid');
+      if (mediaGrid) {
+        const mediaMsgs = (conv.messages || []).filter(m => typeof m.text === 'string' && (m.text.startsWith('__PHOTO__|') || m.text.startsWith('__DRAW__|') || m.text.startsWith('__SHARE__|')));
+        mediaGrid.innerHTML = mediaMsgs.slice(-12).reverse().map(m => {
+          const url = m.text.startsWith('__SHARE__|') ? (m.text.split('|')[3] || '') : (m.text.split('|')[1] || '');
+          return url && !url.includes('[object')
+            ? `<div class="aspect-square bg-zinc-100 dark:bg-zinc-900 overflow-hidden"><img src="${url}" class="w-full h-full object-cover" /></div>`
+            : '';
+        }).join('') || '<p class="col-span-3 py-8 text-center text-xs text-zinc-400">No shared media yet</p>';
+      }
+
       modal.classList.remove('hidden');
       if (window.lucide) window.lucide.createIcons();
     }
+
     document.getElementById('close-group-info')?.addEventListener('click', () => document.getElementById('group-info-modal')?.classList.add('hidden'));
+    document.getElementById('grp-change-name-img-btn')?.addEventListener('click', () => {
+      document.getElementById('grp-inline-edit-box')?.classList.toggle('hidden');
+    });
     document.getElementById('edit-group-icon-input')?.addEventListener('change', e => {
       const f = e.target.files?.[0];
       if (!f) return;
@@ -5105,10 +5344,13 @@
           c.getContext('2d').drawImage(img, 0, 0, 256, 256);
           const dataUrl = c.toDataURL('image/jpeg', 0.82);
           const modal = document.getElementById('group-info-modal');
-          modal.dataset.newIcon = dataUrl;
+          const conv = state.conversations.find(x => x.id === modal.dataset.convId);
+          if (conv) { conv.avatar = dataUrl; upsertLocalGroup(conv); }
           const pImg = document.getElementById('edit-group-icon-preview');
           if (pImg) { pImg.src = dataUrl; pImg.classList.remove('hidden'); }
           document.getElementById('edit-group-icon-placeholder')?.classList.add('hidden');
+          render();
+          showToast('Group image updated ✓');
         };
         img.src = ev.target.result;
       };
@@ -5116,17 +5358,40 @@
     });
     document.getElementById('save-group-info-btn')?.addEventListener('click', () => {
       const modal = document.getElementById('group-info-modal');
-      const cid = modal.dataset.convId;
-      const conv = state.conversations.find(c => c.id === cid);
+      const conv = state.conversations.find(c => c.id === modal.dataset.convId);
       if (conv) {
         const newName = (document.getElementById('edit-group-name-input')?.value || '').trim();
-        if (newName) conv.title = newName;
-        if (modal.dataset.newIcon) { conv.avatar = modal.dataset.newIcon; delete modal.dataset.newIcon; }
+        if (newName) {
+          conv.title = newName;
+          document.getElementById('grp-prof-name-display').textContent = newName;
+        }
         upsertLocalGroup(conv);
       }
-      modal.classList.add('hidden');
+      document.getElementById('grp-inline-edit-box')?.classList.add('hidden');
       render();
-      showToast('Group updated ✓');
+      showToast('Group name updated ✓');
+    });
+    document.getElementById('grp-act-mute')?.addEventListener('click', () => {
+      const cid = document.getElementById('group-info-modal')?.dataset.convId;
+      const conv = state.conversations.find(c => c.id === cid);
+      if (conv) { conv.muted = !conv.muted; upsertLocalGroup(conv); openGroupInfoModal(cid); showToast(conv.muted ? 'Notifications muted' : 'Notifications unmuted'); }
+    });
+    document.getElementById('grp-act-search')?.addEventListener('click', () => {
+      document.getElementById('group-info-modal')?.classList.add('hidden');
+      showToast('Scroll chat to browse messages');
+    });
+    document.getElementById('grp-act-options')?.addEventListener('click', () => {
+      document.getElementById('group-options-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    });
+    document.getElementById('group-options-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'group-options-modal') document.getElementById('group-options-modal').classList.add('hidden');
+    });
+    ['grp-opt-spam', 'grp-opt-restrict', 'grp-opt-block', 'grp-opt-report'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', () => {
+        document.getElementById('group-options-modal')?.classList.add('hidden');
+        showToast('Action updated ✓');
+      });
     });
     document.getElementById('leave-group-btn')?.addEventListener('click', () => {
       const modal = document.getElementById('group-info-modal');
@@ -5135,9 +5400,276 @@
       state.conversations = state.conversations.filter(c => c.id !== cid);
       state.activeConvId = state.conversations[0]?.id || null;
       state.mobileChatOpen = false;
+      document.getElementById('group-options-modal')?.classList.add('hidden');
       modal.classList.add('hidden');
       render();
       showToast('Left group');
+    });
+
+    // Group Theme row -> opens Theme Picker
+    document.getElementById('grp-row-theme')?.addEventListener('click', () => {
+      const cid = document.getElementById('group-info-modal')?.dataset.convId;
+      openChatThemeModal(cid);
+    });
+
+    // Group Invite Link + QR Code (15932.png)
+    document.getElementById('grp-row-invite')?.addEventListener('click', () => {
+      const cid = document.getElementById('group-info-modal')?.dataset.convId;
+      const url = `${window.location.origin}${window.location.pathname}?join_group=${encodeURIComponent(cid)}`;
+      document.getElementById('grp-inv-url-text').textContent = url;
+      document.getElementById('grp-qr-box')?.classList.add('hidden');
+      document.getElementById('group-invite-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    });
+    document.getElementById('close-grp-invite')?.addEventListener('click', () => document.getElementById('group-invite-modal')?.classList.add('hidden'));
+    document.getElementById('grp-inv-copy')?.addEventListener('click', () => {
+      const u = document.getElementById('grp-inv-url-text')?.textContent || '';
+      navigator.clipboard?.writeText(u).catch(() => {});
+      showToast('Invite link copied ✓');
+    });
+    document.getElementById('grp-inv-send-sg')?.addEventListener('click', () => {
+      document.getElementById('group-invite-modal')?.classList.add('hidden');
+      openNewChatModal();
+    });
+    document.getElementById('grp-inv-share')?.addEventListener('click', () => {
+      const u = document.getElementById('grp-inv-url-text')?.textContent || '';
+      if (navigator.share) navigator.share({ title: 'Join Snapgram Group', url: u }).catch(() => {});
+      else { navigator.clipboard?.writeText(u).catch(() => {}); showToast('Invite link copied ✓'); }
+    });
+    document.getElementById('grp-inv-qr-btn')?.addEventListener('click', () => {
+      const box = document.getElementById('grp-qr-box');
+      box?.classList.toggle('hidden');
+      const c = document.getElementById('grp-qr-canvas');
+      const u = document.getElementById('grp-inv-url-text')?.textContent || 'snapgram';
+      if (c) {
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 180, 180);
+        ctx.fillStyle = '#111827';
+        const cells = 15, sz = 10, off = 15;
+        let hash = 0;
+        for (let i = 0; i < u.length; i++) hash = ((hash << 5) - hash + u.charCodeAt(i)) | 0;
+        for (let r = 0; r < cells; r++) {
+          for (let col = 0; col < cells; col++) {
+            const isCorner = (r < 4 && col < 4) || (r < 4 && col >= cells - 4) || (r >= cells - 4 && col < 4);
+            const bit = ((hash ^ (r * 31 + col * 17)) & 3) === 0;
+            if (isCorner || bit) ctx.fillRect(off + col * sz, off + r * sz, sz - 1, sz - 1);
+          }
+        }
+      }
+    });
+
+    // Group People & Admin Hierarchy (15933.png)
+    function renderGroupPeopleModal(cid) {
+      const conv = state.conversations.find(c => c.id === cid);
+      const body = document.getElementById('grp-people-list-body');
+      if (!conv || !body) return;
+      const mainAdm = (conv.creator || '').toLowerCase();
+      const adminsSet = new Set((conv.admins || []).map(a => a.toLowerCase()));
+      const amIMainAdmin = isGroupMainAdmin(conv);
+      const amIAdmin = isGroupAdmin(conv);
+
+      const renderMemberRow = (uname, isPending = false) => {
+        const ul = uname.toLowerCase();
+        const isMain = ul === mainAdm;
+        const isAdm = isMain || adminsSet.has(ul);
+        const uObj = (state.exploreUsers || []).find(x => (x.username || '').toLowerCase() === ul);
+        const roleLabel = isPending ? 'Pending approval' : (isMain ? 'Main Admin' : (isAdm ? 'Admin' : 'Member'));
+        return `
+          <div class="flex items-center justify-between gap-3 py-2">
+            <div class="flex items-center gap-3 min-w-0">
+              ${renderAvatar(uObj?.avatar_url || '', uname, 'w-11 h-11 shrink-0')}
+              <div class="min-w-0">
+                <p class="text-sm font-semibold truncate">${getDisplayNickOrName(conv, uname)}</p>
+                <p class="text-xs text-zinc-500 truncate">${roleLabel} · @${uname}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              ${isPending && amIAdmin ? `<button type="button" class="grp-approve-req px-3 py-1 rounded-lg bg-[#0095F6] text-white text-xs font-bold" data-uname="${uname}">Approve</button>` : ''}
+              ${!isPending && amIMainAdmin && !isMain ? `<button type="button" class="grp-toggle-admin px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold" data-uname="${uname}">${isAdm ? 'Remove Admin' : 'Make Admin'}</button>` : ''}
+              ${!isPending && amIAdmin && !isMain ? `<button type="button" class="grp-remove-mem px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 text-xs font-semibold" data-uname="${uname}">Remove</button>` : ''}
+            </div>
+          </div>
+        `;
+      };
+
+      const membersHtml = (conv.members || []).map(m => renderMemberRow(m, false)).join('');
+      const pendingHtml = (conv.pendingMembers || []).length
+        ? `<div class="pt-3 border-t border-zinc-100 dark:border-zinc-900 space-y-2"><p class="text-xs font-bold text-zinc-500 uppercase">Join Requests (Admins Only)</p>${conv.pendingMembers.map(p => renderMemberRow(p, true)).join('')}</div>`
+        : '';
+
+      body.innerHTML = `<div class="space-y-1">${membersHtml}</div>${pendingHtml}`;
+      body.querySelectorAll('.grp-toggle-admin').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!isGroupMainAdmin(conv)) { showToast('Only Main Admin can assign admins'); return; }
+          const target = btn.dataset.uname;
+          const idx = (conv.admins || []).findIndex(a => a.toLowerCase() === target.toLowerCase());
+          if (idx >= 0) conv.admins.splice(idx, 1);
+          else { conv.admins = conv.admins || []; conv.admins.push(target); }
+          upsertLocalGroup(conv);
+          renderGroupPeopleModal(cid);
+          showToast('Admin roles updated ✓');
+        });
+      });
+      body.querySelectorAll('.grp-approve-req').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!isGroupAdmin(conv)) { showToast('Only admins can approve requests'); return; }
+          const target = btn.dataset.uname;
+          conv.pendingMembers = (conv.pendingMembers || []).filter(p => p !== target);
+          if (!conv.members.includes(target)) conv.members.push(target);
+          upsertLocalGroup(conv);
+          renderGroupPeopleModal(cid);
+          showToast(`@${target} approved ✓`);
+        });
+      });
+      body.querySelectorAll('.grp-remove-mem').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!isGroupAdmin(conv)) { showToast('Only admins can remove members'); return; }
+          const target = btn.dataset.uname;
+          conv.members = (conv.members || []).filter(m => m !== target);
+          conv.admins = (conv.admins || []).filter(a => a !== target);
+          upsertLocalGroup(conv);
+          renderGroupPeopleModal(cid);
+          showToast(`@${target} removed`);
+        });
+      });
+    }
+    document.getElementById('grp-row-people')?.addEventListener('click', () => {
+      const cid = document.getElementById('group-info-modal')?.dataset.convId;
+      renderGroupPeopleModal(cid);
+      document.getElementById('group-people-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    });
+    document.getElementById('close-grp-people')?.addEventListener('click', () => document.getElementById('group-people-modal')?.classList.add('hidden'));
+
+    // Group Privacy & Safety (15934.png)
+    document.getElementById('grp-row-privacy')?.addEventListener('click', () => {
+      document.getElementById('group-privacy-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    });
+    document.getElementById('close-grp-privacy')?.addEventListener('click', () => document.getElementById('group-privacy-modal')?.classList.add('hidden'));
+    ['grp-priv-restrict', 'grp-priv-block', 'grp-priv-report'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', () => {
+        document.getElementById('group-privacy-modal')?.classList.add('hidden');
+        showToast('Safety preference updated ✓');
+      });
+    });
+
+    // Group Nicknames (Sets local nickname + sends notification inside the group chat!)
+    function openGroupNicknamesModal(cid) {
+      const conv = state.conversations.find(c => c.id === cid);
+      const list = document.getElementById('grp-nicknames-list');
+      if (!conv || !list) return;
+      const nicks = getNicknamesMap(cid);
+      list.innerHTML = (conv.members || []).map(uname => {
+        const curNick = nicks[uname.toLowerCase()] || '';
+        return `
+          <div class="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 flex items-center gap-2.5">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold truncate">@${uname}</p>
+              <input type="text" class="grp-nick-input w-full mt-1 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-xs focus:outline-none" value="${curNick}" placeholder="Set nickname..." data-uname="${uname}" />
+            </div>
+            <button type="button" class="grp-nick-save px-3 py-2 rounded-xl bg-[#0095F6] text-white text-xs font-bold shrink-0" data-uname="${uname}">Save</button>
+          </div>
+        `;
+      }).join('');
+      list.querySelectorAll('.grp-nick-save').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const target = btn.dataset.uname;
+          const inp = list.querySelector(`.grp-nick-input[data-uname="${target}"]`);
+          const newNick = (inp?.value || '').trim();
+          setNicknameForMember(cid, target, newNick);
+          const noteText = newNick
+            ? `@${state.currentUser.username} set @${target}'s nickname to "${newNick}"`
+            : `@${state.currentUser.username} cleared @${target}'s nickname`;
+          conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: noteText, time: 'Just now', reaction: '' });
+          upsertLocalGroup(conv);
+          const payload = `__GRP_MSG__|${conv.id}|${conv.title}|${(conv.members || []).join(',')}|${noteText}`;
+          (conv.members || []).filter(m => m !== state.currentUser.username).forEach(mem => saveMessageToSupabase(mem, payload));
+          createNotification(target, 'nickname', newNick ? `set your nickname to "${newNick}" in ${conv.title}` : `cleared your nickname in ${conv.title}`, conv.id);
+          render();
+          showToast('Nickname updated & notified in chat ✓');
+        });
+      });
+      document.getElementById('group-nicknames-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    document.getElementById('grp-row-nicknames')?.addEventListener('click', () => {
+      openGroupNicknamesModal(document.getElementById('group-info-modal')?.dataset.convId);
+    });
+    document.getElementById('close-grp-nicknames')?.addEventListener('click', () => document.getElementById('group-nicknames-modal')?.classList.add('hidden'));
+
+    // Group Create New Row
+    document.getElementById('grp-row-create-new')?.addEventListener('click', () => {
+      document.getElementById('group-info-modal')?.classList.add('hidden');
+      openNewGroupModal();
+    });
+
+    // Group Add Members (Admins Only, Matches 15935.png)
+    const grpAddSelected = new Set();
+    function openGroupAddModal() {
+      const cid = document.getElementById('group-info-modal')?.dataset.convId;
+      const conv = state.conversations.find(c => c.id === cid);
+      if (!conv) return;
+      if (!isGroupAdmin(conv)) {
+        showToast('Only group admins can add people');
+        return;
+      }
+      grpAddSelected.clear();
+      document.getElementById('grp-add-search').value = '';
+      renderGroupAddList('');
+      document.getElementById('group-add-modal')?.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    function renderGroupAddList(q) {
+      const cid = document.getElementById('group-info-modal')?.dataset.convId;
+      const conv = state.conversations.find(c => c.id === cid);
+      const list = document.getElementById('grp-add-list');
+      const btn = document.getElementById('confirm-grp-add-btn');
+      if (!conv || !list) return;
+      const existing = new Set((conv.members || []).map(x => x.toLowerCase()));
+      const lq = (q || '').toLowerCase();
+      const pool = (state.exploreUsers || []).filter(u => {
+        const un = (u.username || '').toLowerCase();
+        if (existing.has(un)) return false;
+        return !lq || un.includes(lq) || (u.full_name || '').toLowerCase().includes(lq);
+      });
+      list.innerHTML = pool.map(u => {
+        const sel = grpAddSelected.has(u.username);
+        return `
+          <button type="button" class="grp-add-pick w-full flex items-center justify-between p-2 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900" data-uname="${u.username}">
+            <div class="flex items-center gap-3 min-w-0">
+              ${renderAvatar(u.avatar_url, u.username, 'w-11 h-11 shrink-0')}
+              <div class="text-left min-w-0"><p class="text-sm font-semibold truncate">${u.full_name || u.username}</p><p class="text-xs text-zinc-500 truncate">@${u.username}</p></div>
+            </div>
+            <span class="w-6 h-6 rounded-full border-2 flex items-center justify-center ${sel ? 'bg-[#0095F6] border-[#0095F6] text-white' : 'border-zinc-300'}">${sel ? '✓' : ''}</span>
+          </button>
+        `;
+      }).join('') || '<p class="text-xs text-zinc-500 py-8 text-center">No more users to add</p>';
+      list.querySelectorAll('.grp-add-pick').forEach(b => {
+        b.addEventListener('click', () => {
+          const un = b.dataset.uname;
+          if (grpAddSelected.has(un)) grpAddSelected.delete(un);
+          else grpAddSelected.add(un);
+          renderGroupAddList(document.getElementById('grp-add-search')?.value || '');
+        });
+      });
+      if (btn) { btn.disabled = grpAddSelected.size === 0; btn.textContent = grpAddSelected.size ? `Add (${grpAddSelected.size})` : 'Add'; }
+    }
+    document.getElementById('grp-act-add')?.addEventListener('click', openGroupAddModal);
+    document.getElementById('grp-people-add-top')?.addEventListener('click', openGroupAddModal);
+    document.getElementById('close-grp-add')?.addEventListener('click', () => document.getElementById('group-add-modal')?.classList.add('hidden'));
+    document.getElementById('grp-add-search')?.addEventListener('input', e => renderGroupAddList(e.target.value));
+    document.getElementById('confirm-grp-add-btn')?.addEventListener('click', () => {
+      const cid = document.getElementById('group-info-modal')?.dataset.convId;
+      const conv = state.conversations.find(c => c.id === cid);
+      if (conv && isGroupAdmin(conv)) {
+        grpAddSelected.forEach(un => { if (!conv.members.includes(un)) conv.members.push(un); });
+        upsertLocalGroup(conv);
+        document.getElementById('group-add-modal')?.classList.add('hidden');
+        openGroupInfoModal(cid);
+        render();
+        showToast('Members added ✓');
+      }
     });
 
     const ACCOUNTS_KEY = 'snapgram_accounts_v1';
