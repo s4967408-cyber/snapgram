@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <style>html, body { touch-action: pan-y; overscroll-behavior: none; overflow-x: hidden; max-width: 100%; }</style>
+  <style>html, body { overflow-x: clip; touch-action: manipulation; }</style>
   <title>SNAPGRAM — Interactive Social Media Platform</title>
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -6269,8 +6269,8 @@
       const mobNav = document.getElementById('mobile-nav');
       if (mobNav) mobNav.style.display = isDmThreadMobile ? 'none' : '';
       const lockMobDm = isDmThreadMobile && window.innerWidth < 768;
-      document.documentElement.style.overflow = lockMobDm ? 'hidden' : '';
-      document.body.style.overflow = lockMobDm ? 'hidden' : '';
+      document.documentElement.style.overflowY = lockMobDm ? 'hidden' : 'auto';
+      document.body.style.overflowY = lockMobDm ? 'hidden' : 'auto';
       document.body.style.position = lockMobDm ? 'fixed' : '';
       document.body.style.inset = lockMobDm ? '0' : '';
       document.body.style.width = lockMobDm ? '100%' : '';
