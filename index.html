@@ -1311,6 +1311,109 @@
     </div>
   </div>
 
+  <!-- Instagram-Style Full-Screen Audio & Video Call Modal (Matches 15850.png) -->
+  <div id="call-screen-modal" class="hidden fixed inset-0 z-[95] bg-zinc-900 text-white flex flex-col justify-between overflow-hidden select-none">
+    <!-- Blurred Peer Avatar Backdrop -->
+    <img id="call-bg-blur" src="" alt="" class="hidden absolute inset-0 w-full h-full object-cover scale-125 blur-3xl opacity-45 pointer-events-none" />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-zinc-900/60 to-black/75 pointer-events-none"></div>
+
+    <!-- Remote Fullscreen Video (shown during active video call) -->
+    <video id="call-remote-video" autoplay playsinline class="hidden absolute inset-0 w-full h-full object-cover z-10"></video>
+    <audio id="call-remote-audio" autoplay playsinline class="hidden"></audio>
+
+    <!-- Local PiP Video Preview (with live Snapchat-style filter) -->
+    <div id="call-local-pip" class="hidden absolute top-16 right-4 z-30 w-28 h-40 sm:w-32 sm:h-48 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/25 bg-black">
+      <video id="call-local-video" autoplay muted playsinline class="w-full h-full object-cover -scale-x-100"></video>
+      <canvas id="call-filter-canvas" class="hidden"></canvas>
+    </div>
+
+    <!-- Top Bar (Minimize & Filter/Options) -->
+    <div class="relative z-20 px-4 pt-4 pb-2 flex items-center justify-between">
+      <button id="call-minimize-btn" type="button" class="p-2 rounded-full hover:bg-white/10 transition" aria-label="Minimize call">
+        <i data-lucide="chevron-down" class="w-6 h-6"></i>
+      </button>
+      <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-semibold">
+        <span class="w-4 h-4 rounded bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center"><svg viewBox="0 0 24 24" class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg></span>
+        <span>SNAPGRAM</span>
+      </div>
+      <button id="call-filter-toggle-btn" type="button" class="p-2 rounded-full hover:bg-white/10 transition" aria-label="Filters & Options">
+        <i data-lucide="more-horizontal" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <!-- Center Peer Info (DP, Name, Status/Timer) -->
+    <div id="call-center-info" class="relative z-20 flex-1 flex flex-col items-center justify-center text-center px-6 -mt-12 space-y-3 pointer-events-none">
+      <div id="call-peer-avatar-wrap" class="w-28 h-28 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-3xl font-bold"></div>
+      <div class="space-y-1">
+        <h2 id="call-peer-name" class="text-2xl font-bold tracking-tight drop-shadow">User</h2>
+        <p id="call-status-text" class="text-sm font-medium text-white/85 drop-shadow">Contacting...</p>
+      </div>
+    </div>
+
+    <!-- Snapchat-Style Live Video Filters Strip -->
+    <div id="call-filters-bar" class="hidden relative z-30 px-4 pb-3">
+      <div class="max-w-md mx-auto bg-black/55 backdrop-blur-md rounded-2xl p-2 flex items-center gap-2 overflow-x-auto no-scrollbar border border-white/15">
+        <button type="button" class="call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-pink-500 text-white" data-fx="none">Normal</button>
+        <button type="button" class="call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white" data-fx="glow">✨ Bright Glow</button>
+        <button type="button" class="call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white" data-fx="warm">☀️ Warm</button>
+        <button type="button" class="call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white" data-fx="rose">💕 Rose</button>
+        <button type="button" class="call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white" data-fx="cool">❄️ Cool</button>
+        <button type="button" class="call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white" data-fx="vivid">🌈 Vivid</button>
+        <button type="button" class="call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white" data-fx="bw">🖤 B&amp;W</button>
+      </div>
+    </div>
+
+    <!-- Bottom Floating Dark Pill Controls (Matches 15850.png) -->
+    <div class="relative z-30 px-4 pb-8 pt-2">
+      <div class="max-w-sm mx-auto bg-zinc-800/85 backdrop-blur-xl rounded-full px-4 py-2.5 flex items-center justify-between shadow-2xl border border-white/10">
+        <button id="call-cam-btn" type="button" class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition" title="Camera On/Off" aria-label="Toggle Camera">
+          <i id="call-cam-icon" data-lucide="video-off" class="w-6 h-6"></i>
+        </button>
+        <button id="call-mic-btn" type="button" class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition" title="Mute Mic" aria-label="Toggle Mic">
+          <i id="call-mic-icon" data-lucide="mic" class="w-6 h-6"></i>
+        </button>
+        <button id="call-speaker-btn" type="button" class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition" title="Speaker" aria-label="Toggle Speaker">
+          <i id="call-speaker-icon" data-lucide="volume-2" class="w-6 h-6"></i>
+        </button>
+        <button id="call-flip-btn" type="button" class="hidden w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition" title="Flip Camera" aria-label="Flip Camera">
+          <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+        </button>
+        <button id="call-end-btn" type="button" class="w-14 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg transition active:scale-95" title="End Call" aria-label="End Call">
+          <i data-lucide="phone-off" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incoming Call Fullscreen Notification Modal -->
+  <div id="incoming-call-modal" class="hidden fixed inset-0 z-[96] bg-zinc-950/95 backdrop-blur-xl text-white flex flex-col items-center justify-between py-14 px-6 select-none">
+    <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15">
+      <span class="w-5 h-5 rounded bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center"><svg viewBox="0 0 24 24" class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg></span>
+      <span class="text-xs font-bold tracking-wider">SNAPGRAM</span>
+    </div>
+    <div class="flex flex-col items-center text-center space-y-4">
+      <div id="inc-call-avatar" class="w-28 h-28 rounded-full overflow-hidden ring-4 ring-pink-500/50 animate-pulse bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-3xl font-bold"></div>
+      <div class="space-y-1">
+        <h2 id="inc-call-title" class="text-2xl font-bold">@user calling you</h2>
+        <p id="inc-call-sub" class="text-sm text-zinc-300">Incoming Snapgram Call...</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-12">
+      <button id="inc-call-decline" type="button" class="flex flex-col items-center gap-2">
+        <span class="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center shadow-xl active:scale-95 transition">
+          <i data-lucide="phone-off" class="w-7 h-7"></i>
+        </span>
+        <span class="text-xs font-semibold text-zinc-300">Decline</span>
+      </button>
+      <button id="inc-call-accept" type="button" class="flex flex-col items-center gap-2">
+        <span class="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center shadow-xl animate-bounce active:scale-95 transition">
+          <i data-lucide="phone" class="w-7 h-7"></i>
+        </span>
+        <span class="text-xs font-semibold text-zinc-300">Accept</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Instagram-Style Staying Safe in Chats Modal (Matches 15824.png) -->
   <div id="chat-safety-modal" class="hidden fixed inset-0 z-[86] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
     <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-[fadeIn_0.15s_ease-out]">
@@ -3993,7 +4096,12 @@
       });
 
       document.querySelectorAll('.chat-call-btn').forEach(btn => {
-        btn.addEventListener('click', () => showToast(`${btn.dataset.call} started`));
+        btn.addEventListener('click', () => {
+          const conv = state.conversations.find(c => c.id === state.activeConvId);
+          if (!conv) return;
+          const isVideo = (btn.dataset.call || '').toLowerCase().includes('video');
+          startSnapgramCall(conv.title, isVideo);
+        });
       });
 
       const newChatBtn = document.getElementById('new-chat-btn');
@@ -8118,6 +8226,10 @@
             };
           }
           if (deletedMsgIdsSet.has(String(m.id))) return;
+          if (typeof m.text === 'string' && m.text.startsWith('__CALL__|')) {
+            handleIncomingCallSignalRow(m);
+            return;
+          }
           convMap[peer].messages.push({
             id: m.id,
             sender: m.sender_username,
@@ -8137,6 +8249,7 @@
           }
           state.unreadMsgCount = rows.filter(m => {
             if (m.sender_username === me) return false;
+            if (typeof m.text === 'string' && m.text.startsWith('__CALL__|')) return false;
             const peerKey = (m.sender_username || '').toLowerCase();
             const ts = new Date(m.created_at).getTime();
             if (hiddenMap[peerKey]) return false;
@@ -10463,6 +10576,516 @@
         if (state.activeTab === 'activity') render();
       } catch {}
     }
+
+    // --- Real WebRTC HD Audio & Video Call + Snapchat Filters + Notification Engine ---
+    const callState = {
+      callId: null,
+      peer: '',
+      isVideo: false,
+      isCaller: false,
+      pc: null,
+      rawStream: null,
+      filteredStream: null,
+      localStream: null,
+      micMuted: false,
+      camOff: true,
+      speakerOn: true,
+      facingMode: 'user',
+      filter: 'none',
+      filterRaf: null,
+      timerInt: null,
+      seconds: 0,
+      status: 'idle', // idle | calling | ringing | connected
+      ringAudioCtx: null,
+      ringInt: null,
+      handledSignals: new Set(),
+      pendingOffer: null,
+      pendingIce: []
+    };
+
+    const CALL_FILTER_CSS = {
+      none: 'none',
+      glow: 'brightness(1.22) contrast(1.06) saturate(1.12)',
+      warm: 'sepia(0.24) brightness(1.1) saturate(1.25)',
+      rose: 'brightness(1.12) saturate(1.2) hue-rotate(-10deg)',
+      cool: 'brightness(1.06) contrast(1.08) hue-rotate(15deg) saturate(1.08)',
+      vivid: 'contrast(1.18) saturate(1.45) brightness(1.08)',
+      bw: 'grayscale(1) contrast(1.15) brightness(1.05)'
+    };
+
+    function formatCallTimer(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    async function sendCallSignal(peer, type, payloadObj) {
+      if (!peer || !callState.callId) return;
+      const body = `__CALL__|${type}|${callState.callId}|${JSON.stringify(payloadObj || {})}`;
+      await saveMessageToSupabase(peer, body);
+    }
+
+    async function fireCallOsNotification(callerUsername, isVideo) {
+      const title = 'Snapgram';
+      const body = `@${callerUsername} calling you (${isVideo ? 'Video call' : 'Voice call'})`;
+      const opts = {
+        body,
+        icon: 'icon-192.png',
+        badge: 'icon-192.png',
+        tag: 'snapgram-call-' + (callState.callId || callerUsername),
+        requireInteraction: true,
+        vibrate: [400, 200, 400, 200, 400]
+      };
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+            const reg = await navigator.serviceWorker.ready;
+            if (reg && reg.showNotification) { await reg.showNotification(title, opts); return; }
+          }
+          new Notification(title, opts);
+        }
+      } catch {}
+    }
+
+    function startCallRingtone() {
+      stopCallRingtone();
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        callState.ringAudioCtx = ctx;
+        const playTone = () => {
+          if (callState.status !== 'ringing') return;
+          const now = ctx.currentTime;
+          [523.25, 659.25].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.22);
+            gain.gain.setValueAtTime(0.001, now + i * 0.22);
+            gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.22 + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.22 + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.22);
+            osc.stop(now + i * 0.22 + 0.36);
+          });
+          if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+        };
+        playTone();
+        callState.ringInt = setInterval(playTone, 2000);
+      } catch {}
+    }
+
+    function stopCallRingtone() {
+      clearInterval(callState.ringInt);
+      callState.ringInt = null;
+      if (callState.ringAudioCtx) {
+        try { callState.ringAudioCtx.close(); } catch {}
+        callState.ringAudioCtx = null;
+      }
+      if (navigator.vibrate) navigator.vibrate(0);
+    }
+
+    function setupCallPeerUi(username) {
+      const peerObj = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === (username || '').toLowerCase());
+      const fullName = peerObj?.full_name || username || 'User';
+      const av = peerObj?.avatar_url || '';
+      const nameEl = document.getElementById('call-peer-name');
+      const avWrap = document.getElementById('call-peer-avatar-wrap');
+      const blurImg = document.getElementById('call-bg-blur');
+      if (nameEl) nameEl.textContent = fullName;
+      if (avWrap) {
+        avWrap.innerHTML = av
+          ? `<img src="${av}" alt="${fullName}" class="w-full h-full object-cover" />`
+          : `<span>${(fullName[0] || 'U').toUpperCase()}</span>`;
+      }
+      if (blurImg) {
+        if (av) { blurImg.src = av; blurImg.classList.remove('hidden'); }
+        else { blurImg.classList.add('hidden'); }
+      }
+    }
+
+    function updateCallControlsUi() {
+      const camIcon = document.getElementById('call-cam-icon');
+      const micIcon = document.getElementById('call-mic-icon');
+      const spkIcon = document.getElementById('call-speaker-icon');
+      const flipBtn = document.getElementById('call-flip-btn');
+      const pip = document.getElementById('call-local-pip');
+      if (camIcon) camIcon.setAttribute('data-lucide', callState.camOff ? 'video-off' : 'video');
+      if (micIcon) micIcon.setAttribute('data-lucide', callState.micMuted ? 'mic-off' : 'mic');
+      if (spkIcon) spkIcon.setAttribute('data-lucide', callState.speakerOn ? 'volume-2' : 'volume-x');
+      if (flipBtn) flipBtn.classList.toggle('hidden', callState.camOff);
+      if (pip) pip.classList.toggle('hidden', callState.camOff);
+      document.getElementById('call-cam-btn')?.classList.toggle('bg-white/20', !callState.camOff);
+      document.getElementById('call-mic-btn')?.classList.toggle('bg-red-500/80', callState.micMuted);
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function applyLocalVideoFilterLoop() {
+      cancelAnimationFrame(callState.filterRaf);
+      const vid = document.getElementById('call-local-video');
+      const canvas = document.getElementById('call-filter-canvas');
+      if (!vid) return;
+      const cssFx = CALL_FILTER_CSS[callState.filter] || 'none';
+      vid.style.filter = cssFx;
+      if (!canvas || callState.camOff || callState.filter === 'none') return;
+      const ctx = canvas.getContext('2d');
+      const draw = () => {
+        if (callState.status === 'idle' || callState.camOff || callState.filter === 'none') return;
+        if (vid.videoWidth && vid.videoHeight) {
+          if (canvas.width !== vid.videoWidth) { canvas.width = vid.videoWidth; canvas.height = vid.videoHeight; }
+          ctx.filter = cssFx;
+          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+        }
+        callState.filterRaf = requestAnimationFrame(draw);
+      };
+      draw();
+    }
+
+    async function setCallVideoFilter(fxId) {
+      callState.filter = fxId || 'none';
+      document.querySelectorAll('.call-fx-btn').forEach(b => {
+        const active = b.dataset.fx === callState.filter;
+        b.className = `call-fx-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold ${active ? 'bg-pink-500 text-white' : 'bg-white/15 text-white'}`;
+      });
+      const vid = document.getElementById('call-local-video');
+      const canvas = document.getElementById('call-filter-canvas');
+      if (vid) vid.style.filter = CALL_FILTER_CSS[callState.filter] || 'none';
+      if (!callState.pc || callState.camOff || !callState.rawStream) return;
+      const sender = callState.pc.getSenders().find(s => s.track && s.track.kind === 'video');
+      if (!sender) return;
+      if (callState.filter === 'none') {
+        cancelAnimationFrame(callState.filterRaf);
+        const rawTrack = callState.rawStream.getVideoTracks()[0];
+        if (rawTrack) await sender.replaceTrack(rawTrack);
+      } else if (canvas && canvas.captureStream) {
+        applyLocalVideoFilterLoop();
+        callState.filteredStream = canvas.captureStream(30);
+        const fxTrack = callState.filteredStream.getVideoTracks()[0];
+        if (fxTrack) await sender.replaceTrack(fxTrack);
+      }
+    }
+
+    async function acquireCallMedia(withVideo) {
+      const constraints = {
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, sampleRate: 48000 },
+        video: withVideo ? { facingMode: callState.facingMode, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } } : false
+      };
+      try {
+        return await navigator.mediaDevices.getUserMedia(constraints);
+      } catch {
+        // Fallback to audio-only if camera unavailable
+        return await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      }
+    }
+
+    function createCallPeerConnection() {
+      const pc = new RTCPeerConnection({
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' }
+        ]
+      });
+      pc.onicecandidate = e => {
+        if (e.candidate && callState.peer && callState.callId) {
+          sendCallSignal(callState.peer, 'ice', { candidate: e.candidate });
+        }
+      };
+      pc.ontrack = e => {
+        const remoteStream = e.streams && e.streams[0];
+        if (!remoteStream) return;
+        const rVid = document.getElementById('call-remote-video');
+        const rAud = document.getElementById('call-remote-audio');
+        const hasVid = remoteStream.getVideoTracks().length > 0;
+        if (hasVid && rVid) {
+          rVid.srcObject = remoteStream;
+          rVid.classList.remove('hidden');
+          document.getElementById('call-center-info')?.classList.add('opacity-0');
+        }
+        if (rAud) {
+          rAud.srcObject = remoteStream;
+          rAud.muted = !callState.speakerOn;
+          rAud.play().catch(() => {});
+        }
+      };
+      pc.oniceconnectionstatechange = () => {
+        const st = pc.iceConnectionState;
+        if (st === 'connected' || st === 'completed') {
+          if (callState.status !== 'connected') {
+            callState.status = 'connected';
+            startCallDurationTimer();
+          }
+        } else if (st === 'disconnected') {
+          // Do NOT auto-cut on brief network blip; attempt ICE restart
+          const stEl = document.getElementById('call-status-text');
+          if (stEl) stEl.textContent = 'Reconnecting...';
+          try { if (pc.restartIce) pc.restartIce(); } catch {}
+        } else if (st === 'failed') {
+          showToast('Network issue: Call disconnected');
+          endSnapgramCall(true);
+        }
+      };
+      return pc;
+    }
+
+    function startCallDurationTimer() {
+      clearInterval(callState.timerInt);
+      callState.seconds = 0;
+      const stEl = document.getElementById('call-status-text');
+      if (stEl) stEl.textContent = '00:00';
+      callState.timerInt = setInterval(() => {
+        callState.seconds += 1;
+        const el = document.getElementById('call-status-text');
+        if (el && callState.status === 'connected') el.textContent = formatCallTimer(callState.seconds);
+      }, 1000);
+    }
+
+    async function startSnapgramCall(peerUsername, isVideo) {
+      if (!peerUsername) return;
+      if (isChatUserBlocked(peerUsername)) { showToast('Unblock user first to call'); return; }
+      callState.callId = 'call_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      callState.peer = peerUsername;
+      callState.isVideo = !!isVideo;
+      callState.isCaller = true;
+      callState.camOff = !isVideo;
+      callState.micMuted = false;
+      callState.speakerOn = true;
+      callState.filter = 'none';
+      callState.status = 'calling';
+      callState.pendingIce = [];
+
+      setupCallPeerUi(peerUsername);
+      document.getElementById('call-status-text').textContent = 'Contacting...';
+      document.getElementById('call-remote-video')?.classList.add('hidden');
+      document.getElementById('call-center-info')?.classList.remove('opacity-0');
+      document.getElementById('call-screen-modal')?.classList.remove('hidden');
+      updateCallControlsUi();
+
+      try {
+        const stream = await acquireCallMedia(isVideo);
+        callState.rawStream = stream;
+        callState.localStream = stream;
+        const lVid = document.getElementById('call-local-video');
+        if (lVid && isVideo && stream.getVideoTracks().length) {
+          lVid.srcObject = stream;
+        }
+        const pc = createCallPeerConnection();
+        callState.pc = pc;
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        document.getElementById('call-status-text').textContent = 'Ringing...';
+        await sendCallSignal(peerUsername, 'offer', { sdp: offer, isVideo: !!isVideo, ts: Date.now() });
+      } catch (err) {
+        showToast('Mic/Camera permission needed for calls');
+        endSnapgramCall(false);
+      }
+    }
+
+    async function acceptIncomingCall() {
+      const offerInfo = callState.pendingOffer;
+      document.getElementById('incoming-call-modal')?.classList.add('hidden');
+      stopCallRingtone();
+      if (!offerInfo) return;
+
+      callState.status = 'connected';
+      setupCallPeerUi(callState.peer);
+      document.getElementById('call-status-text').textContent = 'Connecting...';
+      document.getElementById('call-screen-modal')?.classList.remove('hidden');
+      updateCallControlsUi();
+
+      try {
+        const stream = await acquireCallMedia(callState.isVideo);
+        callState.rawStream = stream;
+        callState.localStream = stream;
+        const lVid = document.getElementById('call-local-video');
+        if (lVid && callState.isVideo && stream.getVideoTracks().length) {
+          lVid.srcObject = stream;
+        }
+        const pc = createCallPeerConnection();
+        callState.pc = pc;
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
+        await pc.setRemoteDescription(new RTCSessionDescription(offerInfo.sdp));
+        for (const cand of callState.pendingIce) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch {}
+        }
+        callState.pendingIce = [];
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await sendCallSignal(callState.peer, 'answer', { sdp: answer });
+        startCallDurationTimer();
+      } catch {
+        showToast('Could not access mic/camera');
+        endSnapgramCall(true);
+      }
+    }
+
+    function endSnapgramCall(notifyPeer = true) {
+      const peer = callState.peer;
+      const cid = callState.callId;
+      if (notifyPeer && peer && cid) {
+        sendCallSignal(peer, 'end', { reason: 'hangup' }).catch(() => {});
+      }
+      stopCallRingtone();
+      clearInterval(callState.timerInt);
+      cancelAnimationFrame(callState.filterRaf);
+      if (callState.pc) { try { callState.pc.close(); } catch {} callState.pc = null; }
+      if (callState.rawStream) { callState.rawStream.getTracks().forEach(t => t.stop()); callState.rawStream = null; }
+      callState.status = 'idle';
+      callState.callId = null;
+      callState.pendingOffer = null;
+      callState.pendingIce = [];
+      document.getElementById('call-screen-modal')?.classList.add('hidden');
+      document.getElementById('incoming-call-modal')?.classList.add('hidden');
+      document.getElementById('call-remote-video')?.classList.add('hidden');
+      document.getElementById('call-filters-bar')?.classList.add('hidden');
+    }
+
+    async function handleIncomingCallSignalRow(row) {
+      if (!row || !row.id || callState.handledSignals.has(String(row.id))) return;
+      callState.handledSignals.add(String(row.id));
+      const me = (state.currentUser.username || '').toLowerCase();
+      if ((row.sender_username || '').toLowerCase() === me) return;
+      const ageMs = Date.now() - new Date(row.created_at).getTime();
+      if (ageMs > 60000) return;
+
+      const parts = String(row.text || '').split('|');
+      const sigType = parts[1];
+      const cid = parts[2];
+      let payload = {};
+      try { payload = JSON.parse(parts.slice(3).join('|') || '{}'); } catch {}
+
+      if (sigType === 'offer') {
+        if (callState.status !== 'idle') return;
+        callState.callId = cid;
+        callState.peer = row.sender_username;
+        callState.isVideo = !!payload.isVideo;
+        callState.isCaller = false;
+        callState.camOff = !payload.isVideo;
+        callState.status = 'ringing';
+        callState.pendingOffer = payload;
+        callState.pendingIce = [];
+
+        const peerObj = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === row.sender_username.toLowerCase());
+        const avEl = document.getElementById('inc-call-avatar');
+        const tEl = document.getElementById('inc-call-title');
+        const sEl = document.getElementById('inc-call-sub');
+        if (avEl) avEl.innerHTML = peerObj?.avatar_url ? `<img src="${peerObj.avatar_url}" class="w-full h-full object-cover" />` : `<span>${(row.sender_username[0] || 'U').toUpperCase()}</span>`;
+        if (tEl) tEl.textContent = `@${row.sender_username} calling you`;
+        if (sEl) sEl.textContent = payload.isVideo ? 'Incoming Snapgram Video Call' : 'Incoming Snapgram Voice Call';
+        document.getElementById('incoming-call-modal')?.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
+        startCallRingtone();
+        fireCallOsNotification(row.sender_username, !!payload.isVideo);
+      } else if (sigType === 'answer' && cid === callState.callId && callState.pc) {
+        try {
+          await callState.pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          for (const cand of callState.pendingIce) {
+            try { await callState.pc.addIceCandidate(new RTCIceCandidate(cand)); } catch {}
+          }
+          callState.pendingIce = [];
+          callState.status = 'connected';
+          startCallDurationTimer();
+        } catch {}
+      } else if (sigType === 'ice' && cid === callState.callId && payload.candidate) {
+        if (callState.pc && callState.pc.remoteDescription) {
+          try { await callState.pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch {}
+        } else {
+          callState.pendingIce.push(payload.candidate);
+        }
+      } else if (sigType === 'end' && cid === callState.callId) {
+        showToast('Call ended');
+        endSnapgramCall(false);
+      }
+    }
+
+    async function pollCallSignals() {
+      const cfg = loadSupaConfig();
+      const me = state.currentUser.username;
+      if (!state.isAuthenticated || !cfg.url.startsWith('https://') || !cfg.anonKey || !state.currentUser.supaToken || !me) return;
+      try {
+        const sinceIso = new Date(Date.now() - 70000).toISOString();
+        const res = await fetch(`${cfg.url}/rest/v1/snapgram_messages?recipient_username=eq.${encodeURIComponent(me)}&text=like.__CALL__%25&created_at=gte.${encodeURIComponent(sinceIso)}&order=created_at.asc`, {
+          headers: { apikey: cfg.anonKey, Authorization: `Bearer ${state.currentUser.supaToken}` }
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        for (const r of rows) await handleIncomingCallSignalRow(r);
+      } catch {}
+    }
+
+    // Bind Call Modal Buttons
+    document.getElementById('call-end-btn')?.addEventListener('click', () => endSnapgramCall(true));
+    document.getElementById('call-minimize-btn')?.addEventListener('click', () => {
+      document.getElementById('call-screen-modal')?.classList.add('hidden');
+      showToast('Call running in background');
+    });
+    document.getElementById('call-mic-btn')?.addEventListener('click', () => {
+      callState.micMuted = !callState.micMuted;
+      if (callState.rawStream) callState.rawStream.getAudioTracks().forEach(t => { t.enabled = !callState.micMuted; });
+      updateCallControlsUi();
+    });
+    document.getElementById('call-speaker-btn')?.addEventListener('click', () => {
+      callState.speakerOn = !callState.speakerOn;
+      const rAud = document.getElementById('call-remote-audio');
+      if (rAud) rAud.muted = !callState.speakerOn;
+      updateCallControlsUi();
+    });
+    document.getElementById('call-cam-btn')?.addEventListener('click', async () => {
+      if (callState.camOff) {
+        try {
+          const vStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: callState.facingMode, width: { ideal: 1280 }, height: { ideal: 720 } } });
+          const vTrack = vStream.getVideoTracks()[0];
+          if (vTrack && callState.rawStream) {
+            callState.rawStream.getVideoTracks().forEach(t => t.stop());
+            callState.rawStream.addTrack(vTrack);
+            const lVid = document.getElementById('call-local-video');
+            if (lVid) lVid.srcObject = callState.rawStream;
+            if (callState.pc) {
+              const sender = callState.pc.getSenders().find(s => s.track && s.track.kind === 'video');
+              if (sender) await sender.replaceTrack(vTrack);
+              else callState.pc.addTrack(vTrack, callState.rawStream);
+            }
+          }
+          callState.camOff = false;
+        } catch {
+          showToast('Camera permission denied');
+        }
+      } else {
+        callState.camOff = true;
+        if (callState.rawStream) callState.rawStream.getVideoTracks().forEach(t => { t.enabled = false; });
+      }
+      updateCallControlsUi();
+    });
+    document.getElementById('call-flip-btn')?.addEventListener('click', async () => {
+      callState.facingMode = callState.facingMode === 'user' ? 'environment' : 'user';
+      if (!callState.camOff && callState.rawStream) {
+        try {
+          const vStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: callState.facingMode, width: { ideal: 1280 }, height: { ideal: 720 } } });
+          const newTrack = vStream.getVideoTracks()[0];
+          callState.rawStream.getVideoTracks().forEach(t => { t.stop(); callState.rawStream.removeTrack(t); });
+          callState.rawStream.addTrack(newTrack);
+          const lVid = document.getElementById('call-local-video');
+          if (lVid) lVid.srcObject = callState.rawStream;
+          const sender = callState.pc?.getSenders().find(s => s.track && s.track.kind === 'video');
+          if (sender) await sender.replaceTrack(newTrack);
+        } catch {}
+      }
+    });
+    document.getElementById('call-filter-toggle-btn')?.addEventListener('click', () => {
+      document.getElementById('call-filters-bar')?.classList.toggle('hidden');
+    });
+    document.querySelectorAll('.call-fx-btn').forEach(btn => {
+      btn.addEventListener('click', () => setCallVideoFilter(btn.dataset.fx || 'none'));
+    });
+    document.getElementById('inc-call-accept')?.addEventListener('click', acceptIncomingCall);
+    document.getElementById('inc-call-decline')?.addEventListener('click', () => endSnapgramCall(true));
+
+    setInterval(() => {
+      if (state.isAuthenticated) pollCallSignals();
+    }, 2000);
 
     setInterval(() => {
       if (state.isAuthenticated) { loadNotifications(); loadMyMessages(); }
