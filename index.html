@@ -1311,6 +1311,81 @@
     </div>
   </div>
 
+  <!-- Instagram-Style Staying Safe in Chats Modal (Matches 15824.png) -->
+  <div id="chat-safety-modal" class="hidden fixed inset-0 z-[86] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-[fadeIn_0.15s_ease-out]">
+      <div class="pt-3 pb-1 flex justify-center sm:hidden"><span class="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span></div>
+      <div class="px-5 pt-2 flex items-center justify-between">
+        <button id="close-chat-safety-btn" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <span></span>
+      </div>
+      <div class="px-6 pb-6 space-y-5">
+        <div class="flex flex-col items-center text-center space-y-3">
+          <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-500/15 via-purple-500/15 to-rose-500/20 flex items-center justify-center border border-pink-200 dark:border-pink-900/40">
+            <i data-lucide="shield-check" class="w-10 h-10 text-pink-500"></i>
+          </div>
+          <h3 class="text-xl font-bold text-zinc-900 dark:text-white">Staying safe in chats</h3>
+        </div>
+        <div class="space-y-4 text-left">
+          <div class="flex items-start gap-3.5">
+            <i data-lucide="user-check" class="w-5 h-5 text-zinc-700 dark:text-zinc-300 shrink-0 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-semibold">Check profiles carefully</p>
+              <p class="text-xs text-zinc-500 leading-relaxed">Before you chat with someone new, review their profile first. You don't have to chat with them if something doesn't feel right.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3.5">
+            <i data-lucide="upload" class="w-5 h-5 text-zinc-700 dark:text-zinc-300 shrink-0 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-semibold">Be mindful of what you share</p>
+              <p class="text-xs text-zinc-500 leading-relaxed">Once you've shared sensitive content or information, it can be hard to control what happens to it.</p>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-zinc-200 dark:border-zinc-800 pt-4 space-y-2">
+          <p class="text-sm font-bold">Remember, you're in control</p>
+          <p class="text-xs text-zinc-500">You can stop the conversation at any time if you feel uncomfortable.</p>
+          <div class="divide-y divide-zinc-100 dark:divide-zinc-800 pt-1">
+            <button id="safety-restrict-btn" type="button" class="w-full py-3 flex items-center justify-between text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800/60 px-1 rounded-lg">
+              <span class="flex items-center gap-3"><i data-lucide="shield-off" class="w-4 h-4"></i> <span id="safety-restrict-label">Restrict user</span></span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-400"></i>
+            </button>
+            <button id="safety-block-btn" type="button" class="w-full py-3 flex items-center justify-between text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-1 rounded-lg">
+              <span class="flex items-center gap-3"><i data-lucide="ban" class="w-4 h-4"></i> <span id="safety-block-label">Block user</span></span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-red-400"></i>
+            </button>
+            <button id="safety-report-btn" type="button" class="w-full py-3 flex items-center justify-between text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-1 rounded-lg">
+              <span class="flex items-center gap-3"><i data-lucide="alert-octagon" class="w-4 h-4"></i> <span>Report</span></span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-red-400"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instagram-Style Chat Theme Picker Modal (Long-press empty chat background) -->
+  <div id="chat-theme-modal" class="hidden fixed inset-0 z-[87] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+    <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl max-h-[82vh] flex flex-col">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold">Chat Theme</h3>
+          <p class="text-[11px] text-zinc-500">Pick a theme or upload your own photo for this chat</p>
+        </div>
+        <button id="close-chat-theme-btn" type="button" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="chat-theme-grid" class="grid grid-cols-3 gap-2.5 overflow-y-auto py-1"></div>
+      <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
+        <label for="chat-theme-photo-input" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-xs font-bold text-center cursor-pointer hover:opacity-95 flex items-center justify-center gap-2">
+          <i data-lucide="image-plus" class="w-4 h-4"></i>
+          <span>Choose Your Photo</span>
+        </label>
+        <input id="chat-theme-photo-input" type="file" accept="image/*" class="hidden" />
+        <button id="chat-theme-reset-btn" type="button" class="py-2.5 px-3.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold">White</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Instagram-Style One-Tap Music Picker Modal -->
   <div id="music-modal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
     <div class="w-full sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-2xl p-5 space-y-4 shadow-2xl h-[80vh] sm:h-[75vh] flex flex-col">
@@ -2006,6 +2081,88 @@
       `;
     }
 
+    const CHAT_THEMES = [
+      { id: 'white', name: 'White (Default)', swatch: '#ffffff', bgStyle: 'background-color: #ffffff;', myBubbleClass: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white', isDark: false },
+      { id: 'love', name: 'Love ❤️', swatch: 'linear-gradient(135deg,#ff9a9e,#fecfef)', bgStyle: 'background: linear-gradient(135deg, #fff0f5 0%, #ffe4ec 50%, #ffd6e7 100%);', patternHtml: '<div class="pointer-events-none absolute inset-0 overflow-hidden opacity-20 flex flex-wrap justify-around items-center text-4xl select-none"><span>❤️</span><span>💕</span><span>💖</span><span>❤️</span><span>💗</span><span>💘</span></div>', myBubbleClass: 'bg-gradient-to-r from-rose-500 to-pink-500 text-white', isDark: false },
+      { id: 'crimson', name: 'Hearts 💘', swatch: 'linear-gradient(160deg,#ff758c,#ff7eb3)', bgStyle: 'background: linear-gradient(160deg, #ff758c 0%, #ff7eb3 100%);', patternHtml: '<div class="pointer-events-none absolute inset-0 overflow-hidden opacity-15 flex flex-wrap justify-around items-center text-5xl select-none"><span>💘</span><span>❤️</span><span>💞</span><span>❤️</span></div>', myBubbleClass: 'bg-white/25 backdrop-blur-md text-white border border-white/30', isDark: true },
+      { id: 'sunset', name: 'Sunset 🌅', swatch: 'linear-gradient(135deg,#ffecd2,#fcb69f)', bgStyle: 'background: linear-gradient(135deg, #fff1e6 0%, #ffd6ba 50%, #fcb69f 100%);', myBubbleClass: 'bg-gradient-to-r from-orange-500 to-rose-500 text-white', isDark: false },
+      { id: 'ocean', name: 'Ocean 🌊', swatch: 'linear-gradient(135deg,#a1c4fd,#c2e9fb)', bgStyle: 'background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);', myBubbleClass: 'bg-gradient-to-r from-sky-500 to-blue-600 text-white', isDark: false },
+      { id: 'lavender', name: 'Lavender 💜', swatch: 'linear-gradient(135deg,#e0c3fc,#8ec5fc)', bgStyle: 'background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);', myBubbleClass: 'bg-gradient-to-r from-violet-500 to-purple-600 text-white', isDark: false },
+      { id: 'midnight', name: 'Midnight 🌙', swatch: 'linear-gradient(160deg,#0f172a,#1e1b4b)', bgStyle: 'background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);', myBubbleClass: 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white', isDark: true }
+    ];
+
+    function getChatThemePreset(id) {
+      return CHAT_THEMES.find(t => t.id === id) || CHAT_THEMES[0];
+    }
+    function getChatThemeConfig(convId) {
+      try {
+        const raw = localStorage.getItem('snapgram_chat_theme_' + getChatStorageUser() + '_' + convId);
+        if (!raw) return CHAT_THEMES[0];
+        const parsed = JSON.parse(raw);
+        if (parsed.customPhoto) return { id: 'custom', name: 'Custom Photo', customPhoto: parsed.customPhoto, myBubbleClass: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white', isDark: true };
+        return getChatThemePreset(parsed.id);
+      } catch {
+        return CHAT_THEMES[0];
+      }
+    }
+    function saveChatThemeConfig(convId, payload) {
+      localStorage.setItem('snapgram_chat_theme_' + getChatStorageUser() + '_' + convId, JSON.stringify(payload));
+    }
+
+    function getBlockedUsersSet() {
+      try { return new Set(JSON.parse(localStorage.getItem('snapgram_blocked_users_' + getChatStorageUser()) || '[]').map(x => String(x).toLowerCase())); } catch { return new Set(); }
+    }
+    function isChatUserBlocked(username) {
+      return getBlockedUsersSet().has(String(username || '').toLowerCase());
+    }
+    function toggleBlockChatUser(username) {
+      const uname = String(username || '').toLowerCase();
+      if (!uname) return false;
+      const set = getBlockedUsersSet();
+      const willBlock = !set.has(uname);
+      if (willBlock) set.add(uname); else set.delete(uname);
+      localStorage.setItem('snapgram_blocked_users_' + getChatStorageUser(), JSON.stringify([...set]));
+      return willBlock;
+    }
+
+    function openChatSafetyModal(username) {
+      const modal = document.getElementById('chat-safety-modal');
+      if (!modal) return;
+      modal.dataset.username = username || '';
+      const blocked = isChatUserBlocked(username);
+      const rLbl = document.getElementById('safety-restrict-label');
+      const bLbl = document.getElementById('safety-block-label');
+      if (rLbl) rLbl.textContent = `Restrict ${username}`;
+      if (bLbl) bLbl.textContent = blocked ? `Unblock ${username}` : `Block ${username}`;
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function openChatThemeModal(convId) {
+      const modal = document.getElementById('chat-theme-modal');
+      const grid = document.getElementById('chat-theme-grid');
+      if (!modal || !grid) return;
+      modal.dataset.convId = convId || state.activeConvId || '';
+      const cur = getChatThemeConfig(modal.dataset.convId);
+      grid.innerHTML = CHAT_THEMES.map(t => `
+        <button type="button" class="chat-theme-pick flex flex-col items-center gap-1.5 p-2 rounded-2xl border transition ${cur.id === t.id ? 'border-pink-500 ring-2 ring-pink-500/30' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'}" data-theme-id="${t.id}">
+          <span class="w-12 h-12 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner" style="background:${t.swatch};"></span>
+          <span class="text-[11px] font-semibold text-center leading-tight">${t.name}</span>
+        </button>
+      `).join('');
+      grid.querySelectorAll('.chat-theme-pick').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cid = modal.dataset.convId;
+          saveChatThemeConfig(cid, { id: btn.dataset.themeId });
+          modal.classList.add('hidden');
+          render();
+          showToast('Chat theme updated ✓');
+        });
+      });
+      modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
     function renderMessages() {
       const visiblePool = state.conversations.filter(c => state.showHiddenChats ? !!c.hidden : !c.hidden);
       const conv = visiblePool.find(c => c.id === state.activeConvId) || visiblePool[0] || null;
@@ -2014,10 +2171,24 @@
         const matchesSearch = !state.chatSearch || c.title.toLowerCase().includes(state.chatSearch.toLowerCase());
         return matchesBox && matchesSearch;
       });
+      const peerObj = conv ? (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === conv.title.toLowerCase()) : null;
+      const peerFullName = peerObj?.full_name || conv?.title || '';
+      const peerAvatar = conv?.avatar || peerObj?.avatar_url || '';
+      const peerJoined = peerObj?.created_at
+        ? ('Joined ' + new Date(peerObj.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }))
+        : 'Snapgram';
+      const isPeerBlocked = conv ? isChatUserBlocked(conv.title) : false;
+      const themeCfg = conv ? getChatThemeConfig(conv.id) : getChatThemePreset('white');
+      const isDarkTheme = !!themeCfg.darkTextOnLight === false && !!themeCfg.isDark;
+      const chatBgStyle = themeCfg.customPhoto
+        ? `background-image: linear-gradient(rgba(0,0,0,0.18), rgba(0,0,0,0.18)), url('${themeCfg.customPhoto}'); background-size: cover; background-position: center;`
+        : (themeCfg.bgStyle || 'background-color: #ffffff;');
+      const myBubbleClass = themeCfg.myBubbleClass || 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white';
+
       return `
-        <div class="max-w-5xl mx-auto h-[calc(100vh-7rem)] md:h-screen flex border-x border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+        <div class="max-w-5xl mx-auto h-[calc(100dvh-3.5rem)] md:h-screen flex border-x border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
           <!-- Instagram DM Inbox -->
-          <aside class="${state.mobileChatOpen ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-zinc-200 dark:border-zinc-800">
+          <aside class="${state.mobileChatOpen ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
             <div class="px-4 pt-4 pb-2 flex items-center justify-between">
               <div class="flex items-center gap-1.5 font-bold text-base">
                 <span>${state.showHiddenChats ? 'Hidden Chats' : state.currentUser.username}</span>
@@ -2057,6 +2228,7 @@
             <div class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-900">
               ${filteredConvs.map(c => {
                 const last = c.messages[c.messages.length - 1];
+                const lastLabel = !last ? 'No messages yet' : (last.text.startsWith('__VOICE__|') ? '🎤 Voice message' : (last.text.startsWith('__SHARE__|') ? '🎬 Shared a reel/post' : last.text));
                 return `
                   <button class="conv-select w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition select-none ${conv && c.id === conv.id ? 'bg-zinc-100/80 dark:bg-zinc-900' : ''}" data-conv-id="${c.id}">
                     <div class="relative shrink-0">
@@ -2065,7 +2237,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-semibold truncate">${c.title}</p>
-                      <p class="text-xs text-zinc-500 truncate">${last ? last.text : 'No messages yet'} ${last ? '· ' + last.time : ''}</p>
+                      <p class="text-xs text-zinc-500 truncate">${lastLabel} ${last ? '· ' + last.time : ''}</p>
                     </div>
                   </button>
                 `;
@@ -2073,107 +2245,148 @@
             </div>
           </aside>
 
-          <!-- Instagram Active Chat Thread -->
-          <section class="${state.mobileChatOpen ? 'flex' : 'hidden md:flex'} flex-1 flex-col">
+          <!-- Instagram Active Chat Thread (Matches 15823.png) -->
+          <section class="${state.mobileChatOpen ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white dark:bg-zinc-950">
             ${conv ? `
-              <header class="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <button id="chat-back-btn" class="md:hidden p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900" aria-label="Back">
-                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+              <header class="px-3.5 py-2.5 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-950 shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <button id="chat-back-btn" class="md:hidden p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 shrink-0" aria-label="Back">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
                   </button>
-                  <div class="relative">
-                    ${renderAvatar(conv.avatar, conv.title, 'w-9 h-9')}
-                    ${conv.online ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
-                  </div>
-                  <div>
-                    <button type="button" class="open-user-profile text-sm font-bold leading-tight hover:underline text-left" data-username="${conv.title}">${conv.title}</button>
-                    <p class="text-[11px] text-zinc-500">${conv.subtitle || ''}</p>
-                  </div>
+                  <button type="button" class="open-user-profile flex items-center gap-2.5 min-w-0 text-left group" data-username="${conv.title}">
+                    <div class="relative shrink-0">
+                      ${renderAvatar(peerAvatar, conv.title, 'w-9 h-9')}
+                      ${conv.online ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 absolute bottom-0 right-0"></span>' : ''}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-bold leading-tight truncate flex items-center gap-1 group-hover:underline">
+                        <span class="truncate">${peerFullName}</span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
+                      </p>
+                      <p class="text-[11px] text-zinc-500 truncate">@${conv.title}</p>
+                    </div>
+                  </button>
                 </div>
-                <div class="flex items-center gap-3 text-zinc-700 dark:text-zinc-300">
-                  <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Audio call"><i data-lucide="phone" class="w-5 h-5"></i></button>
-                  <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Video call"><i data-lucide="video" class="w-5 h-5"></i></button>
-                  <button class="chat-call-btn p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Chat details"><i data-lucide="info" class="w-5 h-5"></i></button>
+                <div class="flex items-center gap-1 text-zinc-800 dark:text-zinc-200 shrink-0">
+                  <button class="chat-call-btn p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Audio call" aria-label="Audio call"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                  <button class="chat-call-btn p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900" data-call="Video call" aria-label="Video call"><i data-lucide="video" class="w-5 h-5"></i></button>
                 </div>
               </header>
 
-              <div class="flex-1 p-4 space-y-3 overflow-y-auto">
-                <div class="text-center py-4 space-y-2">
-                  ${renderAvatar(conv.avatar, conv.title, 'w-16 h-16 mx-auto')}
-                  <p class="text-sm font-bold">${conv.title}</p>
-                  <p class="text-xs text-zinc-500">Snapgram${conv.subtitle ? ' · ' + conv.subtitle : ''}</p>
+              <div id="chat-messages-area" class="flex-1 p-4 space-y-3 overflow-y-auto relative select-none ${isDarkTheme || themeCfg.customPhoto ? 'text-white' : 'text-zinc-900'}" style="${chatBgStyle}" data-conv-id="${conv.id}">
+                ${themeCfg.patternHtml || ''}
+                <!-- Instagram-style Peer Profile Intro + Profile / Safety tips / Block row -->
+                <div class="text-center pt-3 pb-5 space-y-2 relative z-10">
+                  <button type="button" class="open-user-profile inline-block rounded-full focus:outline-none" data-username="${conv.title}">
+                    ${renderAvatar(peerAvatar, conv.title, 'w-20 h-20 mx-auto ring-2 ring-zinc-200/70')}
+                  </button>
+                  <div>
+                    <p class="text-base font-bold ${isDarkTheme || themeCfg.customPhoto ? 'text-white drop-shadow' : 'text-zinc-900'}">${peerFullName}</p>
+                    <p class="text-xs ${isDarkTheme || themeCfg.customPhoto ? 'text-white/80 drop-shadow' : 'text-zinc-500'}">${conv.title} · ${peerJoined}</p>
+                  </div>
+                  <div class="flex items-center justify-center gap-8 pt-2">
+                    <button type="button" class="open-user-profile flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80" data-username="${conv.title}">
+                      <span class="w-10 h-10 rounded-full ${isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900'} flex items-center justify-center">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                      </span>
+                      <span>Profile</span>
+                    </button>
+                    <button id="chat-safety-tips-btn" type="button" class="flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80" data-username="${conv.title}">
+                      <span class="w-10 h-10 rounded-full ${isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900'} flex items-center justify-center">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                      </span>
+                      <span>Safety tips</span>
+                    </button>
+                    <button id="chat-block-btn" type="button" class="flex flex-col items-center gap-1 text-xs font-medium hover:opacity-80 ${isPeerBlocked ? 'text-red-500' : ''}" data-username="${conv.title}">
+                      <span class="w-10 h-10 rounded-full ${isPeerBlocked ? 'bg-red-500 text-white' : (isDarkTheme || themeCfg.customPhoto ? 'bg-white/20 text-white backdrop-blur-sm' : 'bg-zinc-100 text-zinc-900')} flex items-center justify-center">
+                        <i data-lucide="ban" class="w-5 h-5"></i>
+                      </span>
+                      <span>${isPeerBlocked ? 'Unblock' : 'Block'}</span>
+                    </button>
+                  </div>
                 </div>
+
                 ${conv.messages.map((m, idx) => {
                   const isMine = m.sender === state.currentUser.username;
                   const isLast = idx === conv.messages.length - 1;
+                  const isShareMsg = typeof m.text === 'string' && m.text.startsWith('__SHARE__|');
                   return `
-                    <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
-                      <div class="flex items-end gap-2 max-w-[78%] group">
-                        ${!isMine ? renderAvatar(conv.avatar, m.sender, 'w-6 h-6 shrink-0 mb-1') : ''}
-                        <div role="button" tabindex="0" class="msg-react-btn text-left relative px-4 py-2.5 rounded-3xl text-sm transition cursor-pointer ${
-                          isMine
-                            ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white'
-                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-                        }" data-msg-id="${m.id}" title="Tap to react">
+                    <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'} relative z-10">
+                      <div class="flex items-end gap-2 max-w-[82%] group">
+                        ${!isMine ? renderAvatar(peerAvatar, m.sender, 'w-7 h-7 shrink-0 mb-1') : ''}
+                        <div role="button" tabindex="0" class="msg-react-btn text-left relative transition cursor-pointer ${
+                          isShareMsg
+                            ? 'p-0 bg-transparent rounded-2xl'
+                            : (isMine
+                              ? `px-4 py-2.5 rounded-3xl text-sm ${myBubbleClass}`
+                              : 'px-4 py-2.5 rounded-3xl text-sm bg-zinc-100 text-zinc-900 shadow-sm')
+                        }" data-msg-id="${m.id}" title="Tap & hold for options">
                           ${renderChatMsgContent(m.text, m.id, isMine)}
-                          ${m.reaction ? `<span class="absolute -bottom-2 ${isMine ? 'left-2' : 'right-2'} text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow">${m.reaction}</span>` : ''}
+                          ${m.reaction ? `<span class="absolute -bottom-2 ${isMine ? 'left-2' : 'right-2'} text-xs bg-white border border-zinc-200 rounded-full px-1.5 py-0.5 shadow">${m.reaction}</span>` : ''}
                         </div>
                       </div>
-                      ${isMine && isLast && conv.seen ? `<span class="text-[10px] text-zinc-400 mt-1.5 mr-1">${conv.seen}</span>` : ''}
+                      ${isMine && isLast && conv.seen ? `<span class="text-[10px] ${isDarkTheme || themeCfg.customPhoto ? 'text-white/80' : 'text-zinc-400'} mt-1.5 mr-1">${conv.seen}</span>` : ''}
                     </div>
                   `;
                 }).join('')}
               </div>
 
-              <div id="chat-voice-bar" class="hidden p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 space-y-2.5">
-                <div class="flex items-center justify-between gap-2">
-                  <button id="vn-delete-btn" type="button" class="p-2 rounded-full bg-red-500/15 text-red-500 hover:bg-red-500/25 transition" title="Delete Voice Note" aria-label="Delete">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                  <div class="flex items-center gap-2 flex-1 min-w-0 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
-                    <span id="vn-rec-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0"></span>
-                    <span id="vn-timer" class="text-xs font-mono font-bold">0:00</span>
-                    <span id="vn-status-txt" class="text-xs text-zinc-500 truncate">Recording...</span>
-                    <button id="vn-preview-btn" type="button" class="hidden ml-auto px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold">▶ Preview</button>
+              ${isPeerBlocked ? `
+                <div class="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-center space-y-2">
+                  <p class="text-xs text-zinc-500">You blocked <b>@${conv.title}</b>. Unblock to send messages.</p>
+                  <button id="chat-unblock-banner-btn" type="button" class="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-bold" data-username="${conv.title}">Unblock</button>
+                </div>
+              ` : `
+                <div id="chat-voice-bar" class="hidden p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 space-y-2.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <button id="vn-delete-btn" type="button" class="p-2 rounded-full bg-red-500/15 text-red-500 hover:bg-red-500/25 transition" title="Delete Voice Note" aria-label="Delete">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    <div class="flex items-center gap-2 flex-1 min-w-0 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                      <span id="vn-rec-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0"></span>
+                      <span id="vn-timer" class="text-xs font-mono font-bold">0:00</span>
+                      <span id="vn-status-txt" class="text-xs text-zinc-500 truncate">Recording...</span>
+                      <button id="vn-preview-btn" type="button" class="hidden ml-auto px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold">▶ Preview</button>
+                    </div>
+                    <button id="vn-pause-btn" type="button" class="p-2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition" title="Pause / Hold" aria-label="Pause or Resume">
+                      <i id="vn-pause-icon" data-lucide="pause" class="w-4 h-4"></i>
+                    </button>
+                    <button id="vn-stop-btn" type="button" class="px-3 py-1.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-bold">Done</button>
+                    <button id="vn-send-btn" type="button" class="hidden px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white text-xs font-bold shadow">Send</button>
                   </div>
-                  <button id="vn-pause-btn" type="button" class="p-2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition" title="Pause / Hold" aria-label="Pause or Resume">
-                    <i id="vn-pause-icon" data-lucide="pause" class="w-4 h-4"></i>
-                  </button>
-                  <button id="vn-stop-btn" type="button" class="px-3 py-1.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-bold">Done</button>
-                  <button id="vn-send-btn" type="button" class="hidden px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white text-xs font-bold shadow">Send</button>
+                  <!-- Voice Changer Effects Row -->
+                  <div id="vn-effects-row" class="hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                    ${[
+                      { id: 'normal', label: 'Normal' },
+                      { id: 'robot', label: '🤖 Robot' },
+                      { id: 'girl', label: '👧 Girl' },
+                      { id: 'boys', label: '👦 Boys' },
+                      { id: 'aunty', label: '👩 Aunty' },
+                      { id: 'uncle', label: '👨 Uncle' },
+                      { id: 'oldman', label: '👴 Old Man' }
+                    ].map(fx => `
+                      <button type="button" class="vn-fx-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${fx.id === 'normal' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200'}" data-fx="${fx.id}">${fx.label}</button>
+                    `).join('')}
+                  </div>
                 </div>
-                <!-- Voice Changer Effects Row -->
-                <div id="vn-effects-row" class="hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-                  ${[
-                    { id: 'normal', label: 'Normal' },
-                    { id: 'robot', label: '🤖 Robot' },
-                    { id: 'girl', label: '👧 Girl' },
-                    { id: 'boys', label: '👦 Boys' },
-                    { id: 'aunty', label: '👩 Aunty' },
-                    { id: 'uncle', label: '👨 Uncle' },
-                    { id: 'oldman', label: '👴 Old Man' }
-                  ].map(fx => `
-                    <button type="button" class="vn-fx-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${fx.id === 'normal' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200'}" data-fx="${fx.id}">${fx.label}</button>
-                  `).join('')}
-                </div>
-              </div>
-              <form id="chat-form" class="p-3 border-t border-zinc-200 dark:border-zinc-800">
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900">
-                  <button type="button" class="chat-quick-btn w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shrink-0" data-msg="📸 Photo">
-                    <i data-lucide="camera" class="w-4 h-4"></i>
-                  </button>
-                  <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent text-sm focus:outline-none py-1" />
-                  <button id="chat-mic-btn" type="button" class="p-1.5 rounded-full text-zinc-500 hover:text-pink-500 hover:bg-pink-500/10 transition select-none" title="Tap to Record Voice Note" aria-label="Record Voice Note">
-                    <i data-lucide="mic" class="w-5 h-5"></i>
-                  </button>
-                  <button type="button" class="chat-quick-btn p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white" data-msg="❤️" aria-label="Send Heart">
-                    <i data-lucide="heart" class="w-5 h-5"></i>
-                  </button>
-                  <button type="submit" class="text-xs font-bold text-indigo-500 hover:text-indigo-600 px-2">Send</button>
-                </div>
-              </form>
+                <form id="chat-form" class="p-2.5 border-t border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
+                  <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-900">
+                    <button type="button" class="chat-quick-btn w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shrink-0" data-msg="📸 Photo">
+                      <i data-lucide="camera" class="w-4 h-4"></i>
+                    </button>
+                    <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent text-sm focus:outline-none py-1 text-zinc-900 dark:text-white" />
+                    <button id="chat-mic-btn" type="button" class="p-1.5 rounded-full text-zinc-600 dark:text-zinc-300 hover:text-pink-500 transition select-none" title="Tap to Record Voice Note" aria-label="Record Voice Note">
+                      <i data-lucide="mic" class="w-5 h-5"></i>
+                    </button>
+                    <button type="button" class="chat-quick-btn p-1.5 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white" data-msg="❤️" aria-label="Send Heart">
+                      <i data-lucide="heart" class="w-5 h-5"></i>
+                    </button>
+                    <button type="submit" class="text-xs font-bold text-[#0095F6] hover:opacity-80 px-2">Send</button>
+                  </div>
+                </form>
+              `}
             ` : `
-              <div class="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3">
+              <div class="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3 bg-white dark:bg-zinc-950">
                 <div class="w-16 h-16 rounded-full border-2 border-zinc-900 dark:border-white flex items-center justify-center">
                   <i data-lucide="message-circle" class="w-8 h-8"></i>
                 </div>
@@ -3792,7 +4005,8 @@
         let mHoldTimer = null;
         let mHeld = false;
         let mLastTap = 0;
-        const startMHold = () => {
+        const startMHold = (ev) => {
+          ev?.stopPropagation?.();
           mHeld = false;
           clearTimeout(mHoldTimer);
           mHoldTimer = setTimeout(() => {
@@ -3815,6 +4029,41 @@
         btn.addEventListener('click', e => {
           if (mHeld) { e.preventDefault(); mHeld = false; return; }
           if (e.target.closest('.vn-play-btn')) return;
+          const fwdBtn = e.target.closest('.shared-card-fwd-btn');
+          if (fwdBtn) {
+            e.stopPropagation();
+            openShareSheet(fwdBtn.dataset.skind || 'reel', fwdBtn.dataset.sid || '');
+            return;
+          }
+          const shareCard = e.target.closest('.shared-media-card');
+          if (shareCard) {
+            e.stopPropagation();
+            const skind = shareCard.dataset.skind || 'reel';
+            const sid = shareCard.dataset.sid || '';
+            const surl = shareCard.dataset.surl || '';
+            const sowner = shareCard.dataset.sowner || 'user';
+            const pool = skind === 'reel'
+              ? [...state.reels, ...(state.viewedProfile.reels || [])]
+              : [...state.posts, ...(state.viewedProfile.posts || [])];
+            if (pool.some(x => String(x.id) === String(sid))) {
+              openPostDetailModal(sid, skind);
+            } else if (surl) {
+              const body = document.getElementById('post-detail-body');
+              const isVid = skind === 'reel' || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(surl);
+              body.innerHTML = `
+                <article class="pb-5">
+                  <div class="px-4 py-3 flex items-center gap-2.5">
+                    <span class="text-sm font-semibold">@${sowner}</span>
+                  </div>
+                  <div class="bg-black w-full max-h-[70vh] flex items-center justify-center overflow-hidden">
+                    ${isVid ? `<video src="${surl}" controls autoplay playsinline class="w-full max-h-[70vh] object-contain"></video>` : `<img src="${surl}" class="w-full max-h-[70vh] object-cover" />`}
+                  </div>
+                </article>
+              `;
+              document.getElementById('post-detail-modal').classList.remove('hidden');
+            }
+            return;
+          }
           const now = Date.now();
           if (now - mLastTap < 320) {
             mLastTap = 0;
@@ -3828,6 +4077,47 @@
             mLastTap = now;
           }
         });
+      });
+
+      const chatMsgsArea = document.getElementById('chat-messages-area');
+      if (chatMsgsArea) {
+        let bgHoldTimer = null;
+        const startBgHold = (e) => {
+          if (e.target.closest('.msg-react-btn, button, a, input, video, img, .shared-media-card')) return;
+          clearTimeout(bgHoldTimer);
+          bgHoldTimer = setTimeout(() => {
+            openChatThemeModal(chatMsgsArea.dataset.convId || state.activeConvId);
+          }, 480);
+        };
+        const cancelBgHold = () => clearTimeout(bgHoldTimer);
+        chatMsgsArea.addEventListener('touchstart', startBgHold, { passive: true });
+        chatMsgsArea.addEventListener('touchend', cancelBgHold);
+        chatMsgsArea.addEventListener('touchmove', cancelBgHold, { passive: true });
+        chatMsgsArea.addEventListener('touchcancel', cancelBgHold);
+        chatMsgsArea.addEventListener('mousedown', startBgHold);
+        chatMsgsArea.addEventListener('mouseup', cancelBgHold);
+        chatMsgsArea.addEventListener('mouseleave', cancelBgHold);
+        chatMsgsArea.addEventListener('contextmenu', e => {
+          if (e.target.closest('.msg-react-btn, button, a, input')) return;
+          e.preventDefault();
+          openChatThemeModal(chatMsgsArea.dataset.convId || state.activeConvId);
+        });
+      }
+
+      document.getElementById('chat-safety-tips-btn')?.addEventListener('click', e => {
+        openChatSafetyModal(e.currentTarget.dataset.username || '');
+      });
+      document.getElementById('chat-block-btn')?.addEventListener('click', e => {
+        const uname = e.currentTarget.dataset.username || '';
+        const blocked = toggleBlockChatUser(uname);
+        showToast(blocked ? `@${uname} blocked` : `@${uname} unblocked`);
+        render();
+      });
+      document.getElementById('chat-unblock-banner-btn')?.addEventListener('click', e => {
+        const uname = e.currentTarget.dataset.username || '';
+        toggleBlockChatUser(uname);
+        showToast(`@${uname} unblocked`);
+        render();
       });
 
       document.querySelectorAll('.chat-quick-btn').forEach(btn => {
@@ -4759,14 +5049,17 @@
       shellEl.classList.remove('hidden');
       const isReelsTab = state.activeTab === 'reels';
       const mobHeader = document.getElementById('mobile-top-header');
-      if (mobHeader) mobHeader.style.display = isReelsTab ? 'none' : '';
+      const isDmThreadMobile = state.activeTab === 'messages' && state.mobileChatOpen;
+      if (mobHeader) mobHeader.style.display = (isReelsTab || isDmThreadMobile) ? 'none' : '';
       const ptrEl = document.getElementById('ptr-indicator');
       if (ptrEl) ptrEl.style.display = isReelsTab ? 'none' : '';
       const mainWrapper = document.getElementById('main-wrapper');
       if (mainWrapper) {
         mainWrapper.className = isReelsTab
           ? 'flex-1 md:pl-64 pb-14 md:pb-0 relative bg-black'
-          : 'flex-1 md:pl-64 pb-20 md:pb-10 relative';
+          : (state.activeTab === 'messages'
+            ? 'flex-1 md:pl-64 pb-14 md:pb-0 relative bg-white dark:bg-zinc-950'
+            : 'flex-1 md:pl-64 pb-20 md:pb-10 relative');
       }
       const metaTheme = document.getElementById('meta-theme-color');
       if (metaTheme) {
@@ -6605,10 +6898,30 @@
         const sid = parts[2] || '';
         const surl = parts[3] || '';
         const sowner = parts[4] || 'user';
+        const ownerObj = (state.exploreUsers || []).find(u => (u.username || '').toLowerCase() === sowner.toLowerCase());
+        const itemObj = (skind === 'reel' ? state.reels : state.posts).find(x => String(x.id) === String(sid));
+        const resolvedUrl = surl || itemObj?.videoUrl || itemObj?.img || itemObj?.thumbnailUrl || '';
+        const isVideoUrl = skind === 'reel' || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(resolvedUrl) || itemObj?.mediaType === 'video';
+        const ownerAv = ownerObj?.avatar_url || itemObj?.userAvatar || '';
         return `
-          <div class="shared-media-card space-y-1.5 max-w-[200px]" data-skind="${skind}" data-sid="${sid}">
-            ${surl ? `<img src="${surl}" alt="Shared ${skind}" class="w-full h-36 object-cover rounded-xl bg-black/20" />` : ''}
-            <p class="text-xs font-semibold">Shared @${sowner}'s ${skind}</p>
+          <div class="flex items-end gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}">
+            <div class="shared-media-card relative w-[195px] sm:w-[215px] h-[280px] rounded-2xl overflow-hidden bg-zinc-900 shadow-md border border-black/10 cursor-pointer group" data-skind="${skind}" data-sid="${sid}" data-surl="${resolvedUrl}" data-sowner="${sowner}">
+              ${resolvedUrl
+                ? (isVideoUrl
+                    ? `<video src="${resolvedUrl}#t=0.3" muted playsinline preload="metadata" class="w-full h-full object-cover"></video>`
+                    : `<img src="${resolvedUrl}" alt="Shared ${skind}" class="w-full h-full object-cover" />`)
+                : `<div class="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 text-xs">Media unavailable</div>`}
+              <div class="absolute inset-x-0 top-0 p-2.5 bg-gradient-to-b from-black/70 via-black/30 to-transparent flex items-center gap-2">
+                ${renderAvatar(ownerAv, sowner, 'w-6 h-6 ring-1 ring-white/50 shrink-0')}
+                <span class="text-xs font-bold text-white truncate drop-shadow">${sowner}</span>
+              </div>
+              <div class="absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full bg-black/55 backdrop-blur-sm text-white flex items-center justify-center shadow">
+                <i data-lucide="${isVideoUrl ? 'play' : 'image'}" class="w-4 h-4 ${isVideoUrl ? 'fill-white ml-0.5' : ''}"></i>
+              </div>
+            </div>
+            <button type="button" class="shared-card-fwd-btn w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 flex items-center justify-center shrink-0 shadow-sm" data-skind="${skind}" data-sid="${sid}" title="Forward">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
         `;
       }
@@ -7327,6 +7640,74 @@
       activeActionMsgId = null;
     }
     
+    document.getElementById('close-chat-safety-btn')?.addEventListener('click', () => {
+      document.getElementById('chat-safety-modal')?.classList.add('hidden');
+    });
+    document.getElementById('chat-safety-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'chat-safety-modal') document.getElementById('chat-safety-modal').classList.add('hidden');
+    });
+    document.getElementById('safety-restrict-btn')?.addEventListener('click', () => {
+      const uname = document.getElementById('chat-safety-modal')?.dataset.username || 'user';
+      document.getElementById('chat-safety-modal')?.classList.add('hidden');
+      showToast(`@${uname} restricted`);
+    });
+    document.getElementById('safety-block-btn')?.addEventListener('click', () => {
+      const uname = document.getElementById('chat-safety-modal')?.dataset.username || '';
+      const blocked = toggleBlockChatUser(uname);
+      document.getElementById('chat-safety-modal')?.classList.add('hidden');
+      showToast(blocked ? `@${uname} blocked` : `@${uname} unblocked`);
+      render();
+    });
+    document.getElementById('safety-report-btn')?.addEventListener('click', () => {
+      const uname = document.getElementById('chat-safety-modal')?.dataset.username || 'user';
+      document.getElementById('chat-safety-modal')?.classList.add('hidden');
+      showToast(`Reported @${uname} to Snapgram Safety`);
+    });
+
+    document.getElementById('close-chat-theme-btn')?.addEventListener('click', () => {
+      document.getElementById('chat-theme-modal')?.classList.add('hidden');
+    });
+    document.getElementById('chat-theme-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'chat-theme-modal') document.getElementById('chat-theme-modal').classList.add('hidden');
+    });
+    document.getElementById('chat-theme-reset-btn')?.addEventListener('click', () => {
+      const modal = document.getElementById('chat-theme-modal');
+      const cid = modal?.dataset.convId || state.activeConvId;
+      saveChatThemeConfig(cid, { id: 'white' });
+      modal?.classList.add('hidden');
+      render();
+      showToast('Chat theme reset to White');
+    });
+    document.getElementById('chat-theme-photo-input')?.addEventListener('change', e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1080;
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+            else { w = Math.round(w * maxDim / h); h = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+          const modal = document.getElementById('chat-theme-modal');
+          const cid = modal?.dataset.convId || state.activeConvId;
+          saveChatThemeConfig(cid, { id: 'custom', customPhoto: dataUrl });
+          modal?.classList.add('hidden');
+          render();
+          showToast('Custom chat photo applied ✓');
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    });
+
     document.getElementById('msg-actions-modal')?.addEventListener('click', e => {
       if (e.target.id === 'msg-actions-modal') closeMsgActionsModal();
     });
