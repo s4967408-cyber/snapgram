@@ -1949,7 +1949,7 @@
                             ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white'
                             : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
                         }" data-msg-id="${m.id}" title="Tap to react">
-                          <span>${m.text}</span>
+                          ${renderChatMsgContent(m.text, m.id, isMine)}
                           ${m.reaction ? `<span class="absolute -bottom-2 ${isMine ? 'left-2' : 'right-2'} text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow">${m.reaction}</span>` : ''}
                         </button>
                       </div>
@@ -1959,13 +1959,45 @@
                 }).join('')}
               </div>
 
+              <div id="chat-voice-bar" class="hidden p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <button id="vn-delete-btn" type="button" class="p-2 rounded-full bg-red-500/15 text-red-500 hover:bg-red-500/25 transition" title="Delete Voice Note" aria-label="Delete">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                  <div class="flex items-center gap-2 flex-1 min-w-0 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <span id="vn-rec-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0"></span>
+                    <span id="vn-timer" class="text-xs font-mono font-bold">0:00</span>
+                    <span id="vn-status-txt" class="text-xs text-zinc-500 truncate">Recording...</span>
+                    <button id="vn-preview-btn" type="button" class="hidden ml-auto px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-semibold">▶ Preview</button>
+                  </div>
+                  <button id="vn-pause-btn" type="button" class="p-2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition" title="Pause / Hold" aria-label="Pause or Resume">
+                    <i id="vn-pause-icon" data-lucide="pause" class="w-4 h-4"></i>
+                  </button>
+                  <button id="vn-stop-btn" type="button" class="px-3 py-1.5 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-bold">Done</button>
+                  <button id="vn-send-btn" type="button" class="hidden px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white text-xs font-bold shadow">Send</button>
+                </div>
+                <!-- Voice Changer Effects Row -->
+                <div id="vn-effects-row" class="hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                  ${[
+                    { id: 'normal', label: 'Normal' },
+                    { id: 'robot', label: '🤖 Robot' },
+                    { id: 'girl', label: '👧 Girl' },
+                    { id: 'boys', label: '👦 Boys' },
+                    { id: 'aunty', label: '👩 Aunty' },
+                    { id: 'uncle', label: '👨 Uncle' },
+                    { id: 'oldman', label: '👴 Old Man' }
+                  ].map(fx => `
+                    <button type="button" class="vn-fx-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${fx.id === 'normal' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200'}" data-fx="${fx.id}">${fx.label}</button>
+                  `).join('')}
+                </div>
+              </div>
               <form id="chat-form" class="p-3 border-t border-zinc-200 dark:border-zinc-800">
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900">
                   <button type="button" class="chat-quick-btn w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shrink-0" data-msg="📸 Photo">
                     <i data-lucide="camera" class="w-4 h-4"></i>
                   </button>
                   <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-transparent text-sm focus:outline-none py-1" />
-                  <button type="button" class="chat-quick-btn p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white" data-msg="🎙️ Voice note (0:06)" aria-label="Voice message">
+                  <button id="chat-mic-btn" type="button" class="p-1.5 rounded-full text-zinc-500 hover:text-pink-500 hover:bg-pink-500/10 transition select-none" title="Tap to Record Voice Note" aria-label="Record Voice Note">
                     <i data-lucide="mic" class="w-5 h-5"></i>
                   </button>
                   <button type="button" class="chat-quick-btn p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white" data-msg="❤️" aria-label="Send Heart">
@@ -3398,6 +3430,96 @@
           state.activeConvId = btn.dataset.convId;
           state.mobileChatOpen = true;
           render();
+        });
+      });
+
+      document.getElementById('chat-mic-btn')?.addEventListener('click', startVoiceNoteRecording);
+      document.getElementById('vn-delete-btn')?.addEventListener('click', () => {
+        resetVoiceNoteUI();
+        showToast('Voice note deleted');
+      });
+      document.getElementById('vn-pause-btn')?.addEventListener('click', () => {
+        if (!vnState.recorder) return;
+        if (vnState.recorder.state === 'recording') {
+          try { vnState.recorder.pause(); } catch {}
+          vnState.paused = true;
+          document.getElementById('vn-status-txt').textContent = 'Paused (Hold)';
+          document.getElementById('vn-rec-dot')?.classList.remove('animate-pulse');
+          document.getElementById('vn-pause-icon')?.setAttribute('data-lucide', 'play');
+        } else if (vnState.recorder.state === 'paused') {
+          try { vnState.recorder.resume(); } catch {}
+          vnState.paused = false;
+          document.getElementById('vn-status-txt').textContent = 'Recording...';
+          document.getElementById('vn-rec-dot')?.classList.add('animate-pulse');
+          document.getElementById('vn-pause-icon')?.setAttribute('data-lucide', 'pause');
+        }
+        if (window.lucide) window.lucide.createIcons();
+      });
+      document.getElementById('vn-stop-btn')?.addEventListener('click', finishVoiceRecordingToPreview);
+      document.querySelectorAll('.vn-fx-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          vnState.effect = btn.dataset.fx || 'normal';
+          document.querySelectorAll('.vn-fx-btn').forEach(b => {
+            const active = b.dataset.fx === vnState.effect;
+            b.className = `vn-fx-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${active ? 'bg-pink-500 text-white border-pink-500' : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200'}`;
+          });
+        });
+      });
+      document.getElementById('vn-preview-btn')?.addEventListener('click', async () => {
+        if (!vnState.rawBlob) return;
+        if (vnState.previewAudio) { vnState.previewAudio.pause(); vnState.previewAudio = null; }
+        const btn = document.getElementById('vn-preview-btn');
+        btn.textContent = 'Processing...';
+        const processed = await applyVoiceChangerToBlob(vnState.rawBlob, vnState.effect);
+        const url = URL.createObjectURL(processed);
+        vnState.previewAudio = new Audio(url);
+        btn.textContent = 'Playing...';
+        vnState.previewAudio.onended = () => { btn.textContent = '▶ Preview'; };
+        vnState.previewAudio.play().catch(() => { btn.textContent = '▶ Preview'; });
+      });
+      document.getElementById('vn-send-btn')?.addEventListener('click', async () => {
+        const conv = state.conversations.find(c => c.id === state.activeConvId);
+        if (!conv || !vnState.rawBlob) return;
+        const sendBtn = document.getElementById('vn-send-btn');
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Sending...';
+        const durStr = formatVnTime(Math.max(1, vnState.seconds));
+        const fx = vnState.effect || 'normal';
+        const processed = await applyVoiceChangerToBlob(vnState.rawBlob, fx);
+        let audioUrl = URL.createObjectURL(processed);
+        try {
+          if (state.currentUser.supaUserId) {
+            const ext = processed.type.includes('wav') ? 'wav' : 'webm';
+            const file = new File([processed], `voice_${Date.now()}.${ext}`, { type: processed.type || 'audio/webm' });
+            const up = await uploadFileToSupabase(file, () => {});
+            if (up?.publicUrl) audioUrl = up.publicUrl;
+          }
+        } catch {}
+        const msgText = `__VOICE__|${audioUrl}|${durStr}|${fx}`;
+        conv.messages.push({ id: 'm' + Date.now(), sender: state.currentUser.username, text: msgText, time: 'Just now', reaction: '' });
+        conv.seen = 'Delivered';
+        saveMessageToSupabase(conv.title, msgText);
+        resetVoiceNoteUI();
+        render();
+      });
+
+      document.querySelectorAll('.vn-play-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const url = btn.dataset.url;
+          if (!url) return;
+          if (!window.__dmVoiceAudio) window.__dmVoiceAudio = new Audio();
+          const a = window.__dmVoiceAudio;
+          const glyph = btn.querySelector('.vn-play-glyph');
+          if (a.src === url && !a.paused) {
+            a.pause();
+            if (glyph) glyph.textContent = '▶';
+            return;
+          }
+          document.querySelectorAll('.vn-play-glyph').forEach(g => { g.textContent = '▶'; });
+          a.src = url;
+          a.onended = () => { if (glyph) glyph.textContent = '▶'; };
+          a.play().then(() => { if (glyph) glyph.textContent = '❚❚'; }).catch(() => { showToast('Could not play voice note'); });
         });
       });
 
@@ -6112,6 +6234,236 @@
           body: JSON.stringify(patch)
         });
       } catch {}
+    }
+
+    function renderChatMsgContent(txt, msgId, isMine) {
+      if (typeof txt === 'string' && txt.startsWith('__VOICE__|')) {
+        const parts = txt.split('|');
+        const url = parts[1] || '';
+        const dur = parts[2] || '0:00';
+        const fx = parts[3] && parts[3] !== 'normal' ? parts[3] : '';
+        return `
+          <div class="flex items-center gap-2.5 min-w-[175px]">
+            <button type="button" class="vn-play-btn w-8 h-8 rounded-full ${isMine ? 'bg-white/25 text-white' : 'bg-pink-500 text-white'} flex items-center justify-center shrink-0" data-url="${url}" data-msg-id="${msgId}" aria-label="Play voice note">
+              <span class="vn-play-glyph text-xs font-bold">▶</span>
+            </button>
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="flex items-center gap-0.5 h-4">
+                ${[45,80,55,95,70,40,85,60,90,50,75,65].map(h => `<span class="w-1 rounded-full ${isMine ? 'bg-white/80' : 'bg-zinc-500 dark:bg-zinc-400'}" style="height:${h}%"></span>`).join('')}
+              </div>
+              <div class="flex items-center justify-between text-[10px] ${isMine ? 'text-white/85' : 'text-zinc-500'} font-semibold">
+                <span>${dur}</span>
+                ${fx ? `<span class="px-1.5 py-0.2 rounded-full ${isMine ? 'bg-white/20' : 'bg-zinc-200 dark:bg-zinc-700'} capitalize">${fx}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      return `<span>${txt}</span>`;
+    }
+
+    const vnState = {
+      recorder: null,
+      stream: null,
+      chunks: [],
+      rawBlob: null,
+      paused: false,
+      seconds: 0,
+      timer: null,
+      effect: 'normal',
+      previewAudio: null
+    };
+
+    function formatVnTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function encodeWavFromBuffer(audioBuffer) {
+      const numCh = 1;
+      const sampleRate = audioBuffer.sampleRate;
+      const samples = audioBuffer.getChannelData(0);
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+      const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + samples.length * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numCh, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, samples.length * 2, true);
+      let offset = 44;
+      for (let i = 0; i < samples.length; i++, offset += 2) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      }
+      return new Blob([view], { type: 'audio/wav' });
+    }
+
+    async function applyVoiceChangerToBlob(blob, effect) {
+      if (!effect || effect === 'normal') return blob;
+      try {
+        const arr = await blob.arrayBuffer();
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        const tempCtx = new Ctx();
+        const decoded = await tempCtx.decodeAudioData(arr);
+        await tempCtx.close().catch(() => {});
+
+        const rateMap = { robot: 1.0, girl: 1.38, boys: 0.90, aunty: 1.22, uncle: 0.80, oldman: 0.70 };
+        const rate = rateMap[effect] || 1.0;
+        const outLen = Math.max(1, Math.ceil(decoded.duration / rate * decoded.sampleRate));
+        const offCtx = new OfflineAudioContext(1, outLen, decoded.sampleRate);
+
+        const src = offCtx.createBufferSource();
+        src.buffer = decoded;
+        src.playbackRate.value = rate;
+
+        let lastNode = src;
+        if (effect === 'robot') {
+          const bp = offCtx.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 950;
+          bp.Q.value = 2.5;
+          const osc = offCtx.createOscillator();
+          osc.type = 'square';
+          osc.frequency.value = 55;
+          const modGain = offCtx.createGain();
+          modGain.gain.value = 0.6;
+          osc.connect(modGain.gain);
+          lastNode.connect(bp);
+          bp.connect(modGain);
+          osc.start(0);
+          lastNode = modGain;
+        } else if (effect === 'girl' || effect === 'aunty') {
+          const hs = offCtx.createBiquadFilter();
+          hs.type = 'highshelf';
+          hs.frequency.value = 1800;
+          hs.gain.value = effect === 'girl' ? 5 : 2;
+          lastNode.connect(hs);
+          lastNode = hs;
+        } else if (effect === 'boys' || effect === 'uncle' || effect === 'oldman') {
+          const ls = offCtx.createBiquadFilter();
+          ls.type = 'lowshelf';
+          ls.frequency.value = 320;
+          ls.gain.value = effect === 'uncle' ? 6 : 4;
+          lastNode.connect(ls);
+          lastNode = ls;
+          if (effect === 'oldman') {
+            const lp = offCtx.createBiquadFilter();
+            lp.type = 'lowpass';
+            lp.frequency.value = 2100;
+            const trem = offCtx.createOscillator();
+            trem.frequency.value = 9;
+            const tremGain = offCtx.createGain();
+            tremGain.gain.value = 0.85;
+            const lfoAmp = offCtx.createGain();
+            lfoAmp.gain.value = 0.22;
+            trem.connect(lfoAmp);
+            lfoAmp.connect(tremGain.gain);
+            lastNode.connect(lp);
+            lp.connect(tremGain);
+            trem.start(0);
+            lastNode = tremGain;
+          }
+        }
+        lastNode.connect(offCtx.destination);
+        src.start(0);
+        const rendered = await offCtx.startRendering();
+        return encodeWavFromBuffer(rendered);
+      } catch {
+        return blob;
+      }
+    }
+
+    function resetVoiceNoteUI() {
+      clearInterval(vnState.timer);
+      if (vnState.previewAudio) { vnState.previewAudio.pause(); vnState.previewAudio = null; }
+      if (vnState.recorder && vnState.recorder.state !== 'inactive') {
+        try { vnState.recorder.stop(); } catch {}
+      }
+      if (vnState.stream) {
+        vnState.stream.getTracks().forEach(t => t.stop());
+        vnState.stream = null;
+      }
+      vnState.recorder = null;
+      vnState.chunks = [];
+      vnState.rawBlob = null;
+      vnState.paused = false;
+      vnState.seconds = 0;
+      vnState.effect = 'normal';
+      document.getElementById('chat-voice-bar')?.classList.add('hidden');
+      document.getElementById('chat-form')?.classList.remove('hidden');
+    }
+
+    async function startVoiceNoteRecording() {
+      if (vnState.recorder) return;
+      try {
+        vnState.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        showToast('Microphone permission denied — allow mic access to record voice notes');
+        return;
+      }
+      vnState.chunks = [];
+      vnState.rawBlob = null;
+      vnState.paused = false;
+      vnState.seconds = 0;
+      vnState.effect = 'normal';
+
+      const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+      vnState.recorder = mime ? new MediaRecorder(vnState.stream, { mimeType: mime }) : new MediaRecorder(vnState.stream);
+      vnState.recorder.ondataavailable = e => { if (e.data && e.data.size > 0) vnState.chunks.push(e.data); };
+      vnState.recorder.onstop = () => {
+        if (vnState.chunks.length) {
+          vnState.rawBlob = new Blob(vnState.chunks, { type: vnState.recorder?.mimeType || 'audio/webm' });
+        }
+        if (vnState.stream) {
+          vnState.stream.getTracks().forEach(t => t.stop());
+          vnState.stream = null;
+        }
+      };
+      vnState.recorder.start(250);
+
+      document.getElementById('chat-form')?.classList.add('hidden');
+      document.getElementById('chat-voice-bar')?.classList.remove('hidden');
+      document.getElementById('vn-rec-dot')?.classList.remove('hidden');
+      document.getElementById('vn-timer').textContent = '0:00';
+      document.getElementById('vn-status-txt').textContent = 'Recording...';
+      document.getElementById('vn-pause-btn')?.classList.remove('hidden');
+      document.getElementById('vn-stop-btn')?.classList.remove('hidden');
+      document.getElementById('vn-preview-btn')?.classList.add('hidden');
+      document.getElementById('vn-send-btn')?.classList.add('hidden');
+      document.getElementById('vn-effects-row')?.classList.add('hidden');
+
+      clearInterval(vnState.timer);
+      vnState.timer = setInterval(() => {
+        if (!vnState.paused) {
+          vnState.seconds += 1;
+          const tEl = document.getElementById('vn-timer');
+          if (tEl) tEl.textContent = formatVnTime(vnState.seconds);
+        }
+      }, 1000);
+    }
+
+    function finishVoiceRecordingToPreview() {
+      clearInterval(vnState.timer);
+      if (vnState.recorder && vnState.recorder.state !== 'inactive') {
+        vnState.recorder.stop();
+      }
+      document.getElementById('vn-rec-dot')?.classList.add('hidden');
+      document.getElementById('vn-status-txt').textContent = 'Ready · Pick Voice Effect';
+      document.getElementById('vn-pause-btn')?.classList.add('hidden');
+      document.getElementById('vn-stop-btn')?.classList.add('hidden');
+      document.getElementById('vn-preview-btn')?.classList.remove('hidden');
+      document.getElementById('vn-send-btn')?.classList.remove('hidden');
+      document.getElementById('vn-effects-row')?.classList.remove('hidden');
     }
 
     function getChatStorageUser() {
